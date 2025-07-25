@@ -54,5 +54,9 @@ exports.requireLogin = (req, res, next) => {
 };
 
 exports.dashboard = (req, res) => {
-  res.render('dashboard', { user: req.session.user });
+  res.render('dashboard', { user: req.session.user, activePage: 'dashboard',title : 'Dashboard' });
+};
+
+exports.renderOperatorPage = (req, res) => {
+  res.render('operator', { user: req.session.user,activePage: 'operator' , title : 'Operators' });
 };

@@ -15,6 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'entry-exit-secret',
   resave: false,
