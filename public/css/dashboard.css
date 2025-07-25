@@ -3,6 +3,17 @@ body.dashboard{
  background-color: var(--dashboard-white);
 }
 
+button{
+    cursor: pointer;
+    background:var(--blue);
+    color: #fff;
+    padding:0.8em;
+    border:1px solid var(--blue);
+    font-weight:600;
+    letter-spacing: 0.2px;
+    border-radius: 4px;
+}
+
 .dashboard-container {
   display: flex;
   min-height: 100vh;
@@ -81,4 +92,42 @@ body.dashboard .dashboard-content{
 
 .logout-button:hover {
   background:var(--error-color);
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%);
+  background: #fff;
+  padding: 1.5rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border-radius: 10px;
+  z-index: 1000;
+  padding:2em 2em;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operator-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+
+#add-operator-form{
+    margin-top:1em;
+}
+
+#add-operator-form input{
+    width:100%;
 }

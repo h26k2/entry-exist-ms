@@ -13,10 +13,99 @@
     <%- include('partials/sidebar') %>
 
     <main class="dashboard-content">
-        <%- include('partials/header', { title: 'Manage Operator' }) %>
-      <h1>Operator Management</h1>
-      <p>Here you will be able to add, update, and delete operators.</p>
+        
+        <%- include('partials/header', { title }) %>
+
+        <% if (typeof error !== 'undefined') { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
+        <div class="operator-actions">
+            <button id="add-operator-btn">Add Operator</button>
+            <% if(operators.length >0){ %>
+                <button id="delete-selected-btn">Delete Selected</button>
+            <% } %>
+        </div>
+
+        <% if (operators.length > 0) { %>
+            <table>
+                <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>Name</th>
+                    <th>CNIC</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% operators.forEach(operator => { %>
+                    <tr data-id="<%= operator.id %>">
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td><%= operator.name %></td>
+                    <td><%= operator.cnic_num %></td>
+                    <td><button class="edit-btn" data-id="<%= operator.id %>" data-name="<%= operator.name %>" data-cnic="<%= operator.cnic_num %>">Edit</button></td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="not-found-msg">No users are found.</p>
+        <% } %>
+
+<!-- Add Operator Modal -->
+<div id="add-operator-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Add Operator</h2>
+    <hr/>
+    <form id="add-operator-form" action="/dashboard/operator/add" method="POST">
+
+      <label for="name">Name*</label><br/>
+      <input type="text" name="name" placeholder="Please enter full name" required>
+
+      <label for="cnic">CNIC*</label><br/>
+      <input type="text" name="cnic" placeholder="Please enter CNIC without dashes or spaces" required>
+
+      <label for="password">Password*</label><br/>    
+      <input type="password" name="password" placeholder="Please enter default password for user" required >
+      <button type="submit">Add</button>
+      <button type="button" id="close-add-modal">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Operator Modal -->
+<div id="edit-operator-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Edit Operator</h2>
+    <form id="edit-operator-form" method="POST">
+      <input type="hidden" name="id" id="edit-id">
+      
+      <label for="edit-name">Name*</label><br/>
+      <input type="text" name="name" id="edit-name" placeholder="Name" required>
+    
+      <label for="edit-cnic">CNIC*</label><br/>
+      <input type="text" name="cnic" id="edit-cnic" placeholder="CNIC" required>
+      
+      <!-- Optional Password Field -->
+      <input type="password" name="password" id="edit-password" placeholder="New Password (leave blank to keep current)">
+      
+      <button type="submit">Update</button>
+      <button type="button" id="close-edit-modal">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<script src="/js/operators.js"></script>
+
+
     </main>
   </div>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <script>
+    alert("<%= success %>");
+  </script>
+<% } %>
+
 </body>
 </html>
