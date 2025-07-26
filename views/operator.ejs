@@ -40,7 +40,7 @@
                 <tbody>
                 <% operators.forEach(operator => { %>
                     <tr data-id="<%= operator.id %>">
-                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td><input type="checkbox" class="row-checkbox" name="selectedIds[]" value="<%= operator.id %>"></td>
                     <td><%= operator.name %></td>
                     <td><%= operator.cnic_num %></td>
                     <td><button class="edit-btn" data-id="<%= operator.id %>" data-name="<%= operator.name %>" data-cnic="<%= operator.cnic_num %>">Edit</button></td>

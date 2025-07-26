@@ -51,3 +51,46 @@ document.querySelectorAll('.edit-btn').forEach(button => {
     });
   });
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ... existing code ...
+
+  const deleteBtn = document.getElementById('delete-selected-btn');
+
+  deleteBtn?.addEventListener('click', async () => {
+    const confirmed = confirm('Are you sure you want to delete the selected operators?');
+    if (!confirmed) return;
+
+    const selected = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+      .map(cb => cb.value);
+
+    if (selected.length === 0) {
+      alert('Please select at least one operator.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/dashboard/operator/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ selectedIds: selected }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert('Selected operators deleted successfully.');
+        window.location.reload(); // reload to reflect changes
+      } else {
+        alert(data.message || 'An error occurred while deleting.');
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert('Request failed. Please try again.');
+    }
+  });
+});

@@ -131,17 +131,20 @@ exports.updateOperator = async (req, res) => {
 
 
 exports.deleteOperators = async (req, res) => {
-  const { selectedUsers } = req.body;
+  const { selectedIds } = req.body;
 
-  if (!Array.isArray(selectedUsers) || selectedUsers.length === 0) {
-    return res.redirect('/dashboard/operator');
+  if (!selectedIds || selectedIds.length === 0) {
+    return res.status(400).json({ message: 'No users selected' });
   }
+
+  const ids = Array.isArray(selectedIds) ? selectedIds : [selectedIds];
 
   try {
-    await db.query(`DELETE FROM users WHERE id IN (${selectedUsers.map(() => '?').join(',')})`, selectedUsers);
-    res.redirect('/dashboard/operator');
+    await db.query('DELETE FROM users WHERE id IN (?) AND role = "operator"', [ids]);
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Delete error');
+    res.status(500).json({ message: 'Failed to delete users' });
   }
 };
+
