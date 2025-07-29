@@ -1,32 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/login.css">
-</head>
-<body class="login-page">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entry/Exit Management System - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1e40af",
+              secondary: "#3b82f6",
+              accent: "#06b6d4",
+              dark: "#1f2937",
+              light: "#f8fafc",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50"
+  >
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-  <div class="login-container">
-    
-    <h2>Login</h2>
+    <!-- Main Container -->
+    <div
+      class="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12"
+    >
+      <!-- Login Card -->
+      <div class="w-full max-w-sm sm:max-w-md">
+        <!-- Header Section -->
+        <div class="text-center mb-6 lg:mb-8">
+          <div
+            class="mx-auto w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl lg:rounded-2xl flex items-center justify-center mb-4 shadow-lg"
+          >
+            <i class="fas fa-shield-alt text-white text-2xl lg:text-3xl"></i>
+          </div>
+          <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+            Welcome Back
+          </h1>
+          <p class="text-gray-600 text-sm lg:text-base">
+            Entry/Exit Management System
+          </p>
+        </div>
 
-    <% if (typeof error !== 'undefined') { %>
-        <p style="color: red;"><%= error %></p>
-    <% } %>
+        <!-- Security Status -->
+        <% if ((typeof remainingAttempts !== 'undefined' && remainingAttempts !== null) || (typeof lockoutTime !== 'undefined' && lockoutTime)) { %>
+        <div class="mb-4 lg:mb-6">
+          <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
+            <i class="fas fa-lock text-lg mr-3"></i>
+            <div>
+              <p class="font-semibold">Account Temporarily Locked</p>
+              <p class="text-sm">Try again in <span id="lockout-countdown"><%= lockoutTime %></span> minutes</p>
+            </div>
+          </div>
+          <% } else if (typeof remainingAttempts !== 'undefined' && remainingAttempts !== null && remainingAttempts <= 2) { %>
+          <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg flex items-center">
+            <i class="fas fa-exclamation-triangle text-lg mr-3"></i>
+            <div>
+              <p class="font-semibold">Security Warning</p>
+              <p class="text-sm"><%= remainingAttempts %> login attempt(s) remaining before account lockout</p>
+            </div>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
 
-    <form action="/login" method="POST">
-        <label>CNIC:</label><br>
-        <input type="text" name="number" pattern="\d{13}" maxlength="13" inputmode="numeric" required placeholder="Enter 13-digit CNIC number without dashes"><br><br>
+        <!-- Login Form Card -->
+        <div
+          class="bg-white/80 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl border border-white/20 p-6 lg:p-8"
+        >
+          <!-- Error Message -->
+          <% if (typeof error !== 'undefined' && error) { %>
+          <div
+            class="mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg bg-red-50 border border-red-200 flex items-center"
+          >
+            <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+            <span class="text-red-700 text-sm"><%= error %></span>
+          </div>
+          <% } %>
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required placeholder="Enter your password"><br><br>
+          <!-- Success Message -->
+          <% if (typeof message !== 'undefined' && message) { %>
+          <div
+            class="mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg bg-green-50 border border-green-200 flex items-center"
+          >
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span class="text-green-700 text-sm"><%= message %></span>
+          </div>
+          <% } %>
 
-        <button type="submit">Login</button>
-    </form>
+          <form action="/login" method="POST" class="space-y-4 lg:space-y-6">
+            <!-- CNIC Field -->
+            <div>
+              <label
+                for="number"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-id-card mr-2 text-blue-600"></i>CNIC Number
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="number"
+                  name="number"
+                  pattern="\d{5}-\d{7}-\d{1}"
+                  maxlength="15"
+                  inputmode="numeric"
+                  required
+                  placeholder="12345-6789012-3"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/90 backdrop-blur-sm text-gray-900 placeholder-gray-500"
+                  <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>disabled<% } %>
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <i class="fas fa-user text-gray-400"></i>
+                </div>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">
+                Format: 12345-6789012-3 (automatically formatted)
+              </p>
+            </div>
 
-  </div>
+            <!-- Password Field -->
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-lock mr-2 text-blue-600"></i>Password
+              </label>
+              <div class="relative">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  placeholder="Enter your password"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/90 backdrop-blur-sm text-gray-900 placeholder-gray-500"
+                  autocomplete="current-password"
+                  <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>disabled<% } %>
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onclick="togglePassword()"
+                    class="text-gray-400 hover:text-gray-600 transition-colors"
+                    <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>disabled<% } %>
+                  >
+                    <i class="fas fa-eye" id="password-toggle"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
 
-</body>
+            <!-- Remember Me Checkbox -->
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                name="rememberMe"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>disabled<% } %>
+              />
+              <label for="rememberMe" class="ml-2 text-sm text-gray-600">
+                Remember me
+              </label>
+            </div>
+
+            <!-- Login Button -->
+            <button
+              type="submit"
+              class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>disabled<% } %>
+            >
+              <% if (typeof lockoutTime !== 'undefined' && lockoutTime) { %>
+                <i class="fas fa-lock mr-2"></i>Account Locked
+              <% } else { %>
+                <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+              <% } %>
+            </button>
+          </form>
+
+          <!-- Demo Credentials -->
+          <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3
+              class="text-sm font-semibold text-gray-700 mb-3 flex items-center"
+            >
+              <i class="fas fa-info-circle mr-2 text-blue-600"></i>Demo
+              Credentials
+            </h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Admin:</span>
+                <span class="font-mono text-gray-800"
+                  >1234567890123 / admin123</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Demo Admin:</span>
+                <span class="font-mono text-gray-800"
+                  >1111122222333 / demo123</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Operator:</span>
+                <span class="font-mono text-gray-800"
+                  >9876543210987 / operator123</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+          <p class="text-sm text-gray-500">
+            © 2025 Entry/Exit Management System. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+      function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggleIcon = document.getElementById("password-toggle");
+
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          toggleIcon.className = "fas fa-eye-slash";
+        } else {
+          passwordField.type = "password";
+          toggleIcon.className = "fas fa-eye";
+        }
+      }
+
+      // Auto-format CNIC input (allow both formats)
+      const cnicInput = document.getElementById("number");
+      
+      cnicInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, "");
+        
+        // Limit to 13 digits
+        if (value.length > 13) {
+          value = value.substring(0, 13);
+        }
+        
+        // Format as 12345-6789012-3
+        let formattedValue = '';
+        if (value.length > 0) {
+          formattedValue = value.substring(0, 5);
+        }
+        if (value.length > 5) {
+          formattedValue += '-' + value.substring(5, 12); 
+        }
+        if (value.length > 12) {
+          formattedValue += '-' + value.substring(12, 13);
+        }
+        
+        e.target.value = formattedValue;
+        
+        // Update cursor position properly
+        const cursorPosition = formattedValue.length;
+        setTimeout(() => {
+          e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }, 0);
+      });
+
+      // Handle special keys
+      cnicInput.addEventListener("keydown", function (e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true)) {
+          return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+          e.preventDefault();
+        }
+      });
+
+      // Add loading state to form submission
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const button = e.target.querySelector('button[type="submit"]');
+        if (!button.disabled) {
+          button.innerHTML =
+            '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+          button.disabled = true;
+        }
+      });
+
+      // Auto-focus on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const numberInput = document.getElementById('number');
+        if (numberInput && !numberInput.disabled) {
+          numberInput.focus();
+        }
+      });
+
+      // Countdown timer for lockout
+      if (typeof lockoutTime !== 'undefined' && lockoutTime) { 
+      (function() {
+        let remainingTime = lockoutTime  * 60; // Convert to seconds
+        
+        function updateCountdown() {
+          const minutes = Math.floor(remainingTime / 60);
+          const seconds = remainingTime % 60;
+          
+          const countdownElement = document.getElementById('lockout-countdown');
+          if (countdownElement) {
+            countdownElement.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+          }
+          
+          remainingTime--;
+          
+          if (remainingTime < 0) {
+            location.reload(); // Refresh page when lockout expires
+          }
+        }
+        
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call
+      })();
+      } 
+
+      // Form validation
+      document.querySelector('form').addEventListener('submit', function(e) {
+        const cnic = document.getElementById('number').value.replace(/\D/g, '');
+        const password = document.getElementById('password').value;
+
+        if (cnic.length !== 13) {
+          e.preventDefault();
+          Toast.error('Please enter a valid 13-digit CNIC number');
+          return;
+        }
+
+        if (password.length < 1) {
+          e.preventDefault();
+          Toast.error('Please enter your password');
+          return;
+        }
+      });
+    </script>
+
+    <%- include('partials/toast') %>
+
+    <style>
+      .bg-grid-pattern {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+    </style>
+  </body>
 </html>

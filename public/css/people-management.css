@@ -1,0 +1,601 @@
+/* People Management Styles */
+
+/* Search Input Styles */
+.pl-10 {
+  padding-left: 2.5rem !important;
+}
+
+.pl-12 {
+  padding-left: 3rem !important;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.inset-y-0 {
+  top: 0;
+  bottom: 0;
+}
+
+.left-0 {
+  left: 0;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+/* Quick Search Styling */
+#quickSearch {
+  padding-left: 2.5rem;
+}
+
+.search-filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.people-list-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.list-header {
+  padding: 20px 25px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, var(--blue), #1a5a8a);
+  color: white;
+}
+
+.list-header h3 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.list-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.list-actions .btn {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.people-table-container {
+  overflow-x: auto;
+}
+
+.people-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.people-table th {
+  background: #f8f9fa;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 2px solid #e9ecef;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.people-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.people-table tr:hover {
+  background: #f8f9fa;
+}
+
+.people-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Person name with badges */
+.person-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.family-badge {
+  background: #28a745;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Card number styling */
+.card-number {
+  background: #e7f3ff;
+  color: var(--blue);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.no-card {
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Family members count */
+.family-count {
+  background: #fff3cd;
+  color: #856404;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.no-family {
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* Modal specific styles for people management */
+.host-info {
+  background: #e7f3ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--blue);
+}
+
+.host-info h4 {
+  margin: 0 0 5px 0;
+  color: var(--blue);
+}
+
+.host-info p {
+  margin: 0;
+  color: #666;
+}
+
+/* Search results section */
+.search-results-section {
+  margin-top: 25px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Import instructions */
+.import-instructions {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--blue);
+}
+
+.import-instructions h4 {
+  margin: 0 0 15px 0;
+  color: var(--blue);
+}
+
+.import-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.import-instructions li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Person details modal content */
+.person-details {
+  display: grid;
+  gap: 25px;
+}
+
+.detail-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid var(--blue);
+}
+
+.detail-section h4 {
+  margin: 0 0 15px 0;
+  color: var(--blue);
+  font-size: 1.2em;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.detail-value {
+  color: #666;
+}
+
+/* Family members list */
+.family-members-list {
+  display: grid;
+  gap: 10px;
+}
+
+.family-member-item {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.family-member-info h5 {
+  margin: 0 0 5px 0;
+  color: var(--blue);
+}
+
+.family-member-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Entry history in person details */
+.entry-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.entry-history-table th,
+.entry-history-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+.entry-history-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Fee deposits section */
+.deposits-list {
+  display: grid;
+  gap: 10px;
+}
+
+.deposit-item {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deposit-info h5 {
+  margin: 0 0 5px 0;
+  color: #28a745;
+}
+
+.deposit-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.deposit-amount {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #28a745;
+}
+
+/* Balance display */
+.balance-display {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.balance-display h4 {
+  margin: 0 0 5px 0;
+}
+
+.balance-amount {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Status indicators */
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Quick stats */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.stat-card .number {
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--blue);
+  display: block;
+}
+
+.stat-card .label {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Search filters */
+.filter-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-tag {
+  background: var(--blue);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-tag .remove {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.filter-tag .remove:hover {
+  color: #ffc107;
+}
+
+/* Bulk actions */
+.bulk-actions {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.bulk-actions.show {
+  display: block;
+}
+
+.bulk-actions-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.selected-count {
+  font-weight: 600;
+  color: var(--blue);
+}
+
+/* Checkbox column */
+.people-table .checkbox-col {
+  width: 40px;
+  text-align: center;
+}
+
+.people-table .checkbox-col input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+/* Loading states */
+.table-loading {
+  text-align: center;
+  padding: 50px 20px;
+  color: #666;
+}
+
+.table-loading .spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #666;
+}
+
+.empty-state-icon {
+  font-size: 4em;
+  color: #ddd;
+  margin-bottom: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .people-table th,
+  .people-table td {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons .btn-sm {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .search-filter-section .form-row {
+    flex-direction: column;
+  }
+
+  .people-table {
+    font-size: 12px;
+  }
+
+  .people-table th,
+  .people-table td {
+    padding: 6px;
+  }
+
+  .action-buttons .btn-sm {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .person-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions {
+    flex-direction: column;
+  }
+
+  .quick-actions .btn {
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 2% auto;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .people-table th:not(:first-child):not(:nth-child(2)),
+  .people-table td:not(:first-child):not(:nth-child(2)) {
+    display: none;
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print styles */
+@media print {
+  .quick-actions,
+  .search-filter-section,
+  .action-buttons,
+  .modal {
+    display: none !important;
+  }
+
+  .people-table {
+    font-size: 12px;
+  }
+
+  .people-table th,
+  .people-table td {
+    padding: 5px;
+  }
+}

@@ -1,111 +1,531 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manage Operators</title>
-  <link rel="stylesheet" href="/css/global.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
-</head>
-<body class="dashboard">
-  <div class="dashboard-container">
-    
-    <%- include('partials/sidebar') %>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Operators - Entry/Exit Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1e40af",
+              secondary: "#3b82f6",
+              accent: "#06b6d4",
+              dark: "#1f2937",
+              light: "#f8fafc",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="flex h-screen">
+      <%- include('partials/sidebar') %>
 
-    <main class="dashboard-content">
-        
+      <main class="flex-1 overflow-y-auto lg:ml-0">
         <%- include('partials/header', { title }) %>
 
-        <% if (typeof error !== 'undefined') { %>
-            <div class="error-message"><%= error %></div>
-        <% } %>
+        <!-- Main Content -->
+        <div class="p-4 lg:p-6">
+          <!-- Error/Success Messages -->
+          <% if (typeof error !== 'undefined' && error) { %>
+          <div
+            class="mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg bg-red-50 border border-red-200 flex items-center"
+          >
+            <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+            <span class="text-red-700 text-sm lg:text-base"><%= error %></span>
+          </div>
+          <% } %> <% if (typeof success !== 'undefined' && success) { %>
+          <div
+            class="mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg bg-green-50 border border-green-200 flex items-center"
+          >
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span class="text-green-700 text-sm lg:text-base"
+              ><%= success %></span
+            >
+          </div>
+          <% } %>
 
-        <div class="operator-actions">
-            <button id="add-operator-btn">Add Operator</button>
-            <% if(operators.length >0){ %>
-                <button id="delete-selected-btn">Delete Selected</button>
-            <% } %>
-        </div>
+          <!-- Page Header -->
+          <div class="mb-6 lg:mb-8">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                  Operator Management
+                </h1>
+                <p class="text-gray-600 text-sm lg:text-base">
+                  Manage system operators and their access permissions
+                </p>
+              </div>
+              <div
+                class="mt-4 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+              >
+                <button
+                  id="add-operator-btn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add Operator
+                </button>
+                <% if(operators.length > 0){ %>
+                <button
+                  id="delete-selected-btn"
+                  class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
+                >
+                  <i class="fas fa-trash mr-2"></i>Delete Selected
+                </button>
+                <% } %>
+              </div>
+            </div>
+          </div>
 
-        <% if (operators.length > 0) { %>
-            <table>
-                <thead>
-                <tr>
-                    <th><input type="checkbox" id="select-all"></th>
-                    <th>Name</th>
-                    <th>CNIC</th>
-                    <th>Actions</th>
-                </tr>
+          <!-- Operators Table -->
+          <div
+            class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+          >
+            <% if (operators.length > 0) { %>
+            <!-- Mobile Card View (Hidden on larger screens) -->
+            <div class="block lg:hidden">
+              <% operators.forEach((operator, index) => { %>
+              <div class="p-4 border-b border-gray-200 last:border-b-0">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-start space-x-3">
+                    <input
+                      type="checkbox"
+                      class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1"
+                      name="selectedIds[]"
+                      value="<%= operator.id %>"
+                    />
+                    <div class="flex-1">
+                      <h3 class="font-semibold text-gray-900 text-sm">
+                        <%= operator.name %>
+                      </h3>
+                      <p class="text-xs text-gray-600 mt-1">
+                        CNIC: <%= operator.cnic_num %>
+                      </p>
+                      <span
+                        class="inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full <%= operator.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' %>"
+                      >
+                        <%= operator.role.charAt(0).toUpperCase() +
+                        operator.role.slice(1) %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      class="edit-btn text-blue-600 hover:text-blue-800 p-2"
+                      data-id="<%= operator.id %>"
+                      data-name="<%= operator.name %>"
+                      data-cnic="<%= operator.cnic_num %>"
+                    >
+                      <i class="fas fa-edit text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+
+            <!-- Desktop Table View (Hidden on smaller screens) -->
+            <div class="hidden lg:block overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-6 py-4 text-left">
+                      <input
+                        type="checkbox"
+                        id="select-all"
+                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Name
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
+                    >
+                      CNIC
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Role
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Actions
+                    </th>
+                  </tr>
                 </thead>
-                <tbody>
-                <% operators.forEach(operator => { %>
-                    <tr data-id="<%= operator.id %>">
-                    <td><input type="checkbox" class="row-checkbox" name="selectedIds[]" value="<%= operator.id %>"></td>
-                    <td><%= operator.name %></td>
-                    <td><%= operator.cnic_num %></td>
-                    <td><button class="edit-btn" data-id="<%= operator.id %>" data-name="<%= operator.name %>" data-cnic="<%= operator.cnic_num %>">Edit</button></td>
-                    </tr>
-                <% }) %>
+                <tbody class="divide-y divide-gray-200">
+                  <% operators.forEach((operator, index) => { %>
+                  <tr
+                    class="hover:bg-gray-50 transition-colors duration-200"
+                    data-id="<%= operator.id %>"
+                  >
+                    <td class="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        name="selectedIds[]"
+                        value="<%= operator.id %>"
+                      />
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center">
+                        <div
+                          class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3"
+                        >
+                          <i class="fas fa-user text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            <%= operator.name %>
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            ID: #<%= operator.id %>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="text-sm font-mono text-gray-900"
+                        ><%= operator.cnic_num %></span
+                      >
+                    </td>
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= operator.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>"
+                      >
+                        <i class="fas fa-circle text-current mr-1 text-xs"></i>
+                        <%= operator.role.charAt(0).toUpperCase() +
+                        operator.role.slice(1) %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <button
+                        class="edit-btn text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200 flex items-center"
+                        data-id="<%= operator.id %>"
+                        data-name="<%= operator.name %>"
+                        data-cnic="<%= operator.cnic_num %>"
+                      >
+                        <i class="fas fa-edit mr-1"></i>Edit
+                      </button>
+                    </td>
+                  </tr>
+                  <% }) %>
                 </tbody>
-            </table>
-        <% } else { %>
-            <p class="not-found-msg">No users are found.</p>
-        <% } %>
+              </table>
+            </div>
+            <% } else { %>
+            <div class="text-center py-8 lg:py-12">
+              <i
+                class="fas fa-users text-3xl lg:text-4xl text-gray-400 mb-4"
+              ></i>
+              <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">
+                No operators found
+              </h3>
+              <p class="text-gray-500 mb-4 lg:mb-6 text-sm lg:text-base">
+                Get started by adding your first operator
+              </p>
+              <button
+                id="add-first-operator-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center mx-auto text-sm lg:text-base"
+              >
+                <i class="fas fa-plus mr-2"></i>Add First Operator
+              </button>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </main>
+    </div>
 
-<!-- Add Operator Modal -->
-<div id="add-operator-modal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Add Operator</h2>
-    <hr/>
-    <form id="add-operator-form" action="/dashboard/operator/add" method="POST">
+    <!-- Add Operator Modal -->
+    <div
+      id="add-operator-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white rounded-xl lg:rounded-2xl shadow-xl max-w-md w-full max-h-screen overflow-y-auto"
+      >
+        <div class="p-4 lg:p-6">
+          <div class="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 class="text-lg lg:text-xl font-bold text-gray-900">
+              Add New Operator
+            </h2>
+            <button
+              id="close-add-modal"
+              class="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            >
+              <i class="fas fa-times text-lg lg:text-xl"></i>
+            </button>
+          </div>
 
-      <label for="name">Name*</label><br/>
-      <input type="text" name="name" placeholder="Please enter full name" required>
+          <form
+            id="add-operator-form"
+            action="/dashboard/operator/add"
+            method="POST"
+            class="space-y-4 lg:space-y-6"
+          >
+            <div>
+              <label
+                for="add-name"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-user mr-2 text-blue-600"></i>Full Name*
+              </label>
+              <input
+                type="text"
+                id="add-name"
+                name="name"
+                placeholder="Enter full name"
+                required
+                class="w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm lg:text-base"
+              />
+            </div>
 
-      <label for="cnic">CNIC*</label><br/>
-      <input type="text" name="cnic" placeholder="Please enter CNIC without dashes or spaces" required>
+            <div>
+              <label
+                for="add-cnic"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-id-card mr-2 text-blue-600"></i>CNIC Number*
+              </label>
+              <input
+                type="text"
+                id="add-cnic"
+                name="cnic"
+                placeholder="Enter 13-digit CNIC number"
+                pattern="\d{13}"
+                maxlength="13"
+                required
+                class="w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-mono text-sm lg:text-base"
+              />
+              <p class="mt-1 text-xs text-gray-500">
+                Format: 1234567890123 (without dashes)
+              </p>
+            </div>
 
-      <label for="password">Password*</label><br/>    
-      <input type="password" name="password" placeholder="Please enter default password for user" required >
-      <button type="submit">Add</button>
-      <button type="button" id="close-add-modal">Cancel</button>
-    </form>
-  </div>
-</div>
+            <div>
+              <label
+                for="add-password"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-lock mr-2 text-blue-600"></i>Default Password*
+              </label>
+              <input
+                type="password"
+                id="add-password"
+                name="password"
+                placeholder="Enter default password"
+                required
+                class="w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm lg:text-base"
+              />
+            </div>
 
-<!-- Edit Operator Modal -->
-<div id="edit-operator-modal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Edit Operator</h2>
-    <form id="edit-operator-form" method="POST">
-      <input type="hidden" name="id" id="edit-id">
-      
-      <label for="edit-name">Name*</label><br/>
-      <input type="text" name="name" id="edit-name" placeholder="Name" required>
-    
-      <label for="edit-cnic">CNIC*</label><br/>
-      <input type="text" name="cnic" id="edit-cnic" placeholder="CNIC" required>
-      
-      <!-- Optional Password Field -->
-      <input type="password" name="password" id="edit-password" placeholder="New Password (leave blank to keep current)">
-      
-      <button type="submit">Update</button>
-      <button type="button" id="close-edit-modal">Cancel</button>
-    </form>
-  </div>
-</div>
+            <div
+              class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
+            >
+              <button
+                type="submit"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 lg:py-3 px-4 rounded-lg transition-colors duration-200 text-sm lg:text-base"
+              >
+                <i class="fas fa-plus mr-2"></i>Add Operator
+              </button>
+              <button
+                type="button"
+                id="close-add-modal-btn"
+                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 lg:py-3 px-4 rounded-lg transition-colors duration-200 text-sm lg:text-base"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-<script src="/js/operators.js"></script>
+    <!-- Edit Operator Modal -->
+    <div
+      id="edit-operator-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white rounded-xl lg:rounded-2xl shadow-xl max-w-md w-full max-h-screen overflow-y-auto"
+      >
+        <div class="p-4 lg:p-6">
+          <div class="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 class="text-lg lg:text-xl font-bold text-gray-900">
+              Edit Operator
+            </h2>
+            <button
+              id="close-edit-modal"
+              class="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            >
+              <i class="fas fa-times text-lg lg:text-xl"></i>
+            </button>
+          </div>
 
+          <form id="edit-operator-form" method="POST" class="space-y-6">
+            <input type="hidden" name="id" id="edit-id" />
 
-    </main>
-  </div>
+            <div>
+              <label
+                for="edit-name"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-user mr-2 text-blue-600"></i>Full Name*
+              </label>
+              <input
+                type="text"
+                id="edit-name"
+                name="name"
+                placeholder="Enter full name"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              />
+            </div>
 
-<% if (typeof success !== 'undefined' && success) { %>
-  <script>
-    alert("<%= success %>");
-  </script>
-<% } %>
+            <div>
+              <label
+                for="edit-cnic"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-id-card mr-2 text-blue-600"></i>CNIC Number*
+              </label>
+              <input
+                type="text"
+                id="edit-cnic"
+                name="cnic"
+                placeholder="Enter 13-digit CNIC number"
+                pattern="\d{13}"
+                maxlength="13"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-mono"
+              />
+            </div>
 
-</body>
+            <div>
+              <label
+                for="edit-password"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <i class="fas fa-lock mr-2 text-blue-600"></i>New Password
+              </label>
+              <input
+                type="password"
+                id="edit-password"
+                name="password"
+                placeholder="Leave blank to keep current password"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              />
+              <p class="mt-1 text-xs text-gray-500">
+                Leave blank to keep current password
+              </p>
+            </div>
+
+            <div class="flex space-x-3 pt-4">
+              <button
+                type="submit"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+              >
+                <i class="fas fa-save mr-2"></i>Update Operator
+              </button>
+              <button
+                type="button"
+                id="close-edit-modal-btn"
+                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/operators.js"></script>
+    <script>
+      // Enhanced modal functionality using EnhancedModal API
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add operator button
+        document
+          .getElementById("add-operator-btn")
+          ?.addEventListener("click", () =>
+            EnhancedModal.show("add-operator-modal")
+          );
+        document
+          .getElementById("add-first-operator-btn")
+          ?.addEventListener("click", () =>
+            EnhancedModal.show("add-operator-modal")
+          );
+
+        // Close modal buttons for add modal
+        document
+          .getElementById("close-add-modal")
+          ?.addEventListener("click", () =>
+            EnhancedModal.hide("add-operator-modal")
+          );
+        document
+          .getElementById("close-add-modal-btn")
+          ?.addEventListener("click", () =>
+            EnhancedModal.hide("add-operator-modal")
+          );
+
+        // Close modal buttons for edit modal
+        document
+          .getElementById("close-edit-modal")
+          ?.addEventListener("click", () =>
+            EnhancedModal.hide("edit-operator-modal")
+          );
+        document
+          .getElementById("close-edit-modal-btn")
+          ?.addEventListener("click", () =>
+            EnhancedModal.hide("edit-operator-modal")
+          );
+
+        // CNIC formatting
+        document.querySelectorAll('input[name="cnic"]').forEach((input) => {
+          input.addEventListener("input", function (e) {
+            let value = e.target.value.replace(/\D/g, "");
+            if (value.length > 13) value = value.substring(0, 13);
+            e.target.value = value;
+          });
+        });
+
+        // Edit button functionality
+        document.querySelectorAll(".edit-btn").forEach((button) => {
+          button.addEventListener("click", function () {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            const cnic = this.dataset.cnic;
+
+            document.getElementById("edit-id").value = id;
+            document.getElementById("edit-name").value = name;
+            document.getElementById("edit-cnic").value = cnic;
+            document.getElementById("edit-password").value = "";
+
+            const form = document.getElementById("edit-operator-form");
+            form.action = `/dashboard/operator/update/${id}`;
+
+            EnhancedModal.show("edit-operator-modal");
+          });
+        });
+      });
+    </script>
+
+    <%- include('partials/toast') %> <%- include('partials/enhanced-modal') %>
+  </body>
 </html>

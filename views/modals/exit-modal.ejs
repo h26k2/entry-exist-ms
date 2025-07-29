@@ -1,0 +1,277 @@
+<!-- Enhanced Exit Modal -->
+<div
+  id="exitModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm modal-overlay"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-md"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-green-50 to-emerald-50 px-8 py-6 border-b border-green-100"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <i class="fas fa-sign-out-alt text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Process Exit</h2>
+            <p class="text-sm text-gray-600">
+              Complete person exit from facility
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="closeExitModal()"
+          class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-8 overflow-y-auto">
+      <form id="exitForm" class="space-y-6">
+        <!-- Hidden fields -->
+        <input type="hidden" id="exitPersonId" name="person_id" />
+
+        <!-- Person Search Section -->
+        <div class="form-group">
+          <label
+            class="form-label text-lg font-semibold text-gray-900 mb-3 flex items-center"
+          >
+            <i class="fas fa-search text-green-600 mr-2"></i>
+            Search Person Currently Inside
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              id="exitPersonSearch"
+              placeholder="Search by name, CNIC, or card number..."
+              class="form-input !pl-12 !pr-12 text-lg py-4 border-2 border-green-200 focus:border-green-500 focus:ring-green-500"
+              autocomplete="off"
+            />
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center">
+              <i class="fas fa-search text-gray-400 text-lg"></i>
+            </div>
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <div id="exitPersonSearchSpinner" class="hidden">
+                <div
+                  class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Error -->
+          <div
+            id="exitPersonError"
+            class="hidden mt-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-2"
+          >
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            <span></span>
+          </div>
+
+          <!-- Search Results -->
+          <div
+            id="exitPersonResults"
+            class="mt-3 space-y-2 max-h-60 overflow-y-auto"
+          ></div>
+        </div>
+
+        <!-- Selected Person Details -->
+        <div id="exitPersonDetails" class="hidden">
+          <div
+            class="bg-white border-2 border-green-300 rounded-xl p-4 shadow-sm"
+          >
+            <!-- Compact Header -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-user-check text-white text-sm"></i>
+                </div>
+                <span class="font-semibold text-green-900 text-sm"
+                  >Selected for Exit</span
+                >
+              </div>
+              <button
+                type="button"
+                onclick="clearSelectedExitPerson()"
+                class="text-gray-400 hover:text-red-500 transition-colors p-1 hover:bg-red-50 rounded"
+                title="Clear selection"
+              >
+                <i class="fas fa-times text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Compact Person Info -->
+            <div class="bg-gray-50 rounded-lg p-3">
+              <!-- Name and Category Row -->
+              <div class="flex items-center justify-between mb-2">
+                <h4
+                  id="exitPersonName"
+                  class="font-bold text-gray-900 text-base truncate flex-1 mr-2"
+                ></h4>
+                <span
+                  id="exitPersonCategory"
+                  class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium flex-shrink-0"
+                ></span>
+              </div>
+
+              <!-- Compact Info Grid -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+                <div class="flex items-center space-x-1">
+                  <i class="fas fa-id-card text-purple-500 w-3"></i>
+                  <span
+                    id="exitPersonCnic"
+                    class="font-mono text-gray-700 truncate"
+                  ></span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <i class="fas fa-clock text-blue-500 w-3"></i>
+                  <span
+                    id="exitDuration"
+                    class="font-semibold text-blue-700"
+                  ></span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <i class="fas fa-sign-in-alt text-green-500 w-3"></i>
+                  <span
+                    id="exitEntryTime"
+                    class="text-gray-700 truncate"
+                  ></span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <i class="fas fa-dollar-sign text-emerald-500 w-3"></i>
+                  <span
+                    id="exitAmountPaid"
+                    class="font-semibold text-emerald-700"
+                  ></span>
+                </div>
+              </div>
+
+              <!-- Entry Extras (Compact) -->
+              <div
+                id="exitEntryExtras"
+                class="hidden mt-2 pt-2 border-t border-gray-200"
+              >
+                <div
+                  id="exitEntryExtrasList"
+                  class="flex flex-wrap gap-1"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exit Options -->
+        <div id="exitOptions" class="hidden">
+          <div class="space-y-4">
+            <h4 class="font-semibold text-gray-900 text-lg flex items-center">
+              <i class="fas fa-cog text-gray-600 mr-2"></i>
+              Exit Options
+            </h4>
+
+            <!-- Quick Exit Reasons -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button
+                type="button"
+                onclick="setExitReason('Normal exit', this)"
+                class="exit-reason-btn p-3 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-sm"
+              >
+                <i class="fas fa-check-circle text-green-600 mb-1"></i>
+                <div class="font-medium">Normal</div>
+              </button>
+              <button
+                type="button"
+                onclick="setExitReason('Emergency exit', this)"
+                class="exit-reason-btn p-3 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all text-sm"
+              >
+                <i class="fas fa-exclamation-triangle text-red-600 mb-1"></i>
+                <div class="font-medium">Emergency</div>
+              </button>
+              <button
+                type="button"
+                onclick="setExitReason('Early departure', this)"
+                class="exit-reason-btn p-3 border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:bg-yellow-50 transition-all text-sm"
+              >
+                <i class="fas fa-clock text-yellow-600 mb-1"></i>
+                <div class="font-medium">Early</div>
+              </button>
+              <button
+                type="button"
+                onclick="setExitReason('End of visit', this)"
+                class="exit-reason-btn p-3 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all text-sm"
+              >
+                <i class="fas fa-door-open text-blue-600 mb-1"></i>
+                <div class="font-medium">Completed</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exit Remarks -->
+        <div class="form-group">
+          <label
+            class="form-label text-lg font-semibold text-gray-900 mb-3 flex items-center"
+          >
+            <i class="fas fa-comment text-gray-600 mr-2"></i>
+            Exit Remarks
+            <span class="text-sm font-normal text-gray-500 ml-2"
+              >(Optional)</span
+            >
+          </label>
+          <textarea
+            id="exitRemarks"
+            name="exit_remarks"
+            rows="4"
+            class="form-textarea border-2 border-gray-200 focus:border-green-500 focus:ring-green-500 rounded-xl"
+            placeholder="Add any remarks about this exit (optional)..."
+          ></textarea>
+          <div class="mt-2 text-sm text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            This information will be saved in the exit log for future reference.
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
+      <div class="flex justify-between items-center">
+        <button
+          type="button"
+          onclick="closeExitModal()"
+          id="exitModalCancelBtn"
+          class="btn btn-secondary px-6 py-3 rounded-xl"
+        >
+          <i class="fas fa-times mr-2"></i>Cancel
+        </button>
+
+        <button
+          type="submit"
+          form="exitForm"
+          class="btn bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          id="processExitBtn"
+          disabled
+        >
+          <span id="exitBtnText">
+            <i class="fas fa-sign-out-alt mr-2"></i>Process Exit
+          </span>
+          <span id="exitBtnLoading" class="hidden">
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"
+            ></div>
+            Processing...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

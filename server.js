@@ -1,37 +1,94 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const path = require('path');
-const session = require('express-session');
+const express = require("express");
+const dotenv = require("dotenv");
+const path = require("path");
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Create session store for MySQL
+let sessionStore;
+try {
+  const mysql = require("mysql2/promise");
+  const sessionStoreOptions = {
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "entry_exit_db",
+    clearExpired: true,
+    checkExpirationInterval: 900000, // 15 minutes
+    expiration: 24 * 60 * 60 * 1000, // 24 hours
+    createDatabaseTable: true,
+    schema: {
+      tableName: "user_sessions",
+      columnNames: {
+        session_id: "session_id",
+        expires: "expires",
+        data: "data",
+      },
+    },
+  };
+  sessionStore = new MySQLStore(sessionStoreOptions);
+  console.log("✅ MySQL session store initialized");
+} catch (error) {
+  console.error("❌ Failed to initialize MySQL session store:", error.message);
+  process.exit(1);
+}
+
 // View Engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'entry-exit-secret',
-  resave: false,
-  saveUninitialized: false
-}));
+// Trust proxy for accurate IP addresses
+app.set("trust proxy", 1);
+
+// IP tracking middleware
+app.use((req, res, next) => {
+  req.clientIP =
+    req.ip ||
+    req.connection.remoteAddress ||
+    req.headers["x-forwarded-for"] ||
+    "unknown";
+  next();
+});
+
+app.use(
+  session({
+    secret:
+      process.env.SESSION_SECRET ||
+      "entry-exit-secret-key-change-in-production",
+    name: "entry.sid", // Custom session name
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore, // MySQL session store
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      httpOnly: true, // Prevent XSS attacks
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: "strict", // CSRF protection
+    },
+    rolling: true, // Reset expiration on each request
+  })
+);
 
 // DB
-require('./config/db');
-
+require("./config/db");
 
 // Routes
-const authRoutes = require('./routes/authRoutes');
-app.use('/', authRoutes);
-
+const authRoutes = require("./routes/authRoutes");
+app.use("/", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`==> Server running on port ${PORT} <==`);
+  console.log(`==> Database: MySQL <==`);
+  console.log(`==> Session store: MySQL <==`);
+  console.log(`==> Environment: ${process.env.NODE_ENV || "development"} <==`);
 });
-

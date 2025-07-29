@@ -1,0 +1,419 @@
+<!-- Enhanced Toast Container -->
+<div
+  id="toast-container"
+  class="fixed top-4 right-4 z-[9999] space-y-3 max-w-sm"
+>
+  <!-- Toasts will be dynamically added here -->
+</div>
+
+<!-- Enhanced Confirmation Modal -->
+<div
+  id="confirmationModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-[9998] backdrop-blur-sm"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 p-0 overflow-hidden transform transition-all duration-300"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4 border-b border-orange-100"
+    >
+      <div class="flex items-center">
+        <div
+          class="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg"
+        >
+          <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900" id="confirmTitle">
+            Confirm Action
+          </h3>
+          <p class="text-sm text-gray-600">Please confirm your decision</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="px-6 py-6">
+      <p class="text-gray-700 text-base leading-relaxed" id="confirmMessage">
+        Are you sure you want to proceed?
+      </p>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="bg-gray-50 px-6 py-4 flex space-x-3">
+      <button
+        id="confirmYes"
+        class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+      >
+        <i class="fas fa-check mr-2"></i>Yes, Proceed
+      </button>
+      <button
+        id="confirmNo"
+        class="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 transform hover:scale-105"
+      >
+        <i class="fas fa-times mr-2"></i>Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Enhanced Toast Notification System
+  window.Toast = {
+    show: function (message, type = "info", duration = 5000, options = {}) {
+      const container = document.getElementById("toast-container");
+      const toastId =
+        "toast-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9);
+
+      // Toast types and their enhanced styles
+      const types = {
+        success: {
+          gradient: "from-emerald-500 to-green-600",
+          icon: "fas fa-check-circle",
+          iconBg: "bg-white bg-opacity-20",
+          textColor: "text-white",
+          shadow: "shadow-lg shadow-emerald-500/25",
+          border: "border-emerald-400 border-opacity-30",
+        },
+        error: {
+          gradient: "from-red-500 to-rose-600",
+          icon: "fas fa-exclamation-circle",
+          iconBg: "bg-white bg-opacity-20",
+          textColor: "text-white",
+          shadow: "shadow-lg shadow-red-500/25",
+          border: "border-red-400 border-opacity-30",
+        },
+        warning: {
+          gradient: "from-amber-500 to-orange-600",
+          icon: "fas fa-exclamation-triangle",
+          iconBg: "bg-white bg-opacity-20",
+          textColor: "text-white",
+          shadow: "shadow-lg shadow-amber-500/25",
+          border: "border-amber-400 border-opacity-30",
+        },
+        info: {
+          gradient: "from-blue-500 to-indigo-600",
+          icon: "fas fa-info-circle",
+          iconBg: "bg-white bg-opacity-20",
+          textColor: "text-white",
+          shadow: "shadow-lg shadow-blue-500/25",
+          border: "border-blue-400 border-opacity-30",
+        },
+      };
+
+      const toastType = types[type] || types.info;
+
+      // Create toast element with enhanced styling
+      const toast = document.createElement("div");
+      toast.id = toastId;
+      toast.className = `bg-gradient-to-r ${toastType.gradient} ${toastType.textColor} p-4 rounded-2xl ${toastType.shadow} flex items-center space-x-4 max-w-sm transform transition-all duration-500 translate-x-full opacity-0 border ${toastType.border} backdrop-blur-sm`;
+
+      toast.innerHTML = `
+        <div class="${toastType.iconBg} p-2 rounded-xl">
+          <i class="${toastType.icon} text-lg"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold leading-tight">${
+            options.title || this.getDefaultTitle(type)
+          }</p>
+          <p class="text-xs opacity-90 mt-1 line-clamp-2">${message}</p>
+        </div>
+        <button 
+          onclick="Toast.hide('${toastId}')" 
+          class="text-white hover:text-gray-200 transition-colors p-1 hover:bg-white hover:bg-opacity-10 rounded-lg"
+        >
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      `;
+
+      // Add to container
+      container.appendChild(toast);
+
+      // Animate in with enhanced effects
+      setTimeout(() => {
+        toast.classList.remove("translate-x-full", "opacity-0");
+        toast.classList.add("translate-x-0", "opacity-100");
+
+        // Add subtle bounce effect
+        setTimeout(() => {
+          toast.style.transform = "translateX(-4px)";
+          setTimeout(() => {
+            toast.style.transform = "translateX(0)";
+          }, 150);
+        }, 200);
+      }, 50);
+
+      // Progress bar if duration > 0
+      if (duration > 0 && !options.persistent) {
+        const progressBar = document.createElement("div");
+        progressBar.className =
+          "absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-full transition-all ease-linear";
+        progressBar.style.width = "100%";
+        progressBar.style.transitionDuration = duration + "ms";
+        toast.style.position = "relative";
+        toast.appendChild(progressBar);
+
+        setTimeout(() => {
+          progressBar.style.width = "0%";
+        }, 50);
+
+        // Auto remove
+        setTimeout(() => {
+          this.hide(toastId);
+        }, duration);
+      }
+
+      // Sound notification for important toasts
+      if (type === "error" || type === "success") {
+        this.playNotificationSound(type);
+      }
+
+      return toastId;
+    },
+
+    hide: function (toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add("translate-x-full", "opacity-0", "scale-95");
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }
+    },
+
+    getDefaultTitle: function (type) {
+      const titles = {
+        success: "Success!",
+        error: "Error!",
+        warning: "Warning!",
+        info: "Information",
+      };
+      return titles[type] || "Notification";
+    },
+
+    playNotificationSound: function (type) {
+      // Create audio context for subtle notification sounds
+      if (
+        typeof AudioContext !== "undefined" ||
+        typeof webkitAudioContext !== "undefined"
+      ) {
+        try {
+          const audioContext = new (AudioContext || webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          // Different frequencies for different types
+          const frequencies = {
+            success: [523, 659], // C5, E5
+            error: [311, 247], // Eb4, B3
+            warning: [440], // A4
+            info: [523], // C5
+          };
+
+          const freq = frequencies[type] || frequencies.info;
+          oscillator.frequency.setValueAtTime(
+            freq[0],
+            audioContext.currentTime
+          );
+
+          if (freq[1]) {
+            oscillator.frequency.setValueAtTime(
+              freq[1],
+              audioContext.currentTime + 0.1
+            );
+          }
+
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + 0.2
+          );
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.2);
+        } catch (e) {
+          // Ignore audio errors
+        }
+      }
+    },
+
+    success: function (message, options = {}) {
+      return this.show(message, "success", options.duration || 4000, options);
+    },
+
+    error: function (message, options = {}) {
+      return this.show(message, "error", options.duration || 6000, options);
+    },
+
+    warning: function (message, options = {}) {
+      return this.show(message, "warning", options.duration || 5000, options);
+    },
+
+    info: function (message, options = {}) {
+      return this.show(message, "info", options.duration || 4000, options);
+    },
+
+    // Clear all toasts
+    clear: function () {
+      const container = document.getElementById("toast-container");
+      const toasts = container.querySelectorAll('[id^="toast-"]');
+      toasts.forEach((toast) => {
+        this.hide(toast.id);
+      });
+    },
+  };
+
+  // Enhanced Confirmation Dialog System
+  window.Confirm = {
+    show: function (
+      message,
+      title = "Confirm Action",
+      yesText = "Yes, Proceed",
+      noText = "Cancel",
+      options = {}
+    ) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById("confirmationModal");
+        const titleEl = document.getElementById("confirmTitle");
+        const messageEl = document.getElementById("confirmMessage");
+        const yesBtn = document.getElementById("confirmYes");
+        const noBtn = document.getElementById("confirmNo");
+
+        // Set content
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        yesBtn.innerHTML = `<i class="fas fa-check mr-2"></i>${yesText}`;
+        noBtn.innerHTML = `<i class="fas fa-times mr-2"></i>${noText}`;
+
+        // Apply custom styling if provided
+        if (options.type) {
+          const types = {
+            danger:
+              "from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
+            warning:
+              "from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
+            info: "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+          };
+          if (types[options.type]) {
+            yesBtn.className = yesBtn.className.replace(
+              /from-red-\d+ to-red-\d+ hover:from-red-\d+ hover:to-red-\d+/,
+              types[options.type]
+            );
+          }
+        }
+
+        // Show modal with animation
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        // Animate modal in
+        const modalContent = modal.querySelector(".bg-white");
+        modalContent.style.transform = "scale(0.9) translateY(-20px)";
+        modalContent.style.opacity = "0";
+
+        setTimeout(() => {
+          modalContent.style.transform = "scale(1) translateY(0)";
+          modalContent.style.opacity = "1";
+        }, 50);
+
+        // Handle responses
+        const handleYes = () => {
+          this.hide();
+          resolve(true);
+        };
+
+        const handleNo = () => {
+          this.hide();
+          resolve(false);
+        };
+
+        // Remove existing listeners
+        yesBtn.replaceWith(yesBtn.cloneNode(true));
+        noBtn.replaceWith(noBtn.cloneNode(true));
+
+        // Re-get elements after replacement
+        const newYesBtn = document.getElementById("confirmYes");
+        const newNoBtn = document.getElementById("confirmNo");
+
+        // Add new listeners
+        newYesBtn.addEventListener("click", handleYes);
+        newNoBtn.addEventListener("click", handleNo);
+
+        // Handle ESC key and backdrop click
+        const handleEscape = (e) => {
+          if (e.key === "Escape") {
+            handleNo();
+            document.removeEventListener("keydown", handleEscape);
+          }
+        };
+
+        const handleBackdrop = (e) => {
+          if (e.target === modal) {
+            handleNo();
+            modal.removeEventListener("click", handleBackdrop);
+          }
+        };
+
+        document.addEventListener("keydown", handleEscape);
+        modal.addEventListener("click", handleBackdrop);
+
+        // Focus the appropriate button
+        setTimeout(() => {
+          if (options.type === "danger") {
+            newNoBtn.focus();
+          } else {
+            newYesBtn.focus();
+          }
+        }, 100);
+      });
+    },
+
+    hide: function () {
+      const modal = document.getElementById("confirmationModal");
+      const modalContent = modal.querySelector(".bg-white");
+
+      // Animate out
+      modalContent.style.transform = "scale(0.95) translateY(10px)";
+      modalContent.style.opacity = "0";
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        modalContent.style.transform = "";
+        modalContent.style.opacity = "";
+      }, 200);
+    },
+  };
+
+  // Enhanced backwards compatibility
+  window.alert = function (message) {
+    Toast.info(message, { title: "Alert", duration: 0, persistent: true });
+  };
+
+  window.confirm = function (message) {
+    return Confirm.show(message);
+  };
+
+  // Add global notification functions
+  window.showSuccess = function (message, title) {
+    Toast.success(message, { title });
+  };
+
+  window.showError = function (message, title) {
+    Toast.error(message, { title });
+  };
+
+  window.showWarning = function (message, title) {
+    Toast.warning(message, { title });
+  };
+
+  window.showInfo = function (message, title) {
+    Toast.info(message, { title });
+  };
+</script>

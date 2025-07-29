@@ -1,0 +1,2341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports & Analytics - Entry/Exit Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1e40af",
+              secondary: "#3b82f6",
+              accent: "#06b6d4",
+              dark: "#1f2937",
+              light: "#f8fafc",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .stat-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: perspective(1000px) rotateX(0deg);
+      }
+
+      .stat-card:hover {
+        transform: perspective(1000px) rotateX(-5deg) translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab-btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .tab-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(59, 130, 246, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .tab-btn:hover::before {
+        left: 100%;
+      }
+
+      .loading-spinner {
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid #3b82f6;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .data-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.3s ease;
+      }
+
+      .data-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+      }
+
+      .metric-counter {
+        font-family: "Monaco", "Menlo", monospace;
+        letter-spacing: 0.05em;
+      }
+
+      .pulse-ring {
+        position: absolute;
+        border: 3px solid rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.33);
+          opacity: 1;
+        }
+        80%,
+        100% {
+          transform: scale(2.4);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <div class="flex h-screen">
+      <%- include('partials/sidebar') %>
+
+      <main class="flex-1 overflow-y-auto lg:ml-0">
+        <%- include('partials/header', { title: 'Reports & Analytics' }) %>
+
+        <!-- Main Content -->
+        <div class="p-4 lg:p-6 animate-fade-in">
+          <!-- Page Header with Enhanced Design -->
+          <div class="mb-8 lg:mb-10">
+            <div class="relative">
+              <!-- Background decoration -->
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-3xl transform -rotate-1"
+              ></div>
+              <div class="relative glass-card rounded-2xl p-6 lg:p-8">
+                <div
+                  class="flex flex-col lg:flex-row lg:items-center lg:justify-between"
+                >
+                  <div class="flex items-center gap-4 mb-4 lg:mb-0">
+                    <div class="relative">
+                      <div
+                        class="p-3 bg-gradient-to-r from-purple-500 to-blue-600 rounded-xl text-white shadow-lg"
+                      >
+                        <i class="fas fa-chart-bar text-xl"></i>
+                      </div>
+                      <div class="pulse-ring"></div>
+                    </div>
+                    <div>
+                      <h1
+                        class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent"
+                      >
+                        Reports & Analytics
+                      </h1>
+                      <p class="text-gray-600 mt-1 text-lg">
+                        Real-time insights and comprehensive analytics for your
+                        facility
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Live Status Indicator -->
+                  <div
+                    class="flex items-center gap-3 bg-green-50 px-4 py-2 rounded-full border border-green-200"
+                  >
+                    <div
+                      class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+                    ></div>
+                    <span class="text-green-700 text-sm font-medium"
+                      >Live Data</span
+                    >
+                    <span class="text-green-600 text-xs" id="lastUpdate"
+                      >Updated now</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enhanced Tab Navigation -->
+          <div
+            class="glass-card rounded-2xl shadow-xl border-0 mb-8 overflow-hidden"
+          >
+            <div
+              class="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200"
+            >
+              <nav
+                class="flex space-x-0 overflow-x-auto scrollbar-hide"
+                id="reportTabs"
+              >
+                <button
+                  class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn active whitespace-nowrap flex items-center gap-2 min-w-fit"
+                  data-tab="daily-summary"
+                >
+                  <i class="fas fa-calendar-day text-lg"></i>
+                  <span>Daily Summary</span>
+                </button>
+                <button
+                  class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
+                  data-tab="person-history"
+                >
+                  <i class="fas fa-user-clock text-lg"></i>
+                  <span>Person History</span>
+                </button>
+                <button
+                  class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
+                  data-tab="category-report"
+                >
+                  <i class="fas fa-chart-pie text-lg"></i>
+                  <span>Categories</span>
+                </button>
+                <button
+                  class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
+                  data-tab="revenue-report"
+                >
+                  <i class="fas fa-dollar-sign text-lg"></i>
+                  <span>Revenue</span>
+                </button>
+                <button
+                  class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
+                  data-tab="occupancy-analytics"
+                >
+                  <i class="fas fa-chart-line text-lg"></i>
+                  <span>Occupancy</span>
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          <!-- Daily Summary Tab -->
+          <div id="daily-summary" class="tab-content animate-slide-up">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+              <!-- Date Selection Card -->
+              <div class="data-card rounded-2xl shadow-lg p-6 xl:col-span-1">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="p-2 bg-blue-100 rounded-lg">
+                    <i class="fas fa-calendar-alt text-blue-600 text-lg"></i>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900">Date Range</h3>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="space-y-3">
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                        >From Date</label
+                      >
+                      <input
+                        type="date"
+                        id="summaryFromDate"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                        >To Date</label
+                      >
+                      <input
+                        type="date"
+                        id="summaryToDate"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onclick="generateDailySummary()"
+                    class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    id="generateSummaryBtn"
+                  >
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Generate Report</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Enhanced Quick Stats -->
+              <div class="xl:col-span-2">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="p-2 bg-green-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt text-green-600 text-lg"></i>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900">
+                    Today's Overview
+                  </h3>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div
+                    class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-blue-100 text-sm font-medium mb-1">
+                          Entries
+                        </p>
+                        <p
+                          class="text-3xl font-bold metric-counter"
+                          id="todayEntries"
+                        >
+                          0
+                        </p>
+                      </div>
+                      <div class="p-3 bg-white/20 rounded-lg">
+                        <i class="fas fa-sign-in-alt text-xl"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-green-100 text-sm font-medium mb-1">
+                          Exits
+                        </p>
+                        <p
+                          class="text-3xl font-bold metric-counter"
+                          id="todayExits"
+                        >
+                          0
+                        </p>
+                      </div>
+                      <div class="p-3 bg-white/20 rounded-lg">
+                        <i class="fas fa-sign-out-alt text-xl"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-purple-100 text-sm font-medium mb-1">
+                          Current
+                        </p>
+                        <p
+                          class="text-3xl font-bold metric-counter"
+                          id="currentOccupancy"
+                        >
+                          0
+                        </p>
+                      </div>
+                      <div class="p-3 bg-white/20 rounded-lg">
+                        <i class="fas fa-users text-xl"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl shadow-lg"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-orange-100 text-sm font-medium mb-1">
+                          Revenue
+                        </p>
+                        <p
+                          class="text-3xl font-bold metric-counter"
+                          id="todayRevenue"
+                        >
+                          ₹0
+                        </p>
+                      </div>
+                      <div class="p-3 bg-white/20 rounded-lg">
+                        <i class="fas fa-rupee-sign text-xl"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enhanced Daily Summary Results -->
+            <div
+              id="dailySummaryResults"
+              class="glass-card rounded-2xl shadow-xl p-6 animate-slide-up"
+              style="display: none"
+            >
+              <div
+                class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6"
+              >
+                <h3
+                  class="text-xl font-bold text-gray-900 flex items-center gap-3"
+                >
+                  <div class="p-2 bg-blue-100 rounded-lg">
+                    <i class="fas fa-chart-line text-blue-600"></i>
+                  </div>
+                  Daily Summary Report
+                </h3>
+                <div class="flex gap-3 mt-4 lg:mt-0">
+                  <button
+                    onclick="exportDailySummary()"
+                    class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                  >
+                    <i class="fas fa-download"></i>
+                    Export CSV
+                  </button>
+                  <button
+                    onclick="printReport('dailySummaryContent')"
+                    class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                  >
+                    <i class="fas fa-print"></i>
+                    Print
+                  </button>
+                </div>
+              </div>
+              <div id="dailySummaryContent" class="overflow-hidden"></div>
+            </div>
+          </div>
+
+          <!-- Person History Tab -->
+          <div id="person-history" class="tab-content" style="display: none">
+            <div
+              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
+            >
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Search Person History
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Search Person</label
+                  >
+                  <input
+                    type="text"
+                    id="personHistorySearch"
+                    placeholder="Enter CNIC or Name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >From Date</label
+                  >
+                  <input
+                    type="date"
+                    id="historyFromDate"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >To Date</label
+                  >
+                  <input
+                    type="date"
+                    id="historyToDate"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  onclick="searchPersonHistory()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  Search History
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="personHistoryResults"
+              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              style="display: none"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Person Entry/Exit History
+                </h3>
+                <button
+                  onclick="exportPersonHistory()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                >
+                  <i class="fas fa-download mr-2"></i>Export
+                </button>
+              </div>
+              <div id="personHistoryContent"></div>
+            </div>
+          </div>
+
+          <!-- Category Report Tab -->
+          <div id="category-report" class="tab-content" style="display: none">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <!-- Category Selection -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-filter mr-2 text-blue-600"></i>Category
+                  Filters
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Select Category</label
+                    >
+                    <select
+                      id="categorySelect"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">All Categories</option>
+                      <% categories.forEach(category => { %>
+                      <option value="<%= category.id %>">
+                        <%= category.name %>
+                      </option>
+                      <% }); %>
+                    </select>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >From Date</label
+                      >
+                      <input
+                        type="date"
+                        id="categoryFromDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >To Date</label
+                      >
+                      <input
+                        type="date"
+                        id="categoryToDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onclick="generateCategoryReport()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    <i class="fas fa-chart-pie mr-2"></i>Generate Report
+                  </button>
+                </div>
+              </div>
+
+              <!-- Category Chart -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-chart-donut mr-2 text-purple-600"></i
+                  >Category Distribution
+                </h3>
+                <canvas id="categoryChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+
+            <div
+              id="categoryReportResults"
+              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              style="display: none"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Category Analysis
+                </h3>
+                <button
+                  onclick="exportCategoryReport()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                >
+                  <i class="fas fa-download mr-2"></i>Export
+                </button>
+              </div>
+              <div id="categoryReportContent"></div>
+            </div>
+          </div>
+
+          <!-- Revenue Report Tab -->
+          <div id="revenue-report" class="tab-content" style="display: none">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <!-- Revenue Filters -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-filter mr-2 text-blue-600"></i>Revenue
+                  Filters
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Report Type</label
+                    >
+                    <select
+                      id="revenueReportType"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="daily">Daily Revenue</option>
+                      <option value="weekly">Weekly Revenue</option>
+                      <option value="monthly">Monthly Revenue</option>
+                      <option value="facility">By Facility</option>
+                    </select>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >From Date</label
+                      >
+                      <input
+                        type="date"
+                        id="revenueFromDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >To Date</label
+                      >
+                      <input
+                        type="date"
+                        id="revenueToDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onclick="generateRevenueReport()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    <i class="fas fa-chart-line mr-2"></i>Generate Report
+                  </button>
+                </div>
+              </div>
+
+              <!-- Revenue Summary -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-money-bill-wave mr-2 text-green-600"></i
+                  >Revenue Summary
+                </h3>
+                <div class="space-y-4">
+                  <div
+                    class="flex justify-between items-center p-3 bg-green-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium text-gray-700"
+                      >Today's Revenue</span
+                    >
+                    <span
+                      class="text-lg font-bold text-green-600"
+                      id="todayRevenueDisplay"
+                      >₹0</span
+                    >
+                  </div>
+                  <div
+                    class="flex justify-between items-center p-3 bg-blue-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium text-gray-700"
+                      >This Week</span
+                    >
+                    <span
+                      class="text-lg font-bold text-blue-600"
+                      id="weekRevenueDisplay"
+                      >₹0</span
+                    >
+                  </div>
+                  <div
+                    class="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium text-gray-700"
+                      >This Month</span
+                    >
+                    <span
+                      class="text-lg font-bold text-purple-600"
+                      id="monthRevenueDisplay"
+                      >₹0</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="revenueReportResults"
+              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              style="display: none"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Revenue Analysis
+                </h3>
+                <button
+                  onclick="exportRevenueReport()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                >
+                  <i class="fas fa-download mr-2"></i>Export
+                </button>
+              </div>
+              <div id="revenueReportContent"></div>
+            </div>
+          </div>
+
+          <!-- Occupancy Analytics Tab -->
+          <div
+            id="occupancy-analytics"
+            class="tab-content"
+            style="display: none"
+          >
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <!-- Occupancy Filters -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-filter mr-2 text-blue-600"></i>Analytics
+                  Filters
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Analysis Type</label
+                    >
+                    <select
+                      id="occupancyAnalysisType"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="hourly">Hourly Occupancy</option>
+                      <option value="daily">Daily Trends</option>
+                      <option value="peak-hours">Peak Hours</option>
+                      <option value="average-stay">Average Stay Time</option>
+                    </select>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >From Date</label
+                      >
+                      <input
+                        type="date"
+                        id="occupancyFromDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >To Date</label
+                      >
+                      <input
+                        type="date"
+                        id="occupancyToDate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onclick="generateOccupancyAnalytics()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    <i class="fas fa-chart-area mr-2"></i>Generate Analytics
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Occupancy -->
+              <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              >
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  <i class="fas fa-users mr-2 text-orange-600"></i>Live
+                  Occupancy
+                </h3>
+                <div class="text-center">
+                  <div
+                    class="text-4xl font-bold text-orange-600 mb-2"
+                    id="liveOccupancyCount"
+                  >
+                    0
+                  </div>
+                  <div class="text-sm text-gray-600 mb-4">
+                    People Currently Inside
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-blue-50 p-3 rounded-lg">
+                      <div
+                        class="font-semibold text-blue-600"
+                        id="todayTotalEntries"
+                      >
+                        0
+                      </div>
+                      <div class="text-gray-600">Today's Entries</div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg">
+                      <div
+                        class="font-semibold text-green-600"
+                        id="todayTotalExits"
+                      >
+                        0
+                      </div>
+                      <div class="text-gray-600">Today's Exits</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="occupancyAnalyticsResults"
+              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              style="display: none"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Occupancy Analytics
+                </h3>
+                <button
+                  onclick="exportOccupancyAnalytics()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                >
+                  <i class="fas fa-download mr-2"></i>Export
+                </button>
+              </div>
+              <div id="occupancyAnalyticsContent"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/reports.js"></script>
+    <script>
+      // Enhanced UI/UX functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeReportsPage();
+      });
+
+      function initializeReportsPage() {
+        setupTabNavigation();
+        setupAnimations();
+        setDefaultDates();
+        loadInitialData();
+        setupAutoRefresh();
+        setupTooltips();
+      }
+
+      function setupTabNavigation() {
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabButtons.forEach((button, index) => {
+          button.addEventListener("click", () => {
+            const targetTab = button.getAttribute("data-tab");
+
+            // Enhanced tab switching with animations
+            switchTab(targetTab, tabButtons, tabContents, button);
+          });
+        });
+
+        // Initialize first tab
+        const firstTab = tabButtons[0];
+        firstTab.classList.add(
+          "active",
+          "bg-white",
+          "text-blue-600",
+          "shadow-sm"
+        );
+        firstTab.style.borderBottom = "3px solid #3b82f6";
+      }
+
+      function switchTab(targetTab, tabButtons, tabContents, activeButton) {
+        // Remove active state from all tabs
+        tabButtons.forEach((btn) => {
+          btn.classList.remove(
+            "active",
+            "bg-white",
+            "text-blue-600",
+            "shadow-sm"
+          );
+          btn.style.borderBottom = "3px solid transparent";
+        });
+
+        // Hide all content with fade out
+        tabContents.forEach((content) => {
+          content.style.opacity = "0";
+          content.style.transform = "translateY(10px)";
+          setTimeout(() => {
+            content.style.display = "none";
+          }, 150);
+        });
+
+        // Show target content with fade in
+        setTimeout(() => {
+          const targetContent = document.getElementById(targetTab);
+          targetContent.style.display = "block";
+          setTimeout(() => {
+            targetContent.style.opacity = "1";
+            targetContent.style.transform = "translateY(0)";
+          }, 50);
+        }, 150);
+
+        // Activate button
+        activeButton.classList.add(
+          "active",
+          "bg-white",
+          "text-blue-600",
+          "shadow-sm"
+        );
+        activeButton.style.borderBottom = "3px solid #3b82f6";
+      }
+
+      function setupAnimations() {
+        // Add transition styles to tab contents
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+        });
+
+        // Animate stat cards on load
+        const statCards = document.querySelectorAll(".stat-card");
+        statCards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+          card.classList.add("animate-bounce-in");
+        });
+      }
+
+      function setDefaultDates() {
+        const today = new Date().toISOString().split("T")[0];
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const inputs = document.querySelectorAll('input[type="date"]');
+        inputs.forEach((input) => {
+          if (input.id.includes("To") || input.id.includes("to")) {
+            input.value = today;
+          } else {
+            input.value = weekAgo.toISOString().split("T")[0];
+          }
+        });
+      }
+
+      function loadInitialData() {
+        showLoadingState();
+        Promise.all([
+          loadTodayStats(),
+          loadRevenueSummary(),
+          loadLiveOccupancy(),
+          populateCategoryDropdown(),
+        ]).finally(() => {
+          hideLoadingState();
+        });
+      }
+
+      function showLoadingState() {
+        const statsElements = [
+          "todayEntries",
+          "todayExits",
+          "currentOccupancy",
+          "todayRevenue",
+        ];
+        statsElements.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.innerHTML = '<div class="loading-spinner mx-auto"></div>';
+          }
+        });
+      }
+
+      function hideLoadingState() {
+        updateLastUpdateTime();
+      }
+
+      function updateLastUpdateTime() {
+        const lastUpdateElement = document.getElementById("lastUpdate");
+        if (lastUpdateElement) {
+          lastUpdateElement.textContent =
+            "Updated " + new Date().toLocaleTimeString();
+        }
+      }
+
+      function setupAutoRefresh() {
+        // Auto-refresh live data every 30 seconds with visual feedback
+        setInterval(() => {
+          const indicator = document.querySelector(".animate-pulse");
+          if (indicator) {
+            indicator.style.opacity = "0.5";
+            setTimeout(() => (indicator.style.opacity = "1"), 200);
+          }
+
+          loadTodayStats();
+          loadLiveOccupancy();
+          updateLastUpdateTime();
+        }, 30000);
+      }
+
+      function setupTooltips() {
+        // Add tooltips to buttons and interactive elements
+        const tooltipElements = document.querySelectorAll("[data-tooltip]");
+        tooltipElements.forEach((element) => {
+          element.addEventListener("mouseenter", showTooltip);
+          element.addEventListener("mouseleave", hideTooltip);
+        });
+      }
+
+      function showTooltip(event) {
+        const tooltip = document.createElement("div");
+        tooltip.className =
+          "absolute bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg z-50";
+        tooltip.textContent = event.target.getAttribute("data-tooltip");
+        document.body.appendChild(tooltip);
+
+        const rect = event.target.getBoundingClientRect();
+        tooltip.style.left = rect.left + "px";
+        tooltip.style.top = rect.top - 30 + "px";
+      }
+
+      function hideTooltip() {
+        const tooltip = document.querySelector(".absolute.bg-gray-900");
+        if (tooltip) tooltip.remove();
+      }
+
+      // Enhanced report generation with loading states
+      async function generateDailySummary() {
+        const fromDate = document.getElementById("summaryFromDate").value;
+        const toDate = document.getElementById("summaryToDate").value;
+        const button = document.getElementById("generateSummaryBtn");
+
+        if (!fromDate || !toDate) {
+          showNotification("Please select both from and to dates", "warning");
+          return;
+        }
+
+        // Show loading state
+        setButtonLoading(button, true);
+
+        try {
+          const response = await fetch(
+            `/api/daily-summary?fromDate=${fromDate}&toDate=${toDate}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            const resultsDiv = document.getElementById("dailySummaryResults");
+            resultsDiv.style.display = "block";
+            resultsDiv.classList.add("animate-slide-up");
+
+            // Generate enhanced HTML with the new data structure
+            document.getElementById("dailySummaryContent").innerHTML =
+              generateEnhancedSummaryHTML(data);
+
+            showNotification(
+              "Daily summary generated successfully!",
+              "success"
+            );
+          } else {
+            showNotification(
+              "Failed to generate daily summary: " +
+                (data.message || "Unknown error"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error generating daily summary:", error);
+          showNotification(
+            "Network error occurred while generating report",
+            "error"
+          );
+        } finally {
+          setButtonLoading(button, false);
+        }
+      }
+
+      function setButtonLoading(button, isLoading) {
+        if (isLoading) {
+          button.disabled = true;
+          button.innerHTML =
+            '<div class="loading-spinner mr-2"></div>Generating...';
+          button.classList.add("opacity-75");
+        } else {
+          button.disabled = false;
+          button.innerHTML =
+            '<i class="fas fa-chart-bar"></i><span>Generate Report</span>';
+          button.classList.remove("opacity-75");
+        }
+      }
+
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        const bgColor = {
+          success: "bg-green-500",
+          error: "bg-red-500",
+          warning: "bg-yellow-500",
+          info: "bg-blue-500",
+        }[type];
+
+        notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = "0";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      // Enhanced counter animation
+      function animateCounter(elementId, finalValue) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const currentValue =
+          parseInt(element.textContent.replace(/[^\d]/g, "")) || 0;
+        const increment = Math.ceil((finalValue - currentValue) / 20);
+
+        const timer = setInterval(() => {
+          const current =
+            parseInt(element.textContent.replace(/[^\d]/g, "")) || 0;
+          if (current < finalValue) {
+            const newValue = Math.min(current + increment, finalValue);
+            if (elementId.includes("Revenue")) {
+              element.textContent = "₹" + newValue;
+            } else {
+              element.textContent = newValue;
+            }
+          } else {
+            clearInterval(timer);
+          }
+        }, 50);
+      }
+
+      // Print functionality
+      function printReport(contentId) {
+        const content = document.getElementById(contentId);
+        if (!content) return;
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Report</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                @media print { body { margin: 0; } }
+              </style>
+            </head>
+            <body>
+              <h1>Report Generated on ${new Date().toLocaleDateString()}</h1>
+              ${content.innerHTML}
+            </body>
+          </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.print();
+      }
+
+      async function searchPersonHistory() {
+        const searchTerm = document.getElementById("personHistorySearch").value;
+        const fromDate = document.getElementById("historyFromDate").value;
+        const toDate = document.getElementById("historyToDate").value;
+
+        if (!searchTerm.trim()) {
+          showNotification("Please enter a CNIC or name to search", "warning");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/person-history?query=${encodeURIComponent(
+              searchTerm
+            )}&start_date=${fromDate}&end_date=${toDate}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById("personHistoryResults").style.display =
+              "block";
+            document.getElementById("personHistoryContent").innerHTML =
+              generatePersonHistoryHTML(data);
+            showNotification("Person history loaded successfully!", "success");
+          } else {
+            showNotification(
+              "Failed to search person history: " +
+                (data.message || "Unknown error"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error searching person history:", error);
+          showNotification("Network error occurred while searching", "error");
+        }
+      }
+
+      async function generateCategoryReport() {
+        const categoryId = document.getElementById("categorySelect").value;
+        const fromDate = document.getElementById("categoryFromDate").value;
+        const toDate = document.getElementById("categoryToDate").value;
+
+        if (!categoryId) {
+          showNotification("Please select a category", "warning");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/category-report?category_id=${categoryId}&start_date=${fromDate}&end_date=${toDate}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById("categoryReportResults").style.display =
+              "block";
+            document.getElementById("categoryReportContent").innerHTML =
+              generateCategoryReportHTML(data);
+            showNotification(
+              "Category report generated successfully!",
+              "success"
+            );
+          } else {
+            showNotification(
+              "Failed to generate category report: " +
+                (data.message || "Unknown error"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error generating category report:", error);
+          showNotification(
+            "Network error occurred while generating report",
+            "error"
+          );
+        }
+      }
+
+      async function generateRevenueReport() {
+        const reportType = document.getElementById("revenueReportType").value;
+        const fromDate = document.getElementById("revenueFromDate").value;
+        const toDate = document.getElementById("revenueToDate").value;
+
+        try {
+          const response = await fetch(
+            `/api/revenue-report?period=${reportType}&start_date=${fromDate}&end_date=${toDate}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById("revenueReportResults").style.display =
+              "block";
+            document.getElementById("revenueReportContent").innerHTML =
+              generateRevenueReportHTML(data);
+            showNotification(
+              "Revenue report generated successfully!",
+              "success"
+            );
+          } else {
+            showNotification(
+              "Failed to generate revenue report: " +
+                (data.message || "Unknown error"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error generating revenue report:", error);
+          showNotification(
+            "Network error occurred while generating report",
+            "error"
+          );
+        }
+      }
+
+      async function generateOccupancyAnalytics() {
+        const analysisType = document.getElementById(
+          "occupancyAnalysisType"
+        ).value;
+        const fromDate = document.getElementById("occupancyFromDate").value;
+        const toDate = document.getElementById("occupancyToDate").value;
+
+        try {
+          // Since there's no specific occupancy analytics API, we'll use existing APIs
+          showNotification("Generating occupancy analytics...", "info");
+
+          // For now, show a placeholder message
+          document.getElementById("occupancyAnalyticsResults").style.display =
+            "block";
+          document.getElementById("occupancyAnalyticsContent").innerHTML =
+            generateOccupancyAnalyticsHTML({
+              message:
+                "Occupancy analytics feature is currently in development. Please use the Daily Summary report for basic occupancy insights.",
+              type: analysisType,
+              dateRange: `${fromDate} to ${toDate}`,
+            });
+
+          showNotification("Occupancy analytics loaded!", "success");
+        } catch (error) {
+          console.error("Error generating occupancy analytics:", error);
+          showNotification(
+            "Network error occurred while generating analytics",
+            "error"
+          );
+        }
+      }
+
+      // HTML generation helper functions
+      function generateEnhancedSummaryHTML(data) {
+        let html = '<div class="space-y-6">';
+
+        // Summary stats cards
+        html += '<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">';
+        html += `
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-blue-100 text-sm">Total Entries</p>
+                <p class="text-2xl font-bold">${
+                  data.summary.total_entries || 0
+                }</p>
+              </div>
+              <i class="fas fa-sign-in-alt text-2xl"></i>
+            </div>
+          </div>
+          <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-green-100 text-sm">Total Exits</p>
+                <p class="text-2xl font-bold">${
+                  data.summary.total_exits || 0
+                }</p>
+              </div>
+              <i class="fas fa-sign-out-alt text-2xl"></i>
+            </div>
+          </div>
+          <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-purple-100 text-sm">Total Revenue</p>
+                <p class="text-2xl font-bold">₹${
+                  data.summary.total_revenue || 0
+                }</p>
+              </div>
+              <i class="fas fa-rupee-sign text-2xl"></i>
+            </div>
+          </div>
+        `;
+        html += "</div>";
+
+        // Category breakdown
+        if (data.categoryBreakdown && data.categoryBreakdown.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6 mb-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-chart-pie mr-2 text-purple-600"></i>Category Breakdown</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entries</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">People</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.categoryBreakdown.forEach((cat) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                cat.category
+              }</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${cat.entries}</td>
+              <td class="px-6 py-4 text-sm text-green-600">${
+                cat.total_people
+              }</td>
+              <td class="px-6 py-4 text-sm text-purple-600">₹${
+                cat.revenue || 0
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        }
+
+        // Facility usage
+        if (data.facilityUsage && data.facilityUsage.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-building mr-2 text-blue-600"></i>Facility Usage</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Facility</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Count</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.facilityUsage.forEach((facility) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                facility.facility
+              }</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${
+                facility.usage_count
+              }</td>
+              <td class="px-6 py-4 text-sm text-green-600">${
+                facility.total_quantity
+              }</td>
+              <td class="px-6 py-4 text-sm text-purple-600">₹${
+                facility.total_revenue || 0
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        }
+
+        html += "</div>";
+        return html;
+      }
+
+      function generateSummaryHTML(summary) {
+        if (!summary || summary.length === 0) {
+          return '<div class="text-center py-8 text-gray-500">No data found for the selected date range</div>';
+        }
+
+        let html =
+          '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+        html += '<thead class="bg-gray-50"><tr>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entries</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exits</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Change</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>';
+        html +=
+          '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
+
+        summary.forEach((row) => {
+          html += `<tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              row.date
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">${
+              row.entries
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">${
+              row.exits
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              row.entries - row.exits
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">₹${
+              row.revenue || 0
+            }</td>
+          </tr>`;
+        });
+
+        html += "</tbody></table></div>";
+        return html;
+      }
+
+      function generatePersonHistoryHTML(data) {
+        let html = '<div class="space-y-6">';
+
+        // Person info card
+        if (data.person) {
+          html += `
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+              <div class="flex items-center gap-4">
+                <div class="p-3 bg-blue-100 rounded-full">
+                  <i class="fas fa-user text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold text-gray-900">${data.person.name}</h4>
+                  <p class="text-gray-600">CNIC: ${data.person.cnic}</p>
+                  <p class="text-gray-600">Category: ${data.person.category_name}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Stats summary
+        if (data.stats) {
+          html += '<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">';
+          html += `
+            <div class="bg-white border rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-blue-600">${
+                data.stats.total_visits || 0
+              }</div>
+              <div class="text-sm text-gray-600">Total Visits</div>
+            </div>
+            <div class="bg-white border rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-green-600">₹${
+                data.stats.total_spent || 0
+              }</div>
+              <div class="text-sm text-gray-600">Total Spent</div>
+            </div>
+            <div class="bg-white border rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-purple-600">${Math.round(
+                data.stats.avg_duration_minutes || 0
+              )} min</div>
+              <div class="text-sm text-gray-600">Avg Duration</div>
+            </div>
+            <div class="bg-white border rounded-xl p-4 text-center">
+              <div class="text-sm font-medium text-orange-600">${
+                data.stats.last_visit
+                  ? new Date(data.stats.last_visit).toLocaleDateString()
+                  : "N/A"
+              }</div>
+              <div class="text-sm text-gray-600">Last Visit</div>
+            </div>
+          `;
+          html += "</div>";
+        }
+
+        // History table
+        if (data.history && data.history.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-history mr-2 text-gray-600"></i>Entry/Exit History</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date/Time</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Facilities</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operator</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.history.forEach((record) => {
+            const entryTime = new Date(record.entry_time);
+            const exitTime = record.exit_time
+              ? new Date(record.exit_time)
+              : null;
+            const facilities = record.facilities
+              ? record.facilities.map((f) => f.facility_name).join(", ")
+              : "None";
+
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm text-gray-900">
+                <div>${entryTime.toLocaleDateString()}</div>
+                <div class="text-gray-500">${entryTime.toLocaleTimeString()}</div>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  record.entry_type === "ENTRY"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }">
+                  ${record.entry_type}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                ${
+                  record.duration_minutes
+                    ? Math.round(record.duration_minutes) + " min"
+                    : exitTime
+                    ? "Ongoing"
+                    : "-"
+                }
+              </td>
+              <td class="px-6 py-4 text-sm text-purple-600">₹${
+                record.total_amount || 0
+              }</td>
+              <td class="px-6 py-4 text-sm text-gray-600">${facilities}</td>
+              <td class="px-6 py-4 text-sm text-gray-600">${
+                record.operator_name
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        } else {
+          html +=
+            '<div class="text-center py-8 text-gray-500">No history found for the search criteria</div>';
+        }
+
+        html += "</div>";
+        return html;
+      }
+
+      function generateHistoryHTML(history) {
+        if (!history || history.length === 0) {
+          return '<div class="text-center py-8 text-gray-500">No history found for the search criteria</div>';
+        }
+
+        let html =
+          '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+        html += '<thead class="bg-gray-50"><tr>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Person</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>';
+        html +=
+          '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facilities</th>';
+        html +=
+          '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
+
+        history.forEach((record) => {
+          const actionClass =
+            record.action_type === "entry" ? "text-green-600" : "text-red-600";
+          html += `<tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(
+              record.timestamp
+            ).toLocaleString()}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              record.person_name
+            }<br><small class="text-gray-500">${record.cnic_num}</small></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm ${actionClass}">${record.action_type.toUpperCase()}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              record.facilities || "N/A"
+            }</td>
+          </tr>`;
+        });
+
+        html += "</tbody></table></div>";
+        return html;
+      }
+
+      function generateCategoryReportHTML(data) {
+        let html = '<div class="space-y-6">';
+
+        // Category info and summary
+        if (data.category && data.summary) {
+          html += `
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xl font-bold text-gray-900">${
+                    data.category.name
+                  }</h4>
+                  <p class="text-gray-600">${
+                    data.category.description || "Category Analysis"
+                  }</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-purple-600">${
+                    data.summary.unique_people || 0
+                  }</div>
+                  <div class="text-sm text-gray-600">Unique People</div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Summary stats
+          html += '<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">';
+          html += `
+            <div class="bg-white border rounded-xl p-6 text-center">
+              <div class="text-3xl font-bold text-blue-600">${
+                data.summary.total_entries || 0
+              }</div>
+              <div class="text-sm text-gray-600">Total Entries</div>
+            </div>
+            <div class="bg-white border rounded-xl p-6 text-center">
+              <div class="text-3xl font-bold text-green-600">₹${
+                data.summary.total_revenue || 0
+              }</div>
+              <div class="text-sm text-gray-600">Total Revenue</div>
+            </div>
+            <div class="bg-white border rounded-xl p-6 text-center">
+              <div class="text-3xl font-bold text-purple-600">₹${parseFloat(
+                data.summary.avg_per_visit || 0
+              ).toFixed(2)}</div>
+              <div class="text-sm text-gray-600">Avg Per Visit</div>
+            </div>
+          `;
+          html += "</div>";
+        }
+
+        // People breakdown table
+        if (data.report && data.report.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-users mr-2 text-purple-600"></i>People Breakdown</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Person</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CNIC</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Visits</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Spent</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">First Visit</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Visit</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.report.forEach((person) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                person.person_name
+              }</td>
+              <td class="px-6 py-4 text-sm text-gray-600">${person.cnic}</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${
+                person.total_visits
+              }</td>
+              <td class="px-6 py-4 text-sm text-green-600">₹${
+                person.total_spent || 0
+              }</td>
+              <td class="px-6 py-4 text-sm text-gray-600">${
+                person.first_visit
+                  ? new Date(person.first_visit).toLocaleDateString()
+                  : "N/A"
+              }</td>
+              <td class="px-6 py-4 text-sm text-gray-600">${
+                person.last_visit
+                  ? new Date(person.last_visit).toLocaleDateString()
+                  : "N/A"
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        } else {
+          html +=
+            '<div class="text-center py-8 text-gray-500">No data found for the selected category and date range</div>';
+        }
+
+        html += "</div>";
+        return html;
+      }
+
+      function generateCategoryHTML(report) {
+        return '<div class="text-center py-8 text-gray-500">Category report implementation pending</div>';
+      }
+
+      function generateRevenueReportHTML(data) {
+        let html = '<div class="space-y-6">';
+
+        // Revenue by period
+        if (data.revenueByPeriod && data.revenueByPeriod.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6 mb-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-chart-line mr-2 text-green-600"></i>Revenue by Period</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entries</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Per Entry</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.revenueByPeriod.forEach((period) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                period.period
+              }</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${period.entries}</td>
+              <td class="px-6 py-4 text-sm text-green-600">₹${
+                period.revenue || 0
+              }</td>
+              <td class="px-6 py-4 text-sm text-purple-600">₹${parseFloat(
+                period.avg_per_entry || 0
+              ).toFixed(2)}</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        }
+
+        // Revenue by category
+        if (data.revenueByCategory && data.revenueByCategory.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6 mb-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-chart-pie mr-2 text-purple-600"></i>Revenue by Category</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entries</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.revenueByCategory.forEach((category) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                category.category
+              }</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${
+                category.entries
+              }</td>
+              <td class="px-6 py-4 text-sm text-green-600">₹${
+                category.revenue || 0
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        }
+
+        // Revenue by facility
+        if (data.revenueByFacility && data.revenueByFacility.length > 0) {
+          html += '<div class="bg-white rounded-xl shadow-sm border p-6">';
+          html +=
+            '<h4 class="text-lg font-semibold mb-4"><i class="fas fa-building mr-2 text-blue-600"></i>Revenue by Facility</h4>';
+          html +=
+            '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+          html += '<thead class="bg-gray-50"><tr>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Facility</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Count</th>';
+          html +=
+            '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>';
+          html += '</tr></thead><tbody class="divide-y divide-gray-200">';
+
+          data.revenueByFacility.forEach((facility) => {
+            html += `<tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">${
+                facility.facility
+              }</td>
+              <td class="px-6 py-4 text-sm text-blue-600">${
+                facility.usage_count
+              }</td>
+              <td class="px-6 py-4 text-sm text-green-600">₹${
+                facility.revenue || 0
+              }</td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div></div>";
+        }
+
+        if (
+          !data.revenueByPeriod?.length &&
+          !data.revenueByCategory?.length &&
+          !data.revenueByFacility?.length
+        ) {
+          html +=
+            '<div class="text-center py-8 text-gray-500">No revenue data found for the selected period</div>';
+        }
+
+        html += "</div>";
+        return html;
+      }
+
+      function generateRevenueHTML(report) {
+        return '<div class="text-center py-8 text-gray-500">Revenue report implementation pending</div>';
+      }
+
+      function generateOccupancyAnalyticsHTML(data) {
+        let html = '<div class="space-y-6">';
+
+        html += `
+          <div class="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl p-6">
+            <div class="flex items-center gap-4">
+              <div class="p-3 bg-orange-100 rounded-full">
+                <i class="fas fa-chart-area text-orange-600 text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-bold text-gray-900">Occupancy Analytics</h4>
+                <p class="text-gray-600">Analysis Type: ${data.type}</p>
+                <p class="text-gray-600">Date Range: ${data.dateRange}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+            <div class="text-blue-800">
+              <i class="fas fa-info-circle text-2xl mb-4"></i>
+              <p class="text-lg font-medium">${data.message}</p>
+              <p class="text-sm mt-2">Advanced occupancy analytics will be available in future updates.</p>
+            </div>
+          </div>
+        `;
+
+        html += "</div>";
+        return html;
+      }
+
+      function generateAnalyticsHTML(analytics) {
+        return '<div class="text-center py-8 text-gray-500">Analytics implementation pending</div>';
+      }
+
+      // Export functions
+      function exportDailySummary() {
+        const fromDate = document.getElementById("summaryFromDate").value;
+        const toDate = document.getElementById("summaryToDate").value;
+
+        if (!fromDate || !toDate) {
+          showNotification("Please generate a report first", "warning");
+          return;
+        }
+
+        window.open(
+          `/api/export-data?type=entries&start_date=${fromDate}&end_date=${toDate}`,
+          "_blank"
+        );
+      }
+
+      function exportPersonHistory() {
+        const searchTerm = document.getElementById("personHistorySearch").value;
+        const fromDate = document.getElementById("historyFromDate").value;
+        const toDate = document.getElementById("historyToDate").value;
+
+        if (!searchTerm.trim()) {
+          showNotification("Please search for a person first", "warning");
+          return;
+        }
+
+        // For person history, we'll use the general entries export for now
+        window.open(
+          `/api/export-data?type=entries&start_date=${fromDate}&end_date=${toDate}`,
+          "_blank"
+        );
+      }
+
+      function exportCategoryReport() {
+        const categoryId = document.getElementById("categorySelect").value;
+        const fromDate = document.getElementById("categoryFromDate").value;
+        const toDate = document.getElementById("categoryToDate").value;
+
+        if (!categoryId) {
+          showNotification("Please select a category first", "warning");
+          return;
+        }
+
+        window.open(
+          `/api/export-data?type=entries&start_date=${fromDate}&end_date=${toDate}`,
+          "_blank"
+        );
+      }
+
+      function exportRevenueReport() {
+        const fromDate = document.getElementById("revenueFromDate").value;
+        const toDate = document.getElementById("revenueToDate").value;
+
+        window.open(
+          `/api/export-data?type=entries&start_date=${fromDate}&end_date=${toDate}`,
+          "_blank"
+        );
+      }
+
+      function exportOccupancyAnalytics() {
+        const fromDate = document.getElementById("occupancyFromDate").value;
+        const toDate = document.getElementById("occupancyToDate").value;
+
+        window.open(
+          `/api/export-data?type=entries&start_date=${fromDate}&end_date=${toDate}`,
+          "_blank"
+        );
+      }
+
+      // Helper function to populate category dropdown
+      async function populateCategoryDropdown() {
+        try {
+          // Categories are passed from the server, but we can also fetch them if needed
+          const categorySelect = document.getElementById("categorySelect");
+
+          // Add default option if not already present
+          if (categorySelect.children.length <= 1) {
+            // Categories will be populated from server-side rendering
+            // This is a fallback in case we need to load them dynamically
+            const response = await fetch("/api/categories");
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.categories) {
+                data.categories.forEach((category) => {
+                  const option = document.createElement("option");
+                  option.value = category.id;
+                  option.textContent = category.name;
+                  categorySelect.appendChild(option);
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error loading categories:", error);
+        }
+      }
+
+      // Data loading functions
+      async function loadTodayStats() {
+        try {
+          const response = await fetch("/api/current-occupancy");
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById("todayEntries").textContent =
+              data.todayEntries || "0";
+            document.getElementById("todayExits").textContent =
+              data.todayExits || "0";
+            document.getElementById("currentOccupancy").textContent =
+              data.totalCount || "0";
+            document.getElementById("todayRevenue").textContent =
+              "₹" + (data.todayRevenue || "0");
+          }
+        } catch (error) {
+          console.error("Error loading today stats:", error);
+          // Set default values
+          document.getElementById("todayEntries").textContent = "0";
+          document.getElementById("todayExits").textContent = "0";
+          document.getElementById("currentOccupancy").textContent = "0";
+          document.getElementById("todayRevenue").textContent = "₹0";
+        }
+      }
+
+      async function loadRevenueSummary() {
+        try {
+          const response = await fetch("/api/revenue-summary");
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById("todayRevenueDisplay").textContent =
+              "₹" + (data.today || "0");
+            document.getElementById("weekRevenueDisplay").textContent =
+              "₹" + (data.week || "0");
+            document.getElementById("monthRevenueDisplay").textContent =
+              "₹" + (data.month || "0");
+          }
+        } catch (error) {
+          console.error("Error loading revenue summary:", error);
+          // Set default values
+          document.getElementById("todayRevenueDisplay").textContent = "₹0";
+          document.getElementById("weekRevenueDisplay").textContent = "₹0";
+          document.getElementById("monthRevenueDisplay").textContent = "₹0";
+        }
+      }
+
+      async function loadLiveOccupancy() {
+        try {
+          const response = await fetch("/api/current-occupancy");
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById("liveOccupancyCount").textContent =
+              data.totalCount || "0";
+            document.getElementById("todayTotalEntries").textContent =
+              data.todayEntries || "0";
+            document.getElementById("todayTotalExits").textContent =
+              data.todayExits || "0";
+          }
+        } catch (error) {
+          console.error("Error loading live occupancy:", error);
+          // Set default values
+          document.getElementById("liveOccupancyCount").textContent = "0";
+          document.getElementById("todayTotalEntries").textContent = "0";
+          document.getElementById("todayTotalExits").textContent = "0";
+        }
+      }
+
+      // Auto-refresh live data every 30 seconds
+      setInterval(() => {
+        loadLiveOccupancy();
+        loadTodayStats();
+        updateLastUpdateTime();
+      }, 30000);
+
+      function updateLastUpdateTime() {
+        const lastUpdateElement = document.getElementById("lastUpdate");
+        if (lastUpdateElement) {
+          lastUpdateElement.textContent =
+            "Updated " + new Date().toLocaleTimeString();
+        }
+      }
+
+      // Enhanced notification system
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        const bgColor = {
+          success: "bg-green-500",
+          error: "bg-red-500",
+          warning: "bg-yellow-500",
+          info: "bg-blue-500",
+        }[type];
+
+        notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`;
+        notification.innerHTML = `
+          <div class="flex items-center">
+            <i class="fas fa-${
+              type === "success"
+                ? "check-circle"
+                : type === "error"
+                ? "exclamation-circle"
+                : type === "warning"
+                ? "exclamation-triangle"
+                : "info-circle"
+            } mr-2"></i>
+            ${message}
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = "0";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+    </script>
+
+    <style>
+      .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .animate-bounce-in {
+        animation: bounce-in 0.6s ease-out forwards;
+      }
+
+      .animate-slide-up {
+        animation: slide-up 0.4s ease-out forwards;
+      }
+
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+      }
+
+      .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      .stat-card {
+        transition: all 0.3s ease;
+        opacity: 1;
+      }
+
+      .stat-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .glass-card {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .tab-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .tab-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.4),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .tab-btn:hover::before {
+        left: 100%;
+      }
+
+      .tab-btn::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        transition: width 0.3s ease;
+      }
+
+      .tab-btn.active::after {
+        width: 100%;
+      }
+
+      /* Enhanced table styles */
+      .report-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .report-table tr {
+        transition: all 0.2s ease;
+      }
+
+      .report-table tbody tr:hover {
+        background: linear-gradient(
+          90deg,
+          rgba(59, 130, 246, 0.05),
+          rgba(139, 92, 246, 0.05)
+        );
+        transform: scale(1.01);
+      }
+
+      /* Button enhancements */
+      .btn-enhanced {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .btn-enhanced::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      .btn-enhanced:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Responsive enhancements */
+      @media (max-width: 768px) {
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .tab-btn {
+          font-size: 0.875rem;
+          padding: 0.5rem 1rem;
+        }
+
+        .glass-card {
+          margin: 0.5rem;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .tab-btn {
+          font-size: 0.75rem;
+          padding: 0.375rem 0.75rem;
+        }
+      }
+
+      /* Loading states */
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+
+      /* Custom scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(45deg, #2563eb, #7c3aed);
+      }
+    </style>
+
+    <%- include('partials/toast') %>
+  </body>
+</html>

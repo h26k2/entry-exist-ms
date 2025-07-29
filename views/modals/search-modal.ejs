@@ -1,0 +1,176 @@
+<!-- Enhanced Search Modal -->
+<div
+  id="searchModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm modal-overlay"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-md"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-orange-50 to-amber-50 px-8 py-6 border-b border-orange-100"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <i class="fas fa-search text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Search Person</h2>
+            <p class="text-sm text-gray-600">
+              Find person by CNIC, name, or phone
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="closeSearchModal()"
+          class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-8">
+      <form id="searchForm" class="space-y-8">
+        <!-- Search Input -->
+        <div class="form-group">
+          <label
+            class="form-label font-bold text-lg text-gray-800 flex items-center gap-2"
+          >
+            <i class="fas fa-search text-orange-500"></i> Search People
+          </label>
+          <div class="relative mt-2">
+            <input
+              type="text"
+              id="generalSearch"
+              placeholder="Type CNIC, name, or phone..."
+              class="form-input !pl-12 py-3 text-lg rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm"
+              autocomplete="off"
+              aria-label="Search people by CNIC, name, or phone"
+            />
+            <div
+              class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+            >
+              <i class="fas fa-search text-orange-400 text-xl"></i>
+            </div>
+            <div
+              id="searchLoadingSpinner"
+              class="absolute right-4 top-1/2 -translate-y-1/2 hidden"
+            >
+              <div
+                class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"
+              ></div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2 flex items-center gap-1">
+            <i class="fas fa-info-circle text-orange-400"></i>
+            Start typing to search. Supports partial matches and multiple
+            keywords.
+          </p>
+        </div>
+
+        <!-- Search Filters -->
+        <div
+          class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border-2 border-gray-200"
+        >
+          <div class="flex items-center space-x-3 mb-4">
+            <div
+              class="w-8 h-8 bg-gray-500 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-filter text-white text-sm"></i>
+            </div>
+            <h3 class="font-bold text-gray-900">Search Filters</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              class="bg-white rounded-xl p-4 border-2 border-transparent hover:border-blue-200 transition-all"
+            >
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="searchByCnic"
+                  class="form-checkbox mr-3"
+                  checked
+                />
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-id-card text-blue-600"></i>
+                  <span class="text-sm font-semibold text-gray-700">CNIC</span>
+                </div>
+              </label>
+            </div>
+            <div
+              class="bg-white rounded-xl p-4 border-2 border-transparent hover:border-green-200 transition-all"
+            >
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="searchByName"
+                  class="form-checkbox mr-3"
+                  checked
+                />
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-user text-green-600"></i>
+                  <span class="text-sm font-semibold text-gray-700">Name</span>
+                </div>
+              </label>
+            </div>
+            <div
+              class="bg-white rounded-xl p-4 border-2 border-transparent hover:border-purple-200 transition-all"
+            >
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="searchByPhone"
+                  class="form-checkbox mr-3"
+                  checked
+                />
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-phone text-purple-600"></i>
+                  <span class="text-sm font-semibold text-gray-700">Phone</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="generalSearchResults" class="space-y-4">
+          <div class="text-center py-8 text-gray-400">
+            <i class="fas fa-users text-5xl mb-4 opacity-30"></i>
+            <p class="text-lg font-semibold">Start typing to find people</p>
+            <p class="text-sm">Live results will appear here</p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Enhanced Modal Footer -->
+    <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
+      <button
+        type="button"
+        onclick="closeSearchModal()"
+        class="btn btn-secondary"
+      >
+        <i class="fas fa-times mr-2"></i>Close
+      </button>
+      <button
+        type="submit"
+        form="searchForm"
+        class="btn"
+        style="
+          background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+          color: white;
+          box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.25);
+        "
+        id="submitSearchBtn"
+      >
+        Search Now
+      </button>
+    </div>
+  </div>
+</div>

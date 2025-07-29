@@ -1,0 +1,54 @@
+<% /* Common Modal Partial - Usage: include with locals: { id, icon, header,
+headerColor, size, body, footer } */ %>
+<div
+  id="<%= id %>"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 modal-overlay"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-<%= size || 'md' %>"
+    style="border-top: 6px solid <%= headerColor || '#3b82f6' %>"
+  >
+    <!-- Modal Header -->
+    <div
+      class="flex items-center justify-between px-8 py-6 border-b"
+      style="
+        background: <%=
+          `linear-gradient(
+            90deg,
+            $ {(headerColor || '#3b82f6')}11 0%,
+            #fff 100%
+          )
+          ` %>;
+      "
+    >
+      <div class="flex items-center space-x-4">
+        <div
+          class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+          style="background: <%= ` '${headerColor || ' #3b82f6 '}' ` %>"
+        >
+          <i class="<%= icon %> text-white text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900"><%= header %></h2>
+          <% if (typeof subheader !== 'undefined') { %>
+          <p class="text-sm text-gray-600"><%= subheader %></p>
+          <% } %>
+        </div>
+      </div>
+      <button
+        onclick="hideModal('<%= id %>')"
+        class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <!-- Modal Body -->
+    <div class="modal-body p-8"><%- body %></div>
+    <!-- Modal Footer -->
+    <% if (typeof footer !== 'undefined') { %>
+    <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
+      <%- footer %>
+    </div>
+    <% } %>
+  </div>
+</div>

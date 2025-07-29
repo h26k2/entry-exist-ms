@@ -1,0 +1,579 @@
+<!-- Enhanced Modal System -->
+<style>
+  /* Enhanced Modal Styles */
+  .modal-overlay {
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-container {
+    transform-origin: center;
+  }
+
+  /* Modal size variants */
+  .modal-sm {
+    max-width: 28rem;
+  }
+  .modal-md {
+    max-width: 32rem;
+  }
+  .modal-lg {
+    max-width: 48rem;
+  }
+  .modal-xl {
+    max-width: 64rem;
+  }
+  .modal-2xl {
+    max-width: 80rem;
+  }
+  .modal-full {
+    max-width: 95vw;
+  }
+
+  /* Modal content scrolling */
+  .modal-body {
+    max-height: calc(90vh - 200px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+
+  .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .modal-body::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+
+  .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+
+  .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+
+  /* Enhanced form elements */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: #fefefe;
+  }
+
+  .form-input:hover {
+    border-color: #d1d5db;
+  }
+
+  .form-input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    resize: vertical;
+    min-height: 5rem;
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Button enhancements */
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    border: none;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+  }
+
+  .btn:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.25);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 12px -1px rgba(59, 130, 246, 0.35);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.25);
+  }
+
+  .btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 12px -1px rgba(16, 185, 129, 0.35);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.25);
+  }
+
+  .btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 12px -1px rgba(239, 68, 68, 0.35);
+  }
+
+  .btn-secondary {
+    background: #f8fafc;
+    color: #374151;
+    border: 2px solid #e5e7eb;
+  }
+
+  .btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+  }
+
+  /* Loading states */
+  .btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Enhanced checkboxes and radios */
+  .form-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .form-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+  }
+
+  /* Modal header enhancements */
+  .modal-header {
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .modal-title i {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+  }
+
+  /* Modal footer enhancements */
+  .modal-footer {
+    border-top: 1px solid #f3f4f6;
+    padding-top: 1.5rem;
+    margin-top: 2rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 640px) {
+    .modal-footer {
+      flex-direction: column-reverse;
+    }
+
+    .modal-footer .btn {
+      width: 100%;
+    }
+  }
+
+  /* Progress indicators */
+  .progress-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .progress-step.active {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .progress-step.completed {
+    background: #10b981;
+    color: white;
+  }
+
+  .progress-connector {
+    width: 3rem;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 0 0.5rem;
+  }
+
+  .progress-connector.active {
+    background: #3b82f6;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .modal-container {
+      margin: 1rem;
+      max-height: 95vh;
+    }
+
+    .modal-body {
+      max-height: calc(95vh - 200px);
+    }
+  }
+</style>
+
+<script>
+  // Enhanced Modal System
+  window.EnhancedModal = {
+    // Track open modals for stacking
+    openModals: [],
+
+    // Default options
+    defaultOptions: {
+      size: "md",
+      backdrop: true,
+      keyboard: true,
+      focus: true,
+      center: true,
+    },
+
+    show: function (modalId, options = {}) {
+      const opts = { ...this.defaultOptions, ...options };
+      const modal = document.getElementById(modalId);
+
+      if (!modal) {
+        console.error(`Modal with ID "${modalId}" not found`);
+        return;
+      }
+
+      // Add modal to stack
+      this.openModals.push(modalId);
+
+      // Set z-index based on stack
+      const zIndex = 1000 + this.openModals.length * 10;
+      modal.style.zIndex = zIndex;
+
+      // Add size class
+      const container = modal.querySelector(".modal-container");
+      if (container) {
+        container.classList.add(`modal-${opts.size}`);
+      }
+
+      // Show modal
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      // Focus management
+      if (opts.focus) {
+        this.setFocus(modal);
+      }
+
+      // Keyboard handling
+      if (opts.keyboard) {
+        this.handleKeyboard(modalId);
+      }
+
+      // Backdrop handling
+      if (opts.backdrop) {
+        this.handleBackdrop(modalId);
+      }
+
+      // Disable body scroll
+      document.body.style.overflow = "hidden";
+
+      // Trigger custom event
+      modal.dispatchEvent(
+        new CustomEvent("modal:show", { detail: { modalId, options: opts } })
+      );
+    },
+
+    hide: function (modalId, force = false) {
+      const modal = document.getElementById(modalId);
+
+      if (!modal) {
+        return;
+      }
+
+      // Remove from stack
+      const index = this.openModals.indexOf(modalId);
+      if (index > -1) {
+        this.openModals.splice(index, 1);
+      }
+
+      // Hide modal immediately
+      this.hideModal(modal);
+
+      // Re-enable body scroll if no modals open
+      if (this.openModals.length === 0) {
+        document.body.style.overflow = "";
+      }
+
+      // Trigger custom event
+      modal.dispatchEvent(
+        new CustomEvent("modal:hide", { detail: { modalId } })
+      );
+    },
+
+    hideModal: function (modal) {
+      modal.classList.remove("flex");
+      modal.classList.add("hidden");
+    },
+
+    setFocus: function (modal) {
+      // Focus first focusable element
+      const focusable = modal.querySelectorAll(
+        'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      }
+    },
+
+    handleKeyboard: function (modalId) {
+      const handleEscape = (e) => {
+        if (
+          e.key === "Escape" &&
+          this.openModals[this.openModals.length - 1] === modalId
+        ) {
+          this.hide(modalId);
+          document.removeEventListener("keydown", handleEscape);
+        }
+      };
+
+      document.addEventListener("keydown", handleEscape);
+    },
+
+    handleBackdrop: function (modalId) {
+      const modal = document.getElementById(modalId);
+      const handleClick = (e) => {
+        if (e.target === modal) {
+          this.hide(modalId);
+          modal.removeEventListener("click", handleClick);
+        }
+      };
+
+      modal.addEventListener("click", handleClick);
+    },
+
+    // Utility methods
+    setLoading: function (buttonId, loading = true) {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        if (loading) {
+          button.classList.add("loading");
+          button.disabled = true;
+        } else {
+          button.classList.remove("loading");
+          button.disabled = false;
+        }
+      }
+    },
+
+    showError: function (fieldId, message) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.classList.add("error");
+
+        // Remove existing error message
+        const existingError = field.parentNode.querySelector(".error-message");
+        if (existingError) {
+          existingError.remove();
+        }
+
+        // Add error message
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error-message text-red-600 text-sm mt-1";
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+      }
+    },
+
+    clearErrors: function (modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        // Remove error classes
+        modal
+          .querySelectorAll(".error")
+          .forEach((el) => el.classList.remove("error"));
+
+        // Remove error messages
+        modal.querySelectorAll(".error-message").forEach((el) => el.remove());
+      }
+    },
+
+    // Progress steps
+    setStep: function (modalId, step) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        const steps = modal.querySelectorAll(".progress-step");
+        const connectors = modal.querySelectorAll(".progress-connector");
+
+        steps.forEach((stepEl, index) => {
+          if (index < step - 1) {
+            stepEl.classList.add("completed");
+            stepEl.classList.remove("active");
+          } else if (index === step - 1) {
+            stepEl.classList.add("active");
+            stepEl.classList.remove("completed");
+          } else {
+            stepEl.classList.remove("active", "completed");
+          }
+        });
+
+        connectors.forEach((connector, index) => {
+          if (index < step - 1) {
+            connector.classList.add("active");
+          } else {
+            connector.classList.remove("active");
+          }
+        });
+      }
+    },
+  };
+
+  // Global modal functions for backward compatibility
+  window.showModal = function (modalId, options) {
+    EnhancedModal.show(modalId, options);
+  };
+
+  window.hideModal = function (modalId) {
+    EnhancedModal.hide(modalId);
+  };
+
+  window.closeModal = function (modalId) {
+    EnhancedModal.hide(modalId);
+  };
+</script>

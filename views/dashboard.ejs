@@ -1,22 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="/css/global.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
-</head>
-<body class="dashboard">
-  <div class="dashboard-container">
-    
-    <%- include('partials/sidebar') %>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Entry/Exit Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1e40af",
+              secondary: "#3b82f6",
+              accent: "#06b6d4",
+              dark: "#1f2937",
+              light: "#f8fafc",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="flex h-screen">
+      <%- include('partials/sidebar') %>
 
-    <main class="dashboard-content">
+      <main class="flex-1 overflow-y-auto lg:ml-0">
         <%- include('partials/header', { title: 'Dashboard' }) %>
-      <h1>Welcome to Dashboard</h1>
-      <p>You are logged in as <strong><%= user.role %></strong></p>
-    </main>
-  </div>
-</body>
+
+        <!-- Dashboard Content -->
+        <div class="p-4 lg:p-6">
+          <!-- Welcome Section -->
+          <div class="mb-6 lg:mb-8">
+            <div
+              class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl lg:rounded-2xl text-white p-4 lg:p-6 shadow-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <h1 class="text-xl lg:text-3xl font-bold mb-2">
+                    Welcome Back!
+                  </h1>
+                  <p class="text-blue-100 text-sm lg:text-base">
+                    You are logged in as
+                    <span
+                      class="bg-white/20 px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm font-semibold"
+                      ><%= user.role.toUpperCase() %></span
+                    >
+                  </p>
+                </div>
+                <div class="hidden md:block">
+                  <i
+                    class="fas fa-user-shield text-4xl lg:text-6xl opacity-20"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats Cards -->
+          <div
+            class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8"
+          >
+            <!-- Total People Inside -->
+            <div
+              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs lg:text-sm font-medium text-gray-600">
+                    People Inside
+                  </p>
+                  <p
+                    class="text-lg lg:text-3xl font-bold text-green-600"
+                    id="current-occupancy"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="bg-green-100 rounded-full p-2 lg:p-3">
+                  <i class="fas fa-users text-green-600 text-lg lg:text-xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Entries -->
+            <div
+              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs lg:text-sm font-medium text-gray-600">
+                    Today's Entries
+                  </p>
+                  <p
+                    class="text-lg lg:text-3xl font-bold text-blue-600"
+                    id="today-entries"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-2 lg:p-3">
+                  <i
+                    class="fas fa-sign-in-alt text-blue-600 text-lg lg:text-xl"
+                  ></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Revenue -->
+            <div
+              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs lg:text-sm font-medium text-gray-600">
+                    Today's Revenue
+                  </p>
+                  <p
+                    class="text-lg lg:text-3xl font-bold text-purple-600"
+                    id="today-revenue"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="bg-purple-100 rounded-full p-2 lg:p-3">
+                  <i
+                    class="fas fa-coins text-purple-600 text-lg lg:text-xl"
+                  ></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Categories -->
+            <div
+              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs lg:text-sm font-medium text-gray-600">
+                    Categories
+                  </p>
+                  <p class="text-lg lg:text-3xl font-bold text-orange-600">5</p>
+                </div>
+                <div class="bg-orange-100 rounded-full p-2 lg:p-3">
+                  <i class="fas fa-tags text-orange-600 text-lg lg:text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8"
+          >
+            <!-- Entry Management -->
+            <a href="/dashboard/entry" class="group block">
+              <div
+                class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 group-hover:scale-[1.02]"
+              >
+                <div class="flex items-center mb-3 lg:mb-4">
+                  <div
+                    class="bg-blue-100 group-hover:bg-blue-200 rounded-lg p-2 lg:p-3 transition-colors"
+                  >
+                    <i
+                      class="fas fa-door-open text-blue-600 text-lg lg:text-2xl"
+                    ></i>
+                  </div>
+                  <h3
+                    class="text-base lg:text-lg font-semibold text-gray-900 ml-3 lg:ml-4"
+                  >
+                    Entry Management
+                  </h3>
+                </div>
+                <p class="text-gray-600 text-xs lg:text-sm">
+                  Process entries and exits, manage guest access, and track
+                  facility usage.
+                </p>
+                <div
+                  class="mt-3 lg:mt-4 flex items-center text-blue-600 text-xs lg:text-sm font-medium"
+                >
+                  <span>Manage Entries</span>
+                  <i
+                    class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                  ></i>
+                </div>
+              </div>
+            </a>
+
+            <!-- People Management -->
+            <a href="/dashboard/people" class="group block">
+              <div
+                class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-lg hover:border-green-300 transition-all duration-200 group-hover:scale-[1.02]"
+              >
+                <div class="flex items-center mb-3 lg:mb-4">
+                  <div
+                    class="bg-green-100 group-hover:bg-green-200 rounded-lg p-2 lg:p-3 transition-colors"
+                  >
+                    <i
+                      class="fas fa-users text-green-600 text-lg lg:text-2xl"
+                    ></i>
+                  </div>
+                  <h3
+                    class="text-base lg:text-lg font-semibold text-gray-900 ml-3 lg:ml-4"
+                  >
+                    People Management
+                  </h3>
+                </div>
+                <p class="text-gray-600 text-xs lg:text-sm">
+                  Add, edit, and manage people, families, and card generation.
+                </p>
+                <div
+                  class="mt-3 lg:mt-4 flex items-center text-green-600 text-xs lg:text-sm font-medium"
+                >
+                  <span>Manage People</span>
+                  <i
+                    class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                  ></i>
+                </div>
+              </div>
+            </a>
+
+            <!-- Reports & Analytics -->
+            <a href="/dashboard/reports" class="group block">
+              <div
+                class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-lg hover:border-purple-300 transition-all duration-200 group-hover:scale-[1.02]"
+              >
+                <div class="flex items-center mb-3 lg:mb-4">
+                  <div
+                    class="bg-purple-100 group-hover:bg-purple-200 rounded-lg p-2 lg:p-3 transition-colors"
+                  >
+                    <i
+                      class="fas fa-chart-bar text-purple-600 text-lg lg:text-2xl"
+                    ></i>
+                  </div>
+                  <h3
+                    class="text-base lg:text-lg font-semibold text-gray-900 ml-3 lg:ml-4"
+                  >
+                    Reports & Analytics
+                  </h3>
+                </div>
+                <p class="text-gray-600 text-xs lg:text-sm">
+                  View detailed reports, analytics, and export data.
+                </p>
+                <div
+                  class="mt-3 lg:mt-4 flex items-center text-purple-600 text-xs lg:text-sm font-medium"
+                >
+                  <span>View Reports</span>
+                  <i
+                    class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                  ></i>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Recent Activity -->
+          <div
+            class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6"
+          >
+            <div class="flex items-center justify-between mb-4 lg:mb-6">
+              <h2 class="text-lg lg:text-xl font-semibold text-gray-900">
+                Recent Activity
+              </h2>
+              <button
+                class="text-blue-600 hover:text-blue-700 text-xs lg:text-sm font-medium"
+              >
+                View All
+              </button>
+            </div>
+            <div class="space-y-3 lg:space-y-4" id="recent-activity">
+              <div
+                class="flex items-center justify-center py-6 lg:py-8 text-gray-500"
+              >
+                <i class="fas fa-spinner fa-spin mr-2"></i>
+                <span class="text-sm lg:text-base"
+                  >Loading recent activity...</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Load dashboard data
+      async function loadDashboardData() {
+        try {
+          // Load current occupancy
+          const occupancyResponse = await fetch("/api/current-occupancy");
+          const occupancyData = await occupancyResponse.json();
+          if (occupancyData.success) {
+            document.getElementById("current-occupancy").textContent =
+              occupancyData.totalCount;
+          }
+
+          // Load daily summary
+          const summaryResponse = await fetch("/api/daily-summary");
+          const summaryData = await summaryResponse.json();
+          if (summaryData.success) {
+            document.getElementById("today-entries").textContent =
+              summaryData.summary.total_entries || 0;
+            document.getElementById("today-revenue").textContent =
+              "Rs. " + (summaryData.summary.total_revenue || 0);
+          }
+        } catch (error) {
+          console.error("Error loading dashboard data:", error);
+        }
+      }
+
+      // Load recent activity
+      async function loadRecentActivity() {
+        try {
+          const activityContainer = document.getElementById("recent-activity");
+          // For now, show a placeholder
+          activityContainer.innerHTML = `
+          <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-clock text-2xl mb-2"></i>
+            <p>No recent activity</p>
+          </div>
+        `;
+        } catch (error) {
+          console.error("Error loading recent activity:", error);
+        }
+      }
+
+      // Load data when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDashboardData();
+        loadRecentActivity();
+      });
+    </script>
+
+    <%- include('partials/toast') %>
+  </body>
 </html>
