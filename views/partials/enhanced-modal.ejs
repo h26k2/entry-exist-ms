@@ -392,9 +392,11 @@
         container.classList.add(`modal-${opts.size}`);
       }
 
-      // Show modal
+      // Show modal - ensure both class and inline style are set with !important
       modal.classList.remove("hidden");
       modal.classList.add("flex");
+      modal.style.setProperty("display", "flex", "important");
+      modal.style.setProperty("visibility", "visible", "important");
 
       // Focus management
       if (opts.focus) {
@@ -450,6 +452,9 @@
     hideModal: function (modal) {
       modal.classList.remove("flex");
       modal.classList.add("hidden");
+      // Clear inline styles to avoid conflicts
+      modal.style.removeProperty("display");
+      modal.style.removeProperty("visibility");
     },
 
     setFocus: function (modal) {

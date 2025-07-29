@@ -84,22 +84,13 @@ exports.renderLoginPage = (req, res) => {
 exports.login = async (req, res) => {
   const { number, password, rememberMe } = req.body;
 
-  // Debug logging
-  console.log("Received number:", number);
-  console.log("Number type:", typeof number);
-  console.log("Number length:", number ? number.length : 0);
-
   const cnic = number.replace(/\D/g, "");
-  console.log("Processed CNIC:", cnic);
-  console.log("CNIC length:", cnic.length);
-
   const clientIP = req.ip || req.connection.remoteAddress;
   const identifier = `${cnic}_${clientIP}`;
 
   try {
     // Validate CNIC format
     if (cnic.length !== 13) {
-      console.log("CNIC validation failed - length:", cnic.length);
       return res.render("login", {
         error: "Please enter a valid 13-digit CNIC number",
         message: null,

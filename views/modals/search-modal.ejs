@@ -68,8 +68,7 @@
           </div>
           <p class="text-xs text-gray-500 mt-2 flex items-center gap-1">
             <i class="fas fa-info-circle text-orange-400"></i>
-            Start typing to search. Supports partial matches and multiple
-            keywords.
+            Search happens automatically as you type. Results appear instantly.
           </p>
         </div>
 
@@ -142,8 +141,8 @@
         <div id="generalSearchResults" class="space-y-4">
           <div class="text-center py-8 text-gray-400">
             <i class="fas fa-users text-5xl mb-4 opacity-30"></i>
-            <p class="text-lg font-semibold">Start typing to find people</p>
-            <p class="text-sm">Live results will appear here</p>
+            <p class="text-lg font-semibold">Type to search instantly</p>
+            <p class="text-sm">Results will appear automatically as you type</p>
           </div>
         </div>
       </form>
@@ -151,26 +150,23 @@
 
     <!-- Enhanced Modal Footer -->
     <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
-      <button
-        type="button"
-        onclick="closeSearchModal()"
-        class="btn btn-secondary"
-      >
-        <i class="fas fa-times mr-2"></i>Close
-      </button>
-      <button
-        type="submit"
-        form="searchForm"
-        class="btn"
-        style="
-          background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
-          color: white;
-          box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.25);
-        "
-        id="submitSearchBtn"
-      >
-        Search Now
-      </button>
+      <div class="flex items-center justify-between w-full">
+        <div class="text-sm text-gray-600">
+          <i class="fas fa-keyboard mr-1"></i>
+          Press
+          <span class="bg-gray-200 px-2 py-1 rounded font-mono text-xs"
+            >ESC</span
+          >
+          to close
+        </div>
+        <button
+          type="button"
+          onclick="closeSearchModal()"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-times mr-2"></i>Close
+        </button>
+      </div>
     </div>
   </div>
 </div>
