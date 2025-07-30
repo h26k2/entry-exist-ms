@@ -1,3 +1,53 @@
+// Facility stats API for dashboard
+exports.getFacilityStats = async (req, res) => {
+  try {
+    // Total facilities
+    const totalFacilitiesResult = await DatabaseHelper.query(
+      "SELECT COUNT(*) as total FROM facilities"
+    );
+    const totalFacilities = totalFacilitiesResult[0].total || 0;
+
+    // Active facilities
+    const activeFacilitiesResult = await DatabaseHelper.query(
+      "SELECT COUNT(*) as active FROM facilities WHERE is_active = 1"
+    );
+    const activeFacilities = activeFacilitiesResult[0].active || 0;
+
+    // Average price
+    const avgPriceResult = await DatabaseHelper.query(
+      "SELECT AVG(price) as avg FROM facilities"
+    );
+    const avgPrice = avgPriceResult[0].avg
+      ? parseFloat(avgPriceResult[0].avg).toFixed(2)
+      : 0;
+
+    // Revenue today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const todayRevenueResult = await DatabaseHelper.query(
+      `SELECT SUM(ef.total_price) as revenue FROM entry_facilities ef JOIN entry_logs el ON ef.entry_log_id = el.id WHERE el.created_at >= ? AND el.created_at < ?`,
+      [today, tomorrow]
+    );
+    const todayRevenue = todayRevenueResult[0].revenue
+      ? parseFloat(todayRevenueResult[0].revenue).toFixed(2)
+      : 0;
+
+    res.json({
+      success: true,
+      totalFacilities,
+      activeFacilities,
+      avgPrice,
+      todayRevenue,
+    });
+  } catch (err) {
+    console.error("Error loading facility stats:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Error loading facility stats" });
+  }
+};
 const DatabaseHelper = require("../config/dbHelper");
 
 // Render facility management page

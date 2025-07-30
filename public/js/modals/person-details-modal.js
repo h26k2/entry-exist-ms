@@ -272,7 +272,7 @@ class PersonDetailsModal {
     }
 
     // Entry History (if available)
-    if (data.entryHistory && data.entryHistory.length > 0) {
+    if (data.recentEntries && data.recentEntries.length > 0) {
       html += `
         <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200">
           <div class="flex items-center space-x-3 mb-6">
@@ -286,7 +286,7 @@ class PersonDetailsModal {
           </div>
           
           <div class="space-y-3">
-            ${data.entryHistory
+            ${data.recentEntries
               .slice(0, 5)
               .map(
                 (entry) => `
@@ -294,20 +294,26 @@ class PersonDetailsModal {
                 <div class="flex justify-between items-center">
                   <div class="flex items-center space-x-4">
                     <div class="w-8 h-8 ${
-                      entry.type === "entry"
+                      entry.entry_type === "ENTRY"
                         ? "bg-green-100 text-green-600"
                         : "bg-red-100 text-red-600"
                     } rounded-full flex items-center justify-center">
                       <i class="fas fa-${
-                        entry.type === "entry" ? "sign-in-alt" : "sign-out-alt"
+                        entry.entry_type === "ENTRY"
+                          ? "sign-in-alt"
+                          : "sign-out-alt"
                       } text-sm"></i>
                     </div>
                     <div>
                       <span class="font-medium ${
-                        entry.type === "entry"
+                        entry.entry_type === "ENTRY"
                           ? "text-green-800"
                           : "text-red-800"
-                      }">${entry.type.toUpperCase()}</span>
+                      }">${
+                  typeof entry.entry_type === "string"
+                    ? entry.entry_type
+                    : "UNKNOWN"
+                }</span>
                       <div class="text-sm text-gray-600">${
                         entry.facility_name || "Unknown Facility"
                       }</div>
@@ -315,10 +321,10 @@ class PersonDetailsModal {
                   </div>
                   <div class="text-right">
                     <div class="text-sm font-medium text-gray-900">${new Date(
-                      entry.timestamp
+                      entry.entry_time
                     ).toLocaleDateString()}</div>
                     <div class="text-xs text-gray-500">${new Date(
-                      entry.timestamp
+                      entry.entry_time
                     ).toLocaleTimeString()}</div>
                   </div>
                 </div>

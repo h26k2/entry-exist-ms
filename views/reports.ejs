@@ -505,12 +505,12 @@
                       id="categorySelect"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="">All Categories</option>
+                      <option value="">All User Categories</option>
                       <% categories.forEach(category => { %>
                       <option value="<%= category.id %>">
                         <%= category.name %>
                       </option>
-                      <% }); %>
+                      <% }) %>
                     </select>
                   </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1217,7 +1217,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-purple-100 text-sm">Total Revenue</p>
-                <p class="text-2xl font-bold">₹${
+                <p class="text-2xl font-bold">RS${
                   data.summary.total_revenue || 0
                 }</p>
               </div>
@@ -1254,7 +1254,7 @@
               <td class="px-6 py-4 text-sm text-green-600">${
                 cat.total_people
               }</td>
-              <td class="px-6 py-4 text-sm text-purple-600">₹${
+              <td class="px-6 py-4 text-sm text-purple-600">RS${
                 cat.revenue || 0
               }</td>
             </tr>`;
@@ -1292,7 +1292,7 @@
               <td class="px-6 py-4 text-sm text-green-600">${
                 facility.total_quantity
               }</td>
-              <td class="px-6 py-4 text-sm text-purple-600">₹${
+              <td class="px-6 py-4 text-sm text-purple-600">RS${
                 facility.total_revenue || 0
               }</td>
             </tr>`;
@@ -1340,7 +1340,7 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
               row.entries - row.exits
             }</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">₹${
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">RS${
               row.revenue || 0
             }</td>
           </tr>`;
@@ -1382,7 +1382,7 @@
               <div class="text-sm text-gray-600">Total Visits</div>
             </div>
             <div class="bg-white border rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-green-600">₹${
+              <div class="text-2xl font-bold text-green-600">RS${
                 data.stats.total_spent || 0
               }</div>
               <div class="text-sm text-gray-600">Total Spent</div>
@@ -1459,7 +1459,7 @@
                     : "-"
                 }
               </td>
-              <td class="px-6 py-4 text-sm text-purple-600">₹${
+              <td class="px-6 py-4 text-sm text-purple-600">RS${
                 record.total_amount || 0
               }</td>
               <td class="px-6 py-4 text-sm text-gray-600">${facilities}</td>
@@ -1555,13 +1555,13 @@
               <div class="text-sm text-gray-600">Total Entries</div>
             </div>
             <div class="bg-white border rounded-xl p-6 text-center">
-              <div class="text-3xl font-bold text-green-600">₹${
+              <div class="text-3xl font-bold text-green-600">RS${
                 data.summary.total_revenue || 0
               }</div>
               <div class="text-sm text-gray-600">Total Revenue</div>
             </div>
             <div class="bg-white border rounded-xl p-6 text-center">
-              <div class="text-3xl font-bold text-purple-600">₹${parseFloat(
+              <div class="text-3xl font-bold text-purple-600">RS${parseFloat(
                 data.summary.avg_per_visit || 0
               ).toFixed(2)}</div>
               <div class="text-sm text-gray-600">Avg Per Visit</div>
@@ -1601,7 +1601,7 @@
               <td class="px-6 py-4 text-sm text-blue-600">${
                 person.total_visits
               }</td>
-              <td class="px-6 py-4 text-sm text-green-600">₹${
+              <td class="px-6 py-4 text-sm text-green-600">RS${
                 person.total_spent || 0
               }</td>
               <td class="px-6 py-4 text-sm text-gray-600">${
@@ -1658,10 +1658,10 @@
                 period.period
               }</td>
               <td class="px-6 py-4 text-sm text-blue-600">${period.entries}</td>
-              <td class="px-6 py-4 text-sm text-green-600">₹${
+              <td class="px-6 py-4 text-sm text-green-600">RS${
                 period.revenue || 0
               }</td>
-              <td class="px-6 py-4 text-sm text-purple-600">₹${parseFloat(
+              <td class="px-6 py-4 text-sm text-purple-600">RS${parseFloat(
                 period.avg_per_entry || 0
               ).toFixed(2)}</td>
             </tr>`;
@@ -1694,7 +1694,7 @@
               <td class="px-6 py-4 text-sm text-blue-600">${
                 category.entries
               }</td>
-              <td class="px-6 py-4 text-sm text-green-600">₹${
+              <td class="px-6 py-4 text-sm text-green-600">RS${
                 category.revenue || 0
               }</td>
             </tr>`;
@@ -1727,7 +1727,7 @@
               <td class="px-6 py-4 text-sm text-blue-600">${
                 facility.usage_count
               }</td>
-              <td class="px-6 py-4 text-sm text-green-600">₹${
+              <td class="px-6 py-4 text-sm text-green-600">RS${
                 facility.revenue || 0
               }</td>
             </tr>`;
@@ -1897,7 +1897,7 @@
             document.getElementById("currentOccupancy").textContent =
               data.totalCount || "0";
             document.getElementById("todayRevenue").textContent =
-              "₹" + (data.todayRevenue || "0");
+              "RS" + (data.todayRevenue || "0");
           }
         } catch (error) {
           console.error("Error loading today stats:", error);
@@ -1905,7 +1905,7 @@
           document.getElementById("todayEntries").textContent = "0";
           document.getElementById("todayExits").textContent = "0";
           document.getElementById("currentOccupancy").textContent = "0";
-          document.getElementById("todayRevenue").textContent = "₹0";
+          document.getElementById("todayRevenue").textContent = "RS0";
         }
       }
 
@@ -1915,18 +1915,18 @@
           const data = await response.json();
           if (data.success) {
             document.getElementById("todayRevenueDisplay").textContent =
-              "₹" + (data.today || "0");
+              "RS" + (data.today || "0");
             document.getElementById("weekRevenueDisplay").textContent =
-              "₹" + (data.week || "0");
+              "RS" + (data.week || "0");
             document.getElementById("monthRevenueDisplay").textContent =
-              "₹" + (data.month || "0");
+              "RS" + (data.month || "0");
           }
         } catch (error) {
           console.error("Error loading revenue summary:", error);
           // Set default values
-          document.getElementById("todayRevenueDisplay").textContent = "₹0";
-          document.getElementById("weekRevenueDisplay").textContent = "₹0";
-          document.getElementById("monthRevenueDisplay").textContent = "₹0";
+          document.getElementById("todayRevenueDisplay").textContent = "RS0";
+          document.getElementById("weekRevenueDisplay").textContent = "RS0";
+          document.getElementById("monthRevenueDisplay").textContent = "RS0";
         }
       }
 

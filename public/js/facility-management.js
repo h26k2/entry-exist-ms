@@ -155,7 +155,7 @@ function displayFacilityDetails(data) {
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Price:</span>
-                    <span class="detail-value">$${facility.price.toFixed(
+                    <span class="detail-value">Rs. ${facility.price.toFixed(
                       2
                     )}</span>
                 </div>

@@ -72,7 +72,7 @@ function displayDailySummary(data) {
       </div>
       <div class="summary-card revenue">
         <h4>Total Revenue</h4>
-        <div class="value">$${(data.summary.total_revenue || 0).toFixed(
+        <div class="value">RS${(data.summary.total_revenue || 0).toFixed(
           2
         )}</div>
         <div class="description">Revenue generated today</div>
@@ -109,7 +109,7 @@ function displayDailySummary(data) {
           <td>${category.category}</td>
           <td>${category.entries}</td>
           <td>${category.total_people}</td>
-          <td>$${(category.revenue || 0).toFixed(2)}</td>
+          <td>RS${(category.revenue || 0).toFixed(2)}</td>
         </tr>
       `;
     });
@@ -135,7 +135,7 @@ function displayDailySummary(data) {
             <div class="facility-stats">
               <span>Used: ${facility.usage_count}</span>
               <span>Qty: ${facility.total_quantity}</span>
-              <span class="facility-revenue">$${(
+              <span class="facility-revenue">RS${(
                 facility.total_revenue || 0
               ).toFixed(2)}</span>
             </div>
@@ -273,7 +273,7 @@ function displayPersonHistory(data) {
         <span class="stat-label">Total Visits</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">$${(data.stats.total_spent || 0).toFixed(
+        <span class="stat-value">RS${(data.stats.total_spent || 0).toFixed(
           2
         )}</span>
         <span class="stat-label">Total Spent</span>
@@ -330,7 +330,7 @@ function displayPersonHistory(data) {
               : "Still inside"
           }</td>
           <td>${duration}</td>
-          <td>$${(entry.total_amount || 0).toFixed(2)}</td>
+          <td>RS${(entry.total_amount || 0).toFixed(2)}</td>
           <td>${facilities}</td>
           <td>${entry.operator_name}</td>
         </tr>
@@ -400,13 +400,13 @@ function displayCategoryReport(data) {
         <span class="stat-label">Total Entries</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">$${(data.summary.total_revenue || 0).toFixed(
+        <span class="stat-value">RS${(data.summary.total_revenue || 0).toFixed(
           2
         )}</span>
         <span class="stat-label">Total Revenue</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">$${(data.summary.avg_per_visit || 0).toFixed(
+        <span class="stat-value">RS${(data.summary.avg_per_visit || 0).toFixed(
           2
         )}</span>
         <span class="stat-label">Avg per Visit</span>
@@ -436,7 +436,7 @@ function displayCategoryReport(data) {
           <td>${person.person_name}</td>
           <td>${person.cnic}</td>
           <td>${person.total_visits}</td>
-          <td>$${(person.total_spent || 0).toFixed(2)}</td>
+          <td>RS${(person.total_spent || 0).toFixed(2)}</td>
           <td>${new Date(person.first_visit).toLocaleDateString()}</td>
           <td>${new Date(person.last_visit).toLocaleDateString()}</td>
         </tr>
@@ -510,8 +510,8 @@ function displayRevenueReport(data) {
         <tr>
           <td>${period.period}</td>
           <td>${period.entries}</td>
-          <td>$${(period.revenue || 0).toFixed(2)}</td>
-          <td>$${(period.avg_per_entry || 0).toFixed(2)}</td>
+          <td>RS${(period.revenue || 0).toFixed(2)}</td>
+          <td>RS${(period.avg_per_entry || 0).toFixed(2)}</td>
         </tr>
       `;
     });
@@ -546,7 +546,7 @@ function displayRevenueReport(data) {
         <tr>
           <td>${category.category}</td>
           <td>${category.entries}</td>
-          <td>$${(category.revenue || 0).toFixed(2)}</td>
+          <td>RS${(category.revenue || 0).toFixed(2)}</td>
         </tr>
       `;
     });
@@ -581,7 +581,7 @@ function displayRevenueReport(data) {
         <tr>
           <td>${facility.facility}</td>
           <td>${facility.usage_count}</td>
-          <td>$${(facility.revenue || 0).toFixed(2)}</td>
+          <td>RS${(facility.revenue || 0).toFixed(2)}</td>
         </tr>
       `;
     });
@@ -703,7 +703,7 @@ function displayPersonHistory(historyData) {
         <td class="border px-4 py-2">${exitTime}</td>
         <td class="border px-4 py-2">${duration}</td>
         <td class="border px-4 py-2">${entry.facilities || "None"}</td>
-        <td class="border px-4 py-2">₹${entry.total_fee || 0}</td>
+  <td class="border px-4 py-2">RS${entry.total_fee || 0}</td>
       </tr>
     `;
   });

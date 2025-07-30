@@ -319,7 +319,7 @@ class EntryManagementController {
                   ? `<span><i class='fas fa-users mr-1'></i>Host: ${person.host_name}</span>`
                   : ""
               }
-              <span><i class="fas fa-wallet mr-1 text-blue-500"></i>Balance: $${
+              <span><i class="fas fa-wallet mr-1 text-blue-500"></i>Balance: Rs. ${
                 person.available_balance || "0.00"
               }</span>
             </div>
@@ -552,11 +552,15 @@ class EntryManagementController {
   quickExitFromModal(name, cnic) {
     this.closeOccupancyModal();
     this.openExitModal();
-    const searchInput = document.getElementById("exitPersonSearch");
-    if (searchInput) {
-      searchInput.value = name;
-      this.searchPersonForExit();
-    }
+    setTimeout(() => {
+      const searchInput = document.getElementById("exitPersonSearch");
+      if (searchInput) {
+        searchInput.value = name;
+        if (window.exitModalManager) {
+          window.exitModalManager.searchPersonInside(name);
+        }
+      }
+    }, 300);
   }
 
   refreshOccupancy() {
@@ -799,184 +803,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
-
-// QR Code Scanner functionality
-let qrStream = null;
-let qrVideo = null;
-let qrCanvas = null;
-let qrContext = null;
-let qrScanInterval = null;
-
-function openQRScanner() {
-  document.getElementById("qrScannerModal").classList.remove("hidden");
-  document.body.style.overflow = "hidden";
-
-  // Initialize video elements
-  qrVideo = document.getElementById("qr-video");
-  qrCanvas = document.getElementById("qr-canvas");
-  qrContext = qrCanvas.getContext("2d");
-
-  // Reset UI state
-  document.getElementById("qrScanResult").classList.add("hidden");
-  document.getElementById("qrScanError").classList.add("hidden");
-  document.getElementById("startScanBtn").style.display = "inline-block";
-  document.getElementById("stopScanBtn").style.display = "none";
-}
-
-function closeQRScanner() {
-  document.getElementById("qrScannerModal").classList.add("hidden");
-  document.body.style.overflow = "auto";
-  stopQRScan();
-}
-
-function startQRScan() {
-  // Request camera access
-  navigator.mediaDevices
-    .getUserMedia({
-      video: {
-        facingMode: "environment",
-        width: { ideal: 400 },
-        height: { ideal: 400 },
-      },
-    })
-    .then((stream) => {
-      qrStream = stream;
-      qrVideo.srcObject = stream;
-      qrVideo.play();
-
-      // Update UI
-      document.getElementById("startScanBtn").style.display = "none";
-      document.getElementById("stopScanBtn").style.display = "inline-block";
-
-      // Start scanning
-      qrScanInterval = setInterval(scanQRCode, 300);
-    })
-    .catch((err) => {
-      console.error("Error accessing camera:", err);
-      showQRError("Unable to access camera. Please check permissions.");
-    });
-}
-
-function stopQRScan() {
-  if (qrStream) {
-    qrStream.getTracks().forEach((track) => track.stop());
-    qrStream = null;
-  }
-
-  if (qrScanInterval) {
-    clearInterval(qrScanInterval);
-    qrScanInterval = null;
-  }
-
-  if (qrVideo) {
-    qrVideo.srcObject = null;
-  }
-
-  // Update UI
-  document.getElementById("startScanBtn").style.display = "inline-block";
-  document.getElementById("stopScanBtn").style.display = "none";
-}
-
-function scanQRCode() {
-  if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-    qrCanvas.width = qrVideo.videoWidth;
-    qrCanvas.height = qrVideo.videoHeight;
-    qrContext.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
-
-    const imageData = qrContext.getImageData(
-      0,
-      0,
-      qrCanvas.width,
-      qrCanvas.height
-    );
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (code) {
-      // QR code detected
-      stopQRScan();
-      processQRCode(code.data);
-    }
-  }
-}
-
-function processQRCode(qrData) {
-  // Clear previous results
-  document.getElementById("qrScanResult").classList.add("hidden");
-  document.getElementById("qrScanError").classList.add("hidden");
-
-  // Send QR data to server for processing
-  fetch("/cards/api/scan-qr", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ qr_data: qrData }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        // Show success and person info
-        showQRSuccess(
-          `Person found: ${data.person.name} (${data.person.cnic})`
-        );
-
-        // Auto-process entry for this person
-        setTimeout(() => {
-          closeQRScanner();
-          autoProcessEntryFromQR(data.person);
-        }, 2000);
-      } else {
-        showQRError(data.message || "Invalid QR code or person not found");
-      }
-    })
-    .catch((error) => {
-      console.error("Error processing QR code:", error);
-      showQRError("Error processing QR code. Please try again.");
-    });
-}
-
-function autoProcessEntryFromQR(person) {
-  // Open entry modal and pre-fill with person data
-  openEntryModal();
-
-  // Wait for modal to open then populate
-  setTimeout(() => {
-    const personSearchInput = document.getElementById("entryPersonSearch");
-    if (personSearchInput) {
-      personSearchInput.value = person.cnic;
-      // Trigger search to populate person data
-      entryController.searchPersonForEntry();
-    }
-  }, 500);
-}
-
-function showQRSuccess(message) {
-  document.getElementById("qrResultText").textContent = message;
-  document.getElementById("qrScanResult").classList.remove("hidden");
-  document.getElementById("qrScanError").classList.add("hidden");
-}
-
-function showQRError(message) {
-  document.getElementById("qrErrorText").textContent = message;
-  document.getElementById("qrScanError").classList.remove("hidden");
-  document.getElementById("qrScanResult").classList.add("hidden");
-}
-
-// Close QR scanner on escape key
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    const modal = document.getElementById("qrScannerModal");
-    if (!modal.classList.contains("hidden")) {
-      closeQRScanner();
-    }
-  }
-});
-
-// Click outside modal to close
-document
-  .getElementById("qrScannerModal")
-  ?.addEventListener("click", function (e) {
-    if (e.target.id === "qrScannerModal") {
-      closeQRScanner();
-    }
-  });

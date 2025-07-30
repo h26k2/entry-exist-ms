@@ -1,6 +1,7 @@
 const express = require("express");
 const authController = require("../controllers/authController");
 const peopleController = require("../controllers/peopleController");
+const upload = require("../config/multer");
 
 const router = express.Router();
 
@@ -75,6 +76,7 @@ router.get(
 router.post(
   "/api/bulk-import-people",
   authController.requireLogin,
+  upload.single("csvFile"),
   peopleController.bulkImportPeople
 );
 

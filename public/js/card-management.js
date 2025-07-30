@@ -20,31 +20,40 @@ class CardManagement {
 
   bindEvents() {
     // Search and filter events
-    document.getElementById("searchInput").addEventListener(
-      "input",
-      this.debounce((e) => this.handleSearch(e.target.value), 300)
-    );
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+      searchInput.addEventListener(
+        "input",
+        this.debounce((e) => this.handleSearch(e.target.value), 300)
+      );
+    }
 
-    document
-      .getElementById("statusFilter")
-      .addEventListener("change", (e) =>
+    const statusFilter = document.getElementById("statusFilter");
+    if (statusFilter) {
+      statusFilter.addEventListener("change", (e) =>
         this.handleStatusFilter(e.target.value)
       );
+    }
 
-    document
-      .getElementById("limitSelect")
-      .addEventListener("change", (e) =>
+    const limitSelect = document.getElementById("limitSelect");
+    if (limitSelect) {
+      limitSelect.addEventListener("change", (e) =>
         this.handleLimitChange(e.target.value)
       );
+    }
 
-    document
-      .getElementById("refreshBtn")
-      .addEventListener("click", () => this.refreshData());
+    const refreshBtn = document.getElementById("refreshBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => this.refreshData());
+    }
 
     // Modal events
-    document
-      .getElementById("closeCardModal")
-      .addEventListener("click", () => this.closeCardDetailsModal());
+    const closeCardModal = document.getElementById("closeCardModal");
+    if (closeCardModal) {
+      closeCardModal.addEventListener("click", () =>
+        this.closeCardDetailsModal()
+      );
+    }
 
     // Fix: Bind footer close button in card details modal
     const closeCardModalFooterBtn = document.getElementById(
@@ -56,30 +65,45 @@ class CardManagement {
       );
     }
 
-    document
-      .getElementById("closeStatusModal")
-      .addEventListener("click", () => this.closeStatusModal());
+    const closeStatusModal = document.getElementById("closeStatusModal");
+    if (closeStatusModal) {
+      closeStatusModal.addEventListener("click", () => this.closeStatusModal());
+    }
 
-    document
-      .getElementById("closeCreateCardModal")
-      .addEventListener("click", () => this.closeCreateCardModal());
+    const closeCreateCardModal = document.getElementById(
+      "closeCreateCardModal"
+    );
+    if (closeCreateCardModal) {
+      closeCreateCardModal.addEventListener("click", () =>
+        this.closeCreateCardModal()
+      );
+    }
 
-    document
-      .getElementById("cancelStatusUpdate")
-      .addEventListener("click", () => this.closeStatusModal());
+    const cancelStatusUpdate = document.getElementById("cancelStatusUpdate");
+    if (cancelStatusUpdate) {
+      cancelStatusUpdate.addEventListener("click", () =>
+        this.closeStatusModal()
+      );
+    }
 
-    document
-      .getElementById("cancelCreateCard")
-      .addEventListener("click", () => this.closeCreateCardModal());
+    const cancelCreateCard = document.getElementById("cancelCreateCard");
+    if (cancelCreateCard) {
+      cancelCreateCard.addEventListener("click", () =>
+        this.closeCreateCardModal()
+      );
+    }
 
     // QR Viewer Modal events
-    document
-      .getElementById("closeQRViewer")
-      .addEventListener("click", () => this.closeQRViewer());
+    const closeQRViewer = document.getElementById("closeQRViewer");
+    if (closeQRViewer) {
+      closeQRViewer.addEventListener("click", () => this.closeQRViewer());
+    }
 
-    document
-      .getElementById("downloadQRFromViewer")
-      .addEventListener("click", () => {
+    const downloadQRFromViewer = document.getElementById(
+      "downloadQRFromViewer"
+    );
+    if (downloadQRFromViewer) {
+      downloadQRFromViewer.addEventListener("click", () => {
         if (this.currentQRData) {
           this.downloadQR(
             this.currentQRData.imagePath,
@@ -87,52 +111,68 @@ class CardManagement {
           );
         }
       });
+    }
 
-    document.getElementById("openQRInNewTab").addEventListener("click", () => {
-      if (this.currentQRData) {
-        window.open(this.currentQRData.imagePath, "_blank");
-      }
-    });
+    const openQRInNewTab = document.getElementById("openQRInNewTab");
+    if (openQRInNewTab) {
+      openQRInNewTab.addEventListener("click", () => {
+        if (this.currentQRData) {
+          window.open(this.currentQRData.imagePath, "_blank");
+        }
+      });
+    }
 
     // Form events
-    document
-      .getElementById("statusUpdateForm")
-      .addEventListener("submit", (e) => this.handleStatusUpdate(e));
+    const statusUpdateForm = document.getElementById("statusUpdateForm");
+    if (statusUpdateForm) {
+      statusUpdateForm.addEventListener("submit", (e) =>
+        this.handleStatusUpdate(e)
+      );
+    }
 
-    document
-      .getElementById("createCardForm")
-      .addEventListener("submit", (e) => this.handleCreateCard(e));
+    const createCardForm = document.getElementById("createCardForm");
+    if (createCardForm) {
+      createCardForm.addEventListener("submit", (e) =>
+        this.handleCreateCard(e)
+      );
+    }
 
     // Person search
-    document.getElementById("personSearch").addEventListener(
-      "input",
-      this.debounce((e) => this.searchPeople(e.target.value), 300)
-    );
+    const personSearch = document.getElementById("personSearch");
+    if (personSearch) {
+      personSearch.addEventListener(
+        "input",
+        this.debounce((e) => this.searchPeople(e.target.value), 300)
+      );
+    }
 
     // Click outside modal to close
-    document
-      .getElementById("cardDetailsModal")
-      .addEventListener("click", (e) => {
+    const cardDetailsModal = document.getElementById("cardDetailsModal");
+    if (cardDetailsModal) {
+      cardDetailsModal.addEventListener("click", (e) => {
         if (e.target.id === "cardDetailsModal") {
           this.closeCardDetailsModal();
         }
       });
+    }
 
-    document
-      .getElementById("statusUpdateModal")
-      .addEventListener("click", (e) => {
+    const statusUpdateModal = document.getElementById("statusUpdateModal");
+    if (statusUpdateModal) {
+      statusUpdateModal.addEventListener("click", (e) => {
         if (e.target.id === "statusUpdateModal") {
           this.closeStatusModal();
         }
       });
+    }
 
-    document
-      .getElementById("createCardModal")
-      .addEventListener("click", (e) => {
+    const createCardModal = document.getElementById("createCardModal");
+    if (createCardModal) {
+      createCardModal.addEventListener("click", (e) => {
         if (e.target.id === "createCardModal") {
           this.closeCreateCardModal();
         }
       });
+    }
   }
 
   debounce(func, wait) {

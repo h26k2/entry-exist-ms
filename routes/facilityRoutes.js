@@ -12,6 +12,14 @@ router.get(
   facilityController.renderFacilityPage
 );
 
+// Facility stats API (for frontend dashboard)
+router.get(
+  "/api/facilities/stats",
+  authController.requireLogin,
+  authController.requireRole("admin"),
+  facilityController.getFacilityStats
+);
+
 // Facility CRUD operations (Admin only)
 router.post(
   "/api/add-facility",

@@ -1,21 +1,13 @@
--- Entry Exit Management System Database Schema
-
--- Categories table for person classification
-CREATE TABLE categories (
+-- Categories Table
+CREATE TABLE IF NOT EXISTS categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
     requires_payment BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Entry Exit Management System Database Schema
 
--- Insert predefined categories
-INSERT INTO categories (name, description, requires_payment) VALUES
-('Paid', 'Regular paying customers', TRUE),
-('Civilian', 'Civilian personnel', TRUE),
-('Military Serving', 'Active military personnel', FALSE),
-('Retired', 'Retired personnel', TRUE),
-('Staff', 'Staff members', FALSE);
 
 -- Facilities table
 CREATE TABLE facilities (
@@ -136,6 +128,13 @@ AND el.id = (
     SELECT MAX(id) 
     FROM entry_logs el2 
     WHERE el2.person_id = el.person_id
+);
+
+-- User Categories Table
+CREATE TABLE IF NOT EXISTS user_categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
 );
 
 -- Add indexes for better performance

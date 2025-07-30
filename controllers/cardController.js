@@ -7,7 +7,7 @@ const fs = require("fs").promises;
 exports.renderCardManagementPage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM categories WHERE id > 0 ORDER BY name"
+      "SELECT * FROM user_categories WHERE id > 0 ORDER BY name"
     );
 
     res.render("card-management", {
@@ -52,7 +52,7 @@ exports.getAllCards = async (req, res) => {
         u.name as issued_by_name
       FROM cards c
       JOIN people p ON c.person_id = p.id
-      LEFT JOIN categories cat ON p.category_id = cat.id
+      LEFT JOIN user_categories cat ON p.category_id = cat.id
       LEFT JOIN users u ON c.issued_by = u.id
       ${whereClause}
       ORDER BY c.created_at DESC

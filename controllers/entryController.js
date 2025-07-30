@@ -141,7 +141,7 @@ exports.generateCard = async (req, res) => {
 exports.renderEntryPage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM categories WHERE id > 0 ORDER BY name"
+      "SELECT * FROM user_categories WHERE id > 0 ORDER BY name"
     );
     const facilities = await DatabaseHelper.query(
       "SELECT * FROM facilities WHERE is_active = 1 ORDER BY name"
@@ -187,9 +187,8 @@ exports.searchPerson = async (req, res) => {
       `
       SELECT 
         p.*, 
-        c.name as category, 
-        c.requires_payment,
-        COALESCE(
+        c.name as category
+        , COALESCE(
           (SELECT SUM(amount) FROM fee_deposits WHERE person_id = p.id AND status = 'ACTIVE'), 
           0
         ) as balance

@@ -325,11 +325,50 @@ exports.requireRole = (roles) => {
 };
 
 exports.dashboard = (req, res) => {
-  res.render("dashboard", {
-    user: req.session.user,
-    activePage: "dashboard",
-    title: "Dashboard",
-  });
+  require("../config/dbHelper")
+    .query(
+      `SELECT e.id, e.person_id, e.entry_time, e.exit_time, e.entry_type, e.remarks, p.name, p.cnic FROM entry_logs e LEFT JOIN people p ON e.person_id = p.id ORDER BY e.entry_time DESC LIMIT 10`
+    )
+    .then((recentActivities) => {
+      res.render("dashboard", {
+        user: req.session.user,
+        activePage: "dashboard",
+        title: "Dashboard",
+        recentActivities,
+      });
+    })
+    .catch((err) => {
+      console.error("[Dashboard] Error:", err);
+      res.render("dashboard", {
+        user: req.session.user,
+        activePage: "dashboard",
+        title: "Dashboard",
+        recentActivities: [],
+        error: "Failed to load recent activities.",
+      });
+    });
+};
+
+exports.allActivities = (req, res) => {
+  require("../config/dbHelper")
+    .query(
+      `SELECT e.id, e.person_id, e.entry_time, e.exit_time, e.entry_type, e.remarks, p.name, p.cnic FROM entry_logs e LEFT JOIN people p ON e.person_id = p.id ORDER BY e.entry_time DESC`
+    )
+    .then((recentActivities) => {
+      res.render("all-activities", {
+        user: req.session.user,
+        activePage: "dashboard",
+        recentActivities,
+      });
+    })
+    .catch((err) => {
+      console.error("[All Activities] Error:", err);
+      res.render("all-activities", {
+        user: req.session.user,
+        recentActivities: [],
+        error: "Failed to load activities.",
+      });
+    });
 };
 
 exports.renderOperatorPage = async (req, res) => {

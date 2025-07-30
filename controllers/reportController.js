@@ -4,7 +4,7 @@ const DatabaseHelper = require("../config/dbHelper");
 exports.renderReportsPage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM categories ORDER BY name"
+      "SELECT * FROM user_categories ORDER BY name"
     );
     const facilities = await DatabaseHelper.query(
       "SELECT * FROM facilities WHERE is_active = 1 ORDER BY name"
@@ -73,7 +73,7 @@ exports.getDailySummary = async (req, res) => {
     // Facility usage
     const facilityUsage = await DatabaseHelper.query(
       `
-      SELECT 
+        JOIN categories c ON p.category_id = c.id
         f.name as facility,
         COUNT(ef.id) as usage_count,
         SUM(ef.quantity) as total_quantity,

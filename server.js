@@ -84,4 +84,6 @@ require("./config/db");
 const { initializeRoutes } = require("./routes");
 initializeRoutes(app);
 
-app.listen(PORT, () => {});
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});

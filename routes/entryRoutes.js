@@ -55,6 +55,15 @@ router.post(
 );
 
 // Fee deposits
+
+// Current occupancy API for header
+router.get(
+  "/api/current-occupancy",
+  authController.requireApiAuth,
+  entryController.getCurrentOccupancy
+);
+
+// Fee deposits
 router.post(
   "/api/add-fee-deposit",
   authController.requireLogin,

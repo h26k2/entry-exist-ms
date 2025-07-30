@@ -1,3 +1,22 @@
+// Robust global function to show person details modal
+window.viewPersonDetails = function (id) {
+  if (
+    window.PersonDetailsModalInstance &&
+    typeof window.PersonDetailsModalInstance.view === "function"
+  ) {
+    window.PersonDetailsModalInstance.view(id);
+  } else if (
+    window.PersonDetailsModal &&
+    typeof window.PersonDetailsModal.prototype.view === "function"
+  ) {
+    window.PersonDetailsModalInstance = new window.PersonDetailsModal();
+    window.PersonDetailsModalInstance.view(id);
+  } else {
+    // Fallback: just show the modal if available
+    const modal = document.getElementById("personDetailsModal");
+    if (modal) modal.classList.remove("hidden");
+  }
+};
 // People Management Core JavaScript
 
 // Toast notification system
@@ -103,6 +122,11 @@ async function loadPeopleData() {
 function displayPeopleData(people) {
   const container = document.getElementById("peopleTableBody");
   if (!container) return;
+
+  // Debug: log the first person object to check cnic property
+  if (people.length > 0) {
+    console.log("First person object:", people[0]);
+  }
 
   if (people.length === 0) {
     container.innerHTML = `

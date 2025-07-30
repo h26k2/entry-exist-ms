@@ -57,37 +57,12 @@
         <div class="flex space-x-3">
           <button
             type="button"
-            onclick="editPersonFromDetails()"
-            class="btn btn-primary"
-            id="editPersonBtn"
+            onclick="closePersonDetailsModal()"
+            class="btn btn-secondary"
           >
-            <i class="fas fa-edit mr-2"></i>Edit Person
-          </button>
-          <button
-            type="button"
-            onclick="generateCardFromDetails()"
-            class="btn btn-success"
-            id="generateCardBtn"
-            style="display: none"
-          >
-            <i class="fas fa-id-card mr-2"></i>Generate Card
-          </button>
-          <button
-            type="button"
-            onclick="addFamilyMemberFromDetails()"
-            class="btn btn-purple"
-            id="addFamilyBtn"
-          >
-            <i class="fas fa-user-plus mr-2"></i>Add Family Member
+            <i class="fas fa-times mr-2"></i>Close
           </button>
         </div>
-        <button
-          type="button"
-          onclick="closePersonDetailsModal()"
-          class="btn btn-secondary"
-        >
-          <i class="fas fa-times mr-2"></i>Close
-        </button>
       </div>
     </div>
   </div>

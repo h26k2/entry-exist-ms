@@ -53,200 +53,134 @@
           </div>
           <% } %>
 
-          <!-- Page Header -->
-          <div class="mb-6 lg:mb-8">
-            <div
-              class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <h1 class="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
-                  Operator Management
-                </h1>
-                <p class="text-gray-600 text-sm lg:text-base">
-                  Manage system operators and their access permissions
-                </p>
-              </div>
+          <!-- Enhanced Page Header (separated from table) -->
+          <div class="mb-8 lg:mb-10">
+            <div class="relative">
+              <!-- Background decoration -->
               <div
-                class="mt-4 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
-              >
-                <button
-                  id="add-operator-btn"
-                  class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
+                class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-3xl transform -rotate-1"
+              ></div>
+              <div class="relative glass-card rounded-2xl p-6 lg:p-8">
+                <div
+                  class="flex flex-col lg:flex-row lg:items-center lg:justify-between"
                 >
-                  <i class="fas fa-plus mr-2"></i>Add Operator
-                </button>
-                <% if(operators.length > 0){ %>
-                <button
-                  id="delete-selected-btn"
-                  class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
-                >
-                  <i class="fas fa-trash mr-2"></i>Delete Selected
-                </button>
-                <% } %>
+                  <div class="flex items-center gap-4 mb-4 lg:mb-0">
+                    <div class="relative">
+                      <div
+                        class="p-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg"
+                      >
+                        <i class="fas fa-user-shield text-xl"></i>
+                      </div>
+                      <div class="pulse-ring"></div>
+                    </div>
+                    <div>
+                      <h1
+                        class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent"
+                      >
+                        Operator Management
+                      </h1>
+                      <p class="text-gray-600 mt-1 text-lg">
+                        Manage system operators and their access permissions
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="mt-4 lg:mt-0 flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3"
+                  >
+                    <button
+                      id="add-operator-btn"
+                      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
+                    >
+                      <i class="fas fa-plus mr-2"></i>Add Operator
+                    </button>
+                    <% if(operators.length > 0){ %>
+                    <button
+                      id="delete-selected-btn"
+                      class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm lg:text-base"
+                    >
+                      <i class="fas fa-trash mr-2"></i>Delete Selected
+                    </button>
+                    <% } %>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Operators Table -->
-          <div
-            class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-          >
-            <% if (operators.length > 0) { %>
-            <!-- Mobile Card View (Hidden on larger screens) -->
-            <div class="block lg:hidden">
-              <% operators.forEach((operator, index) => { %>
-              <div class="p-4 border-b border-gray-200 last:border-b-0">
-                <div class="flex items-start justify-between">
-                  <div class="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1"
-                      name="selectedIds[]"
-                      value="<%= operator.id %>"
-                    />
-                    <div class="flex-1">
-                      <h3 class="font-semibold text-gray-900 text-sm">
-                        <%= operator.name %>
-                      </h3>
-                      <p class="text-xs text-gray-600 mt-1">
-                        CNIC: <%= operator.cnic_num %>
-                      </p>
-                      <span
-                        class="inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full <%= operator.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' %>"
-                      >
-                        <%= operator.role.charAt(0).toUpperCase() +
-                        operator.role.slice(1) %>
-                      </span>
+          <div class="mb-8 lg:mb-10">
+            <div class="relative">
+              <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-3xl transform -rotate-1"></div>
+              <div class="relative glass-card rounded-2xl p-6 lg:p-8">
+                <% if (operators.length > 0) { %>
+                  <div class="flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                      <div class="flex items-center gap-3">
+                        <div class="p-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg text-white">
+                          <i class="fas fa-table text-sm"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Operators Table</h2>
+                      </div>
+                      <div class="text-sm text-gray-600" id="resultsInfo">
+                        <%= operators.length %> operators
+                      </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                      <table class="min-w-full rounded-xl shadow overflow-hidden">
+                        <thead>
+                          <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              <input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CNIC</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% operators.forEach(function(operator, index) { %>
+                          <tr class="hover:bg-gray-50 transition-colors duration-200" data-id="<%= operator.id %>">
+                            <td class="px-6 py-4">
+                              <input type="checkbox" class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" name="selectedIds[]" value="<%= operator.id %>" />
+                            </td>
+                            <td class="px-6 py-4">
+                              <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                  <i class="fas fa-user text-blue-600 text-sm"></i>
+                                </div>
+                                <div>
+                                  <div class="text-sm font-medium text-gray-900"><%= operator.name %></div>
+                                  <div class="text-sm text-gray-500">ID: #<%= operator.id %></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="px-6 py-4">
+                              <span class="text-sm font-mono text-gray-900"><%= operator.cnic_num %></span>
+                            </td>
+                            <td class="px-6 py-4">
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= operator.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>"><i class="fas fa-circle text-current mr-1 text-xs"></i><%= operator.role.charAt(0).toUpperCase() + operator.role.slice(1) %></span>
+                            </td>
+                            <td class="px-6 py-4">
+                              <button class="edit-btn text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200 flex items-center" data-id="<%= operator.id %>" data-name="<%= operator.name %>" data-cnic="<%= operator.cnic_num %>"><i class="fas fa-edit mr-1"></i>Edit</button>
+                            </td>
+                          </tr>
+                          <% }); %>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  <div class="flex space-x-2">
-                    <button
-                      class="edit-btn text-blue-600 hover:text-blue-800 p-2"
-                      data-id="<%= operator.id %>"
-                      data-name="<%= operator.name %>"
-                      data-cnic="<%= operator.cnic_num %>"
-                    >
-                      <i class="fas fa-edit text-sm"></i>
-                    </button>
+                <% } else { %>
+                  <div class="text-center py-8 lg:py-12">
+                    <i class="fas fa-users text-3xl lg:text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">No operators found</h3>
+                    <p class="text-gray-500 mb-4 lg:mb-6 text-sm lg:text-base">Get started by adding your first operator</p>
+                    <button id="add-first-operator-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center mx-auto text-sm lg:text-base"><i class="fas fa-plus mr-2"></i>Add First Operator</button>
                   </div>
-                </div>
+                <% } %>
               </div>
-              <% }); %>
             </div>
-
-            <!-- Desktop Table View (Hidden on smaller screens) -->
-            <div class="hidden lg:block overflow-x-auto">
-              <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th class="px-6 py-4 text-left">
-                      <input
-                        type="checkbox"
-                        id="select-all"
-                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </th>
-                    <th
-                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Name
-                    </th>
-                    <th
-                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
-                    >
-                      CNIC
-                    </th>
-                    <th
-                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Role
-                    </th>
-                    <th
-                      class="px-6 py-4 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                  <% operators.forEach((operator, index) => { %>
-                  <tr
-                    class="hover:bg-gray-50 transition-colors duration-200"
-                    data-id="<%= operator.id %>"
-                  >
-                    <td class="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        name="selectedIds[]"
-                        value="<%= operator.id %>"
-                      />
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="flex items-center">
-                        <div
-                          class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3"
-                        >
-                          <i class="fas fa-user text-blue-600 text-sm"></i>
-                        </div>
-                        <div>
-                          <div class="text-sm font-medium text-gray-900">
-                            <%= operator.name %>
-                          </div>
-                          <div class="text-sm text-gray-500">
-                            ID: #<%= operator.id %>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span class="text-sm font-mono text-gray-900"
-                        ><%= operator.cnic_num %></span
-                      >
-                    </td>
-                    <td class="px-6 py-4">
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= operator.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>"
-                      >
-                        <i class="fas fa-circle text-current mr-1 text-xs"></i>
-                        <%= operator.role.charAt(0).toUpperCase() +
-                        operator.role.slice(1) %>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4">
-                      <button
-                        class="edit-btn text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200 flex items-center"
-                        data-id="<%= operator.id %>"
-                        data-name="<%= operator.name %>"
-                        data-cnic="<%= operator.cnic_num %>"
-                      >
-                        <i class="fas fa-edit mr-1"></i>Edit
-                      </button>
-                    </td>
-                  </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
-            <% } else { %>
-            <div class="text-center py-8 lg:py-12">
-              <i
-                class="fas fa-users text-3xl lg:text-4xl text-gray-400 mb-4"
-              ></i>
-              <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">
-                No operators found
-              </h3>
-              <p class="text-gray-500 mb-4 lg:mb-6 text-sm lg:text-base">
-                Get started by adding your first operator
-              </p>
-              <button
-                id="add-first-operator-btn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 lg:px-4 rounded-lg transition-colors duration-200 flex items-center mx-auto text-sm lg:text-base"
-              >
-                <i class="fas fa-plus mr-2"></i>Add First Operator
-              </button>
-            </div>
-            <% } %>
+          </div>
           </div>
         </div>
       </main>
@@ -312,13 +246,17 @@
             const name = this.dataset.name;
             const cnic = this.dataset.cnic;
 
-            document.getElementById("edit-id").value = id;
-            document.getElementById("edit-name").value = name;
-            document.getElementById("edit-cnic").value = cnic;
-            document.getElementById("edit-password").value = "";
-
+            const idInput = document.getElementById("edit-id");
+            const nameInput = document.getElementById("edit-name");
+            const cnicInput = document.getElementById("edit-cnic");
+            const passwordInput = document.getElementById("edit-password");
             const form = document.getElementById("edit-operator-form");
-            form.action = `/dashboard/operator/update/${id}`;
+
+            if (idInput) idInput.value = id;
+            if (nameInput) nameInput.value = name;
+            if (cnicInput) cnicInput.value = cnic;
+            if (passwordInput) passwordInput.value = "";
+            if (form) form.action = `/dashboard/operator/update/${id}`;
 
             EnhancedModal.show("edit-operator-modal");
           });

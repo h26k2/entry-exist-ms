@@ -4,7 +4,7 @@ const DatabaseHelper = require("../config/dbHelper");
 exports.renderPeoplePage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM categories ORDER BY name"
+      "SELECT * FROM user_categories ORDER BY name"
     );
     const people = await DatabaseHelper.query(`
       SELECT p.*, c.name as category_name,
@@ -498,18 +498,48 @@ exports.getPeopleByCategory = async (req, res) => {
 
 // Bulk import people from CSV
 exports.bulkImportPeople = async (req, res) => {
+  const csv = require("csv-parse");
+  const fs = require("fs");
+  const db = require("../config/db");
   try {
-    // This is a placeholder for bulk import functionality
-    // In a real implementation, you would:
-    // 1. Parse the uploaded CSV file
-    // 2. Validate each row
-    // 3. Insert valid records
-    // 4. Return summary of imported/failed records
-
+    if (!req.file) {
+      return res.json({ success: false, message: "No file uploaded" });
+    }
+    const filePath = req.file.path;
+    const results = [];
+    const errors = [];
+    const parser = fs
+      .createReadStream(filePath)
+      .pipe(csv.parse({ columns: true, trim: true }));
+    for await (const row of parser) {
+      // Validate required fields
+      if (!row.CNIC || !row.Name) {
+        errors.push({ row, error: "Missing CNIC or Name" });
+        continue;
+      }
+      // Insert into DB
+      try {
+        await db.query(
+          "INSERT INTO people (cnic, name, phone, address, category, emergency_contact) VALUES (?, ?, ?, ?, ?, ?)",
+          [
+            row.CNIC,
+            row.Name,
+            row.Phone || "",
+            row.Address || "",
+            row.Category || "",
+            row["Emergency Contact"] || "",
+          ]
+        );
+        results.push(row);
+      } catch (dbErr) {
+        errors.push({ row, error: dbErr.message });
+      }
+    }
     res.json({
-      success: false,
-      message:
-        "Bulk import functionality is not yet implemented. Please add people individually for now.",
+      success: true,
+      imported: results.length,
+      failed: errors.length,
+      errors,
     });
   } catch (err) {
     console.error(err);

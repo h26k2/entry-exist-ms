@@ -43,4 +43,18 @@ router.post(
   authController.deleteOperators
 );
 
+// User Category Management Page (Admin only)
+router.get(
+  "/dashboard/user-categories",
+  authController.requireLogin,
+  authController.requireRole(["admin"]),
+  (req, res) => {
+    res.render("user-category-management", {
+      user: req.session.user,
+      activePage: "user-categories",
+      title: "User Categories Management",
+    });
+  }
+);
+
 module.exports = router;

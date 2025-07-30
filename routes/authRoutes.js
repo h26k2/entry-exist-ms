@@ -9,5 +9,10 @@ router.post("/login", authController.login);
 router.get("/logout", authController.logout);
 router.post("/logout", authController.logout);
 router.get("/dashboard", authController.requireLogin, authController.dashboard);
+router.get(
+  "/dashboard/all-activities",
+  authController.requireLogin,
+  authController.allActivities
+);
 
 module.exports = router;

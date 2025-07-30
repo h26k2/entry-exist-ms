@@ -133,7 +133,7 @@
           </div>
 
           <!-- Quick Actions Grid -->
-          <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
             <!-- New Entry -->
             <button
               class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-blue-200 p-4 lg:p-6 transition-all duration-300 text-center"
@@ -249,35 +249,6 @@
                 ></i>
               </div>
             </button>
-
-            <!-- QR Code Scanner -->
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-cyan-200 p-4 lg:p-6 transition-all duration-300 text-center"
-              onclick="openQRScanner()"
-              style="
-                background: linear-gradient(135deg, #cffafe 0%, #a7f3d0 100%);
-              "
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-qrcode text-white text-xl"></i>
-              </div>
-              <h3 class="text-sm lg:text-lg font-bold text-gray-900 mb-2">
-                Scan QR Code
-              </h3>
-              <p class="text-xs lg:text-sm text-gray-600">
-                Quick entry with QR code
-              </p>
-              <div
-                class="mt-2 text-cyan-600 text-xs lg:text-sm font-medium group-hover:text-cyan-700"
-              >
-                <span>Scan</span>
-                <i
-                  class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"
-                ></i>
-              </div>
-            </button>
           </div>
 
           <!-- Search Results -->
@@ -320,90 +291,6 @@
     <!-- Search Modal -->
     <%- include('modals/search-modal') %>
 
-    <!-- QR Scanner Modal -->
-    <div
-      id="qrScannerModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50"
-    >
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-semibold text-gray-900">Scan QR Code</h3>
-              <button
-                onclick="closeQRScanner()"
-                class="text-gray-400 hover:text-gray-600"
-              >
-                <i class="fas fa-times text-xl"></i>
-              </button>
-            </div>
-
-            <div class="mb-4">
-              <video
-                id="qr-video"
-                width="100%"
-                style="max-width: 400px"
-              ></video>
-              <canvas id="qr-canvas" style="display: none"></canvas>
-            </div>
-
-            <div class="text-center">
-              <p class="text-sm text-gray-600 mb-4">
-                Position the QR code within the camera view
-              </p>
-              <button
-                id="startScanBtn"
-                onclick="startQRScan()"
-                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mr-2"
-              >
-                <i class="fas fa-camera mr-2"></i>Start Camera
-              </button>
-              <button
-                id="stopScanBtn"
-                onclick="stopQRScan()"
-                class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                style="display: none"
-              >
-                <i class="fas fa-stop mr-2"></i>Stop Camera
-              </button>
-            </div>
-
-            <div id="qrScanResult" class="mt-4 hidden">
-              <div class="bg-green-50 border border-green-200 rounded-md p-4">
-                <div class="flex">
-                  <i class="fas fa-check-circle text-green-400 mt-0.5 mr-3"></i>
-                  <div>
-                    <h4 class="text-sm font-medium text-green-800">
-                      QR Code Detected
-                    </h4>
-                    <p
-                      class="text-sm text-green-700 mt-1"
-                      id="qrResultText"
-                    ></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div id="qrScanError" class="mt-4 hidden">
-              <div class="bg-red-50 border border-red-200 rounded-md p-4">
-                <div class="flex">
-                  <i
-                    class="fas fa-exclamation-circle text-red-400 mt-0.5 mr-3"
-                  ></i>
-                  <div>
-                    <h4 class="text-sm font-medium text-red-800">Scan Error</h4>
-                    <p class="text-sm text-red-700 mt-1" id="qrErrorText"></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="/js/entry-management.js"></script>
     <script src="/js/modals/entry-modal.js"></script>
     <script src="/js/modals/exit-modal.js"></script>

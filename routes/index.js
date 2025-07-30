@@ -13,6 +13,7 @@ const facilityRoutes = require("./facilityRoutes");
 const reportRoutes = require("./reportRoutes");
 const adminRoutes = require("./adminRoutes");
 const cardRoutes = require("./cardRoutes");
+const userCategoryRoutes = require("./userCategoryRoutes");
 
 /**
  * Initialize all routes with the Express app
@@ -29,6 +30,9 @@ function initializeRoutes(app) {
   app.use("/", reportRoutes);
   app.use("/", adminRoutes);
   app.use("/cards", cardRoutes);
+  // Register user category routes
+  app.use("/user-category", require("./userCategoryRoutes"));
+  app.use("/api/user-categories", userCategoryRoutes);
 }
 
 /**
@@ -73,6 +77,10 @@ const routeStructure = {
     description: "Card and QR code management",
     endpoints: ["/cards", "/cards/api/*", "/cards/api/scan-qr"],
   },
+  userCategoryRoutes: {
+    description: "User category management",
+    endpoints: ["/user-category", "/api/user-categories"],
+  },
 };
 
 module.exports = {
@@ -86,4 +94,5 @@ module.exports = {
   reportRoutes,
   adminRoutes,
   cardRoutes,
+  userCategoryRoutes,
 };
