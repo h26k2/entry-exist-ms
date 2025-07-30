@@ -39,6 +39,113 @@ exports.renderPeoplePage = async (req, res) => {
   }
 };
 
+// Get people stats for dashboard
+exports.getPeopleStats = async (req, res) => {
+  try {
+    const [totalPeople] = await DatabaseHelper.query(
+      "SELECT COUNT(*) as count FROM people WHERE is_active = 1"
+    );
+
+    const [activeMembers] = await DatabaseHelper.query(
+      "SELECT COUNT(*) as count FROM people WHERE is_active = 1 AND is_family_member = 0"
+    );
+
+    const [familyGroups] = await DatabaseHelper.query(
+      "SELECT COUNT(DISTINCT host_person_id) as count FROM people WHERE host_person_id IS NOT NULL AND is_active = 1"
+    );
+
+    const [recentAdditions] = await DatabaseHelper.query(
+      "SELECT COUNT(*) as count FROM people WHERE is_active = 1 AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    );
+
+    res.json({
+      success: true,
+      totalPeople: totalPeople.count,
+      activeMembers: activeMembers.count,
+      familyGroups: familyGroups.count,
+      recentAdditions: recentAdditions.count,
+    });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Failed to get stats" });
+  }
+};
+
+// Get all people with pagination and filters
+exports.getAllPeople = async (req, res) => {
+  try {
+    const { page = 1, limit = 50, category, status, search } = req.query;
+    const offset = (page - 1) * limit;
+
+    let whereClause = "WHERE p.is_active = 1";
+    const params = [];
+
+    if (search) {
+      whereClause += " AND (p.name LIKE ? OR p.cnic LIKE ? OR p.phone LIKE ?)";
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (category) {
+      whereClause += " AND p.category_id = ?";
+      params.push(category);
+    }
+
+    if (status === "active") {
+      whereClause += " AND p.is_active = 1";
+    } else if (status === "blocked") {
+      whereClause += " AND p.is_active = 0";
+    }
+
+    const people = await DatabaseHelper.query(
+      `
+      SELECT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM people p2 WHERE p2.host_person_id = p.id) as family_members_count
+      FROM people p
+      LEFT JOIN categories c ON p.category_id = c.id
+      ${whereClause}
+      ORDER BY p.name
+      LIMIT ? OFFSET ?
+    `,
+      [...params, parseInt(limit), parseInt(offset)]
+    );
+
+    res.json({ success: true, people });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Failed to get people" });
+  }
+};
+
+// Search people for quick search
+exports.searchPeopleQuick = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.json({ success: true, people: [] });
+    }
+
+    const people = await DatabaseHelper.query(
+      `
+      SELECT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM people p2 WHERE p2.host_person_id = p.id) as family_members_count
+      FROM people p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.is_active = 1 
+      AND (p.name LIKE ? OR p.cnic LIKE ? OR p.phone LIKE ?)
+      ORDER BY p.name
+      LIMIT 20
+    `,
+      [`%${q}%`, `%${q}%`, `%${q}%`]
+    );
+
+    res.json({ success: true, people });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Search failed" });
+  }
+};
+
 // Search people with advanced filters
 exports.searchPeople = async (req, res) => {
   const { query, category_id, is_family_member, has_card } = req.body;
@@ -122,13 +229,13 @@ exports.addPerson = async (req, res) => {
       [
         cnic,
         name,
-        phone,
-        address,
+        phone || null,
+        address || null,
         category_id,
         is_family_member === "1",
         host_person_id || null,
-        emergency_contact,
-        remarks,
+        emergency_contact || null,
+        remarks || null,
         cardNumber,
         cardIssuedDate,
       ]
@@ -177,13 +284,13 @@ exports.updatePerson = async (req, res) => {
       [
         cnic,
         name,
-        phone,
-        address,
+        phone || null,
+        address || null,
         category_id,
         is_family_member === "1",
         host_person_id || null,
-        emergency_contact,
-        remarks,
+        emergency_contact || null,
+        remarks || null,
         id,
       ]
     );
@@ -231,34 +338,6 @@ exports.deletePerson = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: "Failed to delete person" });
-  }
-};
-
-// Generate card for person
-exports.generateCard = async (req, res) => {
-  const { person_id } = req.body;
-
-  try {
-    const cardNumber = "CARD" + Date.now().toString().slice(-8);
-    const cardIssuedDate = new Date().toISOString().split("T")[0];
-
-    await DatabaseHelper.query(
-      `
-      UPDATE people 
-      SET card_number = ?, card_issued_date = ?, updated_at = NOW()
-      WHERE id = ?
-    `,
-      [cardNumber, cardIssuedDate, person_id]
-    );
-
-    res.json({
-      success: true,
-      card_number: cardNumber,
-      message: "Card generated successfully",
-    });
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false, message: "Failed to generate card" });
   }
 };
 
@@ -370,11 +449,11 @@ exports.addFamilyMember = async (req, res) => {
       [
         cnic,
         name,
-        phone,
+        phone || null,
         hostInfo[0].category_id,
         host_person_id,
-        emergency_contact,
-        remarks,
+        emergency_contact || null,
+        remarks || null,
       ]
     );
 

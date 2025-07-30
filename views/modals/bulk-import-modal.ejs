@@ -1,0 +1,138 @@
+<!-- Bulk Import Modal -->
+<div
+  id="bulkImportModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm modal-overlay"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-green-50 to-emerald-50 px-8 py-6 border-b border-green-100"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <i class="fas fa-upload text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Bulk Import People</h2>
+            <p class="text-sm text-gray-600">
+              Import multiple people from CSV file
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="closeBulkImportModal()"
+          class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-8">
+      <!-- Instructions -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+        <h4 class="font-semibold text-blue-900 mb-3 flex items-center">
+          <i class="fas fa-info-circle mr-2"></i>Import Instructions
+        </h4>
+        <ul class="text-sm text-blue-800 space-y-2">
+          <li class="flex items-start">
+            <i class="fas fa-check-circle mr-2 mt-1 text-blue-600"></i>
+            Upload a CSV file with columns: CNIC, Name, Phone, Address,
+            Category, Emergency Contact
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle mr-2 mt-1 text-blue-600"></i>
+            CNIC and Name are required fields
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle mr-2 mt-1 text-blue-600"></i>
+            Category should match existing categories in the system
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle mr-2 mt-1 text-blue-600"></i>
+            Maximum file size: 5MB
+          </li>
+        </ul>
+      </div>
+
+      <!-- Import Form -->
+      <form id="bulkImportForm" class="space-y-6">
+        <div class="form-group">
+          <label class="form-label">Select CSV File</label>
+          <div class="relative">
+            <input
+              type="file"
+              id="csvFile"
+              accept=".csv"
+              required
+              class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+          <p class="text-sm text-gray-500 mt-2">
+            <i class="fas fa-file-csv mr-1"></i>
+            Please ensure your CSV file follows the required format
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label
+            class="flex items-center cursor-pointer bg-white rounded-xl p-4 border-2 border-transparent hover:border-green-300 transition-all"
+          >
+            <input
+              type="checkbox"
+              id="generateCardsForAll"
+              class="form-checkbox mr-4"
+            />
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-id-card text-green-600"></i>
+              <span class="font-semibold text-gray-700"
+                >Generate cards for all imported people</span
+              >
+            </div>
+          </label>
+        </div>
+
+        <!-- Sample Format -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h5 class="font-semibold text-gray-900 mb-2">Sample CSV Format:</h5>
+          <div
+            class="bg-white rounded border p-3 font-mono text-sm overflow-x-auto"
+          >
+            <div class="text-gray-600">
+              CNIC,Name,Phone,Address,Category,Emergency Contact
+            </div>
+            <div class="text-gray-800">
+              1234567890123,John Doe,03001234567,123 Main St,Paid,03009876543
+            </div>
+            <div class="text-gray-800">
+              9876543210987,Jane Smith,03119876543,456 Oak
+              Ave,Civilian,03001234567
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          onclick="closeBulkImportModal()"
+          class="btn btn-secondary"
+        >
+          <i class="fas fa-times mr-2"></i>Cancel
+        </button>
+        <button type="submit" form="bulkImportForm" class="btn btn-primary">
+          <i class="fas fa-upload mr-2"></i>Import People
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -82,9 +82,9 @@ app.use(
 // DB
 require("./config/db");
 
-// Routes
-const authRoutes = require("./routes/authRoutes");
-app.use("/", authRoutes);
+// Initialize all routes
+const { initializeRoutes } = require("./routes");
+initializeRoutes(app);
 
 app.listen(PORT, () => {
   console.log(`==> Server running on port ${PORT} <==`);

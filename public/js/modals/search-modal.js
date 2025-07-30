@@ -324,7 +324,7 @@ window.quickEntry = function (personId) {
   }
 
   // Pre-fill the entry form with selected person
-  fetch(`/api/person/${personId}`)
+  fetch(`/api/person-details/${personId}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {

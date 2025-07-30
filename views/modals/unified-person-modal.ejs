@@ -1,43 +1,53 @@
-<!-- Enhanced Register Modal (moved out of exit modal) -->
+<!-- Unified Person Registration/Edit Modal -->
 <div
-  id="registerModal"
-  class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm modal-overlay"
+  id="unifiedPersonModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm modal-overlay"
 >
   <div
-    class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-lg"
+    class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-xl"
   >
     <!-- Modal Header -->
     <div
-      class="bg-gradient-to-r from-purple-50 to-indigo-50 px-8 py-6 border-b border-purple-100"
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-blue-100"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <div
-            class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg"
+            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg"
           >
-            <i class="fas fa-user-plus text-white text-lg"></i>
+            <i
+              id="unifiedPersonModalIcon"
+              class="fas fa-user-plus text-white text-lg"
+            ></i>
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">
-              Register New Person
+            <h2
+              id="unifiedPersonModalTitle"
+              class="text-2xl font-bold text-gray-900"
+            >
+              Add New Person
             </h2>
-            <p class="text-sm text-gray-600">Add a new person to the system</p>
+            <p id="unifiedPersonModalSubtitle" class="text-sm text-gray-600">
+              Create a new person in the system
+            </p>
           </div>
         </div>
         <button
-          onclick="closeRegisterModal()"
+          onclick="closeUnifiedPersonModal()"
           class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
         >
           <i class="fas fa-times text-xl"></i>
         </button>
       </div>
     </div>
+
     <!-- Modal Body -->
-    <div class="modal-body p-8">
-      <form id="registerForm" class="space-y-8">
-        <!-- Hidden field for JS integration -->
-        <input type="hidden" id="registerPersonId" name="person_id" />
-        <!-- Personal Information -->
+    <div class="modal-body p-8 overflow-y-auto max-h-[80vh]">
+      <form id="unifiedPersonForm" class="space-y-8">
+        <input type="hidden" id="unifiedPersonId" name="person_id" />
+        <input type="hidden" id="unifiedPersonMode" value="add" />
+
+        <!-- Personal Information Section -->
         <div
           class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200"
         >
@@ -51,12 +61,13 @@
               Personal Information
             </h3>
           </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-group">
               <label class="form-label">CNIC Number *</label>
               <input
                 type="text"
-                id="registerCnic"
+                id="unifiedPersonCnic"
                 name="cnic"
                 required
                 class="form-input font-mono"
@@ -68,7 +79,7 @@
               <label class="form-label">Full Name *</label>
               <input
                 type="text"
-                id="registerName"
+                id="unifiedPersonName"
                 name="name"
                 required
                 class="form-input"
@@ -76,12 +87,13 @@
               />
             </div>
           </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-group">
               <label class="form-label">Phone Number</label>
               <input
                 type="tel"
-                id="registerPhone"
+                id="unifiedPersonPhone"
                 name="phone"
                 class="form-input"
                 placeholder="+92 300 1234567"
@@ -90,12 +102,12 @@
             <div class="form-group">
               <label class="form-label">Category *</label>
               <select
-                id="registerCategory"
+                id="unifiedPersonCategory"
                 name="category_id"
                 required
                 class="form-select"
               >
-                <option value="">Select category</option>
+                <option value="">Select Category</option>
                 <% if (typeof categories !== 'undefined') { %> <%
                 categories.forEach(category => { %>
                 <option value="<%= category.id %>"><%= category.name %></option>
@@ -103,18 +115,20 @@
               </select>
             </div>
           </div>
+
           <div class="form-group">
             <label class="form-label">Address</label>
             <textarea
-              id="registerAddress"
+              id="unifiedPersonAddress"
               name="address"
-              rows="2"
+              rows="3"
               class="form-textarea"
               placeholder="Enter full address"
             ></textarea>
           </div>
         </div>
-        <!-- Family Information -->
+
+        <!-- Family Status Section -->
         <div
           class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200"
         >
@@ -128,13 +142,14 @@
               Family Information
             </h3>
           </div>
+
           <div class="form-group">
             <label
               class="flex items-center cursor-pointer bg-white rounded-xl p-4 border-2 border-transparent hover:border-purple-300 transition-all"
             >
               <input
                 type="checkbox"
-                id="registerIsFamilyMember"
+                id="unifiedPersonIsFamilyMember"
                 name="is_family_member"
                 value="1"
                 class="form-checkbox mr-4"
@@ -142,27 +157,36 @@
               <div class="flex items-center space-x-3">
                 <i class="fas fa-home text-purple-600"></i>
                 <span class="font-semibold text-gray-700"
-                  >Is Family Member</span
+                  >This is a family member</span
                 >
               </div>
             </label>
           </div>
+
           <div
-            id="familyMemberDetails"
+            id="unifiedPersonFamilyFields"
             class="form-group"
             style="display: none"
           >
-            <label class="form-label">Host Person</label>
-            <select
-              id="registerHostPerson"
+            <label class="form-label">Host/Main Person</label>
+            <div class="search-container">
+              <input
+                type="text"
+                id="unifiedPersonHostSearch"
+                placeholder="Search by CNIC/Name"
+                class="form-input"
+              />
+              <div id="unifiedPersonHostResults" class="mt-2"></div>
+            </div>
+            <input
+              type="hidden"
+              id="unifiedPersonHostId"
               name="host_person_id"
-              class="form-select"
-            >
-              <option value="">Select host person</option>
-            </select>
+            />
           </div>
         </div>
-        <!-- Emergency Information -->
+
+        <!-- Contact Information Section -->
         <div
           class="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200"
         >
@@ -174,24 +198,47 @@
             </div>
             <h3 class="font-bold text-orange-900 text-lg">Emergency Contact</h3>
           </div>
-          <div class="form-group">
-            <label class="form-label">Emergency Contact Number</label>
-            <input
-              type="tel"
-              id="registerEmergencyContact"
-              name="emergency_contact"
-              class="form-input"
-              placeholder="+92 300 1234567"
-            />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="form-label">Emergency Contact Number</label>
+              <input
+                type="tel"
+                id="unifiedPersonEmergencyContact"
+                name="emergency_contact"
+                class="form-input"
+                placeholder="+92 300 1234567"
+              />
+            </div>
+            <div class="form-group">
+              <label
+                class="flex items-center cursor-pointer bg-white rounded-xl p-4 border-2 border-transparent hover:border-orange-300 transition-all"
+              >
+                <input
+                  type="checkbox"
+                  id="unifiedPersonGenerateCard"
+                  name="generate_card"
+                  value="1"
+                  class="form-checkbox mr-4"
+                />
+                <div class="flex items-center space-x-3">
+                  <i class="fas fa-id-card text-orange-600"></i>
+                  <span class="font-semibold text-gray-700"
+                    >Generate ID Card</span
+                  >
+                </div>
+              </label>
+            </div>
           </div>
         </div>
+
         <!-- Additional Information -->
         <div class="form-group">
           <label class="form-label">
             <i class="fas fa-comment mr-2 text-gray-600"></i>Remarks (Optional)
           </label>
           <textarea
-            id="registerRemarks"
+            id="unifiedPersonRemarks"
             name="remarks"
             rows="3"
             class="form-textarea"
@@ -200,22 +247,23 @@
         </div>
       </form>
     </div>
+
     <!-- Enhanced Modal Footer -->
     <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
       <button
         type="button"
-        onclick="closeRegisterModal()"
+        onclick="closeUnifiedPersonModal()"
         class="btn btn-secondary"
       >
         <i class="fas fa-times mr-2"></i>Cancel
       </button>
       <button
         type="submit"
-        form="registerForm"
+        form="unifiedPersonForm"
         class="btn btn-primary"
-        id="submitRegisterBtn"
+        id="submitUnifiedPersonBtn"
       >
-        <i class="fas fa-user-plus mr-2"></i>Register Person
+        <i class="fas fa-save mr-2"></i>Save Person
       </button>
     </div>
   </div>

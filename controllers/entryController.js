@@ -5,23 +5,45 @@ exports.renderCardGenerationPage = (req, res) => {
 
 // API to generate a card for a person
 exports.generateCard = async (req, res) => {
-  const { cnic, name } = req.body;
-  if (!cnic) {
-    return res.json({ success: false, message: "CNIC is required." });
-  }
+  const { cnic, name, person_id } = req.body;
+
   try {
-    // Check if person exists
+    let cardNumber = "CARD" + Date.now().toString().slice(-8);
+    let issuedDate = new Date().toISOString().split("T")[0];
+
+    // If person_id is provided, generate card for existing person
+    if (person_id) {
+      await require("../config/dbHelper").query(
+        "UPDATE people SET card_number = ?, card_issued_date = ?, updated_at = NOW() WHERE id = ?",
+        [cardNumber, issuedDate, person_id]
+      );
+      return res.json({
+        success: true,
+        card_number: cardNumber,
+        card_issued_date: issuedDate,
+        message: "Card generated successfully.",
+      });
+    }
+
+    // If CNIC is provided, check if person exists
+    if (!cnic) {
+      return res.json({
+        success: false,
+        message: "CNIC or person ID is required.",
+      });
+    }
+
+    // Check if person exists by CNIC
     const people = await require("../config/dbHelper").query(
       "SELECT * FROM people WHERE cnic = ?",
       [cnic]
     );
     let person = people[0];
-    let cardNumber = "CARD" + Date.now().toString().slice(-8);
-    let issuedDate = new Date().toISOString().split("T")[0];
+
     if (person) {
       // Update card info if person exists
       await require("../config/dbHelper").query(
-        "UPDATE people SET card_number = ?, card_issued_date = ? WHERE id = ?",
+        "UPDATE people SET card_number = ?, card_issued_date = ?, updated_at = NOW() WHERE id = ?",
         [cardNumber, issuedDate, person.id]
       );
       return res.json({
@@ -39,7 +61,7 @@ exports.generateCard = async (req, res) => {
       }
       // Create new person with card info
       await require("../config/dbHelper").query(
-        "INSERT INTO people (cnic, name, card_number, card_issued_date) VALUES (?, ?, ?, ?)",
+        "INSERT INTO people (cnic, name, card_number, card_issued_date, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())",
         [cnic, name, cardNumber, issuedDate]
       );
       return res.json({

@@ -27,7 +27,9 @@
     <link rel="stylesheet" href="/css/global.css" />
     <link rel="stylesheet" href="/css/people-management.css" />
   </head>
-  <body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+  <body
+    class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen"
+  >
     <div class="flex h-screen">
       <%- include('partials/sidebar') %>
 
@@ -92,10 +94,19 @@
             <div class="stat-card">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-gray-600 mb-1">Total People</p>
-                  <p class="text-2xl lg:text-3xl font-bold text-blue-600" id="totalPeople">-</p>
+                  <p class="text-sm font-medium text-gray-600 mb-1">
+                    Total People
+                  </p>
+                  <p
+                    class="text-2xl lg:text-3xl font-bold text-blue-600"
+                    id="totalPeople"
+                  >
+                    -
+                  </p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center"
+                >
                   <i class="fas fa-users text-blue-600 text-xl"></i>
                 </div>
               </div>
@@ -104,10 +115,19 @@
             <div class="stat-card">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-gray-600 mb-1">Active Members</p>
-                  <p class="text-2xl lg:text-3xl font-bold text-green-600" id="activeMembers">-</p>
+                  <p class="text-sm font-medium text-gray-600 mb-1">
+                    Active Members
+                  </p>
+                  <p
+                    class="text-2xl lg:text-3xl font-bold text-green-600"
+                    id="activeMembers"
+                  >
+                    -
+                  </p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center"
+                >
                   <i class="fas fa-user-check text-green-600 text-xl"></i>
                 </div>
               </div>
@@ -116,10 +136,19 @@
             <div class="stat-card">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-gray-600 mb-1">Family Groups</p>
-                  <p class="text-2xl lg:text-3xl font-bold text-purple-600" id="familyGroups">-</p>
+                  <p class="text-sm font-medium text-gray-600 mb-1">
+                    Family Groups
+                  </p>
+                  <p
+                    class="text-2xl lg:text-3xl font-bold text-purple-600"
+                    id="familyGroups"
+                  >
+                    -
+                  </p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center"
+                >
                   <i class="fas fa-home text-purple-600 text-xl"></i>
                 </div>
               </div>
@@ -128,10 +157,19 @@
             <div class="stat-card">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-gray-600 mb-1">Recent Additions</p>
-                  <p class="text-2xl lg:text-3xl font-bold text-orange-600" id="recentAdditions">-</p>
+                  <p class="text-sm font-medium text-gray-600 mb-1">
+                    Recent Additions
+                  </p>
+                  <p
+                    class="text-2xl lg:text-3xl font-bold text-orange-600"
+                    id="recentAdditions"
+                  >
+                    -
+                  </p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center"
+                >
                   <i class="fas fa-user-plus text-orange-600 text-xl"></i>
                 </div>
               </div>
@@ -143,51 +181,74 @@
             <!-- Add New Person -->
             <button
               class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-blue-200 p-6 transition-all duration-300 text-center"
-
               onclick="openAddPersonModal()"
             >
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
+              >
                 <i class="fas fa-user-plus text-white text-xl"></i>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Add New Person</h3>
-              <p class="text-sm text-gray-600">Register a new person in the system</p>
-              <div class="mt-4 text-blue-600 text-sm font-medium group-hover:text-blue-700">
+              <h3 class="text-lg font-bold text-gray-900 mb-2">
+                Add New Person
+              </h3>
+              <p class="text-sm text-gray-600">
+                Register a new person in the system
+              </p>
+              <div
+                class="mt-4 text-blue-600 text-sm font-medium group-hover:text-blue-700"
+              >
                 <span>Get Started</span>
-                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                <i
+                  class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                ></i>
               </div>
             </button>
 
             <!-- Bulk Import -->
             <button
               class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-green-200 p-6 transition-all duration-300 text-center"
-
               onclick="openBulkImportModal()"
             >
-              <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
+              >
                 <i class="fas fa-upload text-white text-xl"></i>
               </div>
               <h3 class="text-lg font-bold text-gray-900 mb-2">Bulk Import</h3>
-              <p class="text-sm text-gray-600">Import multiple people from CSV</p>
-              <div class="mt-4 text-green-600 text-sm font-medium group-hover:text-green-700">
+              <p class="text-sm text-gray-600">
+                Import multiple people from CSV
+              </p>
+              <div
+                class="mt-4 text-green-600 text-sm font-medium group-hover:text-green-700"
+              >
                 <span>Upload Data</span>
-                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                <i
+                  class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                ></i>
               </div>
             </button>
 
             <!-- Advanced Search -->
             <button
               class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-purple-200 p-6 transition-all duration-300 text-center"
-
               onclick="openAdvancedSearchModal()"
             >
-              <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
-
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
+              >
+                <i class="fas fa-search text-white text-xl"></i>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Advanced Search</h3>
+              <h3 class="text-lg font-bold text-gray-900 mb-2">
+                Advanced Search
+              </h3>
               <p class="text-sm text-gray-600">Search with multiple filters</p>
-              <div class="mt-4 text-purple-600 text-sm font-medium group-hover:text-purple-700">
+              <div
+                class="mt-4 text-purple-600 text-sm font-medium group-hover:text-purple-700"
+              >
                 <span>Find People</span>
-                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                <i
+                  class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+                ></i>
               </div>
             </button>
           </div>
@@ -195,12 +256,14 @@
           <!-- Search and Filter Section -->
           <div class="glass-card p-6 mb-6">
             <div class="flex items-center space-x-3 mb-6">
-              <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center"
+              >
                 <i class="fas fa-filter text-white"></i>
               </div>
               <h3 class="text-lg font-bold text-gray-900">Search & Filter</h3>
             </div>
-            
+
             <div class="flex flex-col lg:flex-row gap-4">
               <!-- Quick Search -->
               <div class="flex-1">
@@ -215,7 +278,7 @@
                     class="w-full px-4 py-3 pl-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   />
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
-
+                    <i class="fas fa-search text-gray-400"></i>
                   </div>
                 </div>
               </div>
@@ -441,641 +504,62 @@
       </main>
     </div>
 
-    <!-- Enhanced Add/Edit Person Modal -->
-    <div
-      id="personModal"
-      class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm modal-overlay"
-    >
-      <div
-        class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container modal-xl"
-      >
-        <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-blue-100">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <i class="fas fa-user-edit text-white text-lg"></i>
-              </div>
-              <div>
-                <h2 id="personModalTitle" class="text-2xl font-bold text-gray-900">
-                  Add New Person
-                </h2>
-                <p class="text-sm text-gray-600">Create or edit person information</p>
-              </div>
-            </div>
-            <button
-              onclick="closePersonModal()"
-              class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="modal-body p-8">
-          <form id="personForm" class="space-y-8">
-            <input type="hidden" id="personId" />
-
-            <!-- Personal Information Section -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
-              <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                  <i class="fas fa-id-card text-white"></i>
-                </div>
-                <h3 class="font-bold text-blue-900 text-lg">Personal Information</h3>
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-group">
-                  <label class="form-label">CNIC Number *</label>
-                  <input
-                    type="text"
-                    id="personCnic"
-                    required
-                    class="form-input font-mono"
-                    placeholder="1234567890123"
-                    maxlength="13"
-                  />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Full Name *</label>
-                  <input
-                    type="text"
-                    id="personName"
-                    required
-                    class="form-input"
-                    placeholder="Enter full name"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-group">
-                  <label class="form-label">Phone Number</label>
-                  <input
-                    type="tel"
-                    id="personPhone"
-                    class="form-input"
-                    placeholder="+92 300 1234567"
-                  />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Category *</label>
-                  <select
-                    id="personCategory"
-                    required
-                    class="form-select"
-                  >
-                    <option value="">Select Category</option>
-                    <% categories.forEach(category => { %>
-                    <option value="<%= category.id %>">
-                      <%= category.name %>
-                    </option>
-                    <% }) %>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Address</label>
-                <textarea
-                  id="personAddress"
-                  rows="3"
-                  class="form-textarea"
-                  placeholder="Enter full address"
-                ></textarea>
-              </div>
-            </div>
-
-            <!-- Family Status Section -->
-            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
-              <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
-                  <i class="fas fa-users text-white"></i>
-                </div>
-                <h3 class="font-bold text-purple-900 text-lg">Family Information</h3>
-              </div>
-
-              <div class="form-group">
-                <label class="flex items-center cursor-pointer bg-white rounded-xl p-4 border-2 border-transparent hover:border-purple-300 transition-all">
-                  <input
-                    type="checkbox"
-                    id="personIsFamilyMember"
-                    class="form-checkbox mr-4"
-                  />
-                  <div class="flex items-center space-x-3">
-                    <i class="fas fa-home text-purple-600"></i>
-                    <span class="font-semibold text-gray-700">This is a family member</span>
-                  </div>
-                </label>
-              </div>
-
-              <div
-                id="personFamilyFields"
-                class="form-group"
-                style="display: none"
-              >
-                <label class="form-label">Host/Main Person</label>
-                <input
-                  type="text"
-                  id="personHostSearch"
-                  placeholder="Search by CNIC/Name"
-                  class="form-input"
-                />
-                <div id="personHostResults" class="mt-2"></div>
-                <input type="hidden" id="personHostId" />
-              </div>
-            </div>
-
-            <!-- Contact Information Section -->
-            <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200">
-              <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-                  <i class="fas fa-phone text-white"></i>
-                </div>
-                <h3 class="font-bold text-orange-900 text-lg">Emergency Contact</h3>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-group">
-                  <label class="form-label">Emergency Contact Number</label>
-                  <input
-                    type="tel"
-                    id="personEmergencyContact"
-                    class="form-input"
-                    placeholder="+92 300 1234567"
-                  />
-                </div>
-                <div class="form-group">
-                  <label class="flex items-center cursor-pointer bg-white rounded-xl p-4 border-2 border-transparent hover:border-orange-300 transition-all">
-                    <input
-                      type="checkbox"
-                      id="personGenerateCard"
-                      class="form-checkbox mr-4"
-                    />
-                    <div class="flex items-center space-x-3">
-                      <i class="fas fa-id-card text-orange-600"></i>
-                      <span class="font-semibold text-gray-700">Generate ID Card</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Additional Information -->
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-comment mr-2 text-gray-600"></i>Remarks (Optional)
-              </label>
-              <textarea
-                id="personRemarks"
-                rows="3"
-                class="form-textarea"
-                placeholder="Any additional notes or comments..."
-              ></textarea>
-            </div>
-          </form>
-        </div>
-        
-        <!-- Enhanced Modal Footer -->
-        <div class="modal-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
-          <button 
-            type="button" 
-            onclick="closePersonModal()"
-            class="btn btn-secondary"
-          >
-            <i class="fas fa-times mr-2"></i>Cancel
-          </button>
-          <button 
-            type="submit" 
-            form="personForm"
-            class="btn btn-primary"
-            id="submitPersonBtn"
-          >
-            <i class="fas fa-save mr-2"></i>Save Person
-          </button>
-        </div>
-      </div>
-    </div>
-              >
-              <textarea
-                id="personRemarks"
-                rows="2"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              ></textarea>
-            </div>
-
-            <div class="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                <i class="fas fa-save mr-2"></i>Save Person
-              </button>
-              <button
-                type="button"
-                onclick="closePersonModal()"
-                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <!-- Unified Person Modal (Add/Edit Person) -->
+    <%- include('modals/unified-person-modal', { categories: categories }) %>
 
     <!-- Person Details Modal -->
-    <div
-      id="personDetailsModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-screen overflow-y-auto"
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Person Details</h2>
-            <button
-              onclick="closePersonDetailsModal()"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-          <div id="personDetailsContent"></div>
-        </div>
-      </div>
-    </div>
+    <%- include('modals/person-details-modal') %>
 
-    <!-- Add Family Member Modal -->
-    <div
-      id="familyMemberModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto"
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Add Family Member</h2>
-            <button
-              onclick="closeFamilyMemberModal()"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-
-          <form id="familyMemberForm" class="space-y-6">
-            <input type="hidden" id="familyHostPersonId" />
-
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 class="font-semibold text-blue-900 mb-2">Host Information</h4>
-              <p class="text-blue-800">
-                Name: <span id="familyHostName"></span>
-              </p>
-              <p class="text-blue-800">
-                CNIC: <span id="familyHostCnic"></span>
-              </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >CNIC Number *</label
-                >
-                <input
-                  type="text"
-                  id="familyCnic"
-                  required
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono"
-                  placeholder="1234567890123"
-                  maxlength="13"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Full Name *</label
-                >
-                <input
-                  type="text"
-                  id="familyName"
-                  required
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Phone Number</label
-                >
-                <input
-                  type="tel"
-                  id="familyPhone"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Emergency Contact</label
-                >
-                <input
-                  type="tel"
-                  id="familyEmergencyContact"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2"
-                >Remarks</label
-              >
-              <textarea
-                id="familyRemarks"
-                rows="2"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-              ></textarea>
-            </div>
-
-            <div class="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                <i class="fas fa-user-plus mr-2"></i>Add Family Member
-              </button>
-              <button
-                type="button"
-                onclick="closeFamilyMemberModal()"
-                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <!-- Family Member Modal -->
+    <%- include('modals/family-member-modal') %>
 
     <!-- Advanced Search Modal -->
-    <div
-      id="advancedSearchModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-screen overflow-y-auto"
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Advanced Search</h2>
-            <button
-              onclick="closeAdvancedSearchModal()"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-
-          <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Search Query</label
-                >
-                <input
-                  type="text"
-                  id="advSearchQuery"
-                  placeholder="Name, CNIC, Phone..."
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Category</label
-                >
-                <select
-                  id="advSearchCategory"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Categories</option>
-                  <% categories.forEach(category => { %>
-                  <option value="<%= category.id %>">
-                    <%= category.name %>
-                  </option>
-                  <% }) %>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Registration From</label
-                >
-                <input
-                  type="date"
-                  id="advSearchRegistrationStart"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Registration To</label
-                >
-                <input
-                  type="date"
-                  id="advSearchRegistrationEnd"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="advSearchFamilyMembers"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                />
-                <label class="text-sm font-medium text-gray-700"
-                  >Include Family Members</label
-                >
-              </div>
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="advSearchWithCards"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                />
-                <label class="text-sm font-medium text-gray-700"
-                  >Only people with cards</label
-                >
-              </div>
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="advSearchWithoutCards"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                />
-                <label class="text-sm font-medium text-gray-700"
-                  >Only people without cards</label
-                >
-              </div>
-            </div>
-
-            <div class="flex space-x-3">
-              <button
-                onclick="performAdvancedSearch()"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-              >
-                Search
-              </button>
-              <button
-                onclick="clearAdvancedSearch()"
-                class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-              >
-                Clear
-              </button>
-            </div>
-
-            <div
-              id="advancedSearchResults"
-              class="bg-gray-50 rounded-lg p-4 min-h-32"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <%- include('modals/advanced-search-modal', { categories: categories }) %>
 
     <!-- Bulk Import Modal -->
-    <div
-      id="bulkImportModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto"
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Bulk Import People</h2>
-            <button
-              onclick="closeBulkImportModal()"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
+    <%- include('modals/bulk-import-modal') %>
 
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h4 class="font-semibold text-blue-900 mb-3">
-              Import Instructions:
-            </h4>
-            <ul class="text-sm text-blue-800 space-y-1">
-              <li>
-                • Upload a CSV file with columns: CNIC, Name, Phone, Address,
-                Category, Emergency Contact
-              </li>
-              <li>• CNIC and Name are required fields</li>
-              <li>• Category should match existing categories in the system</li>
-              <li>• Maximum file size: 5MB</li>
-            </ul>
-          </div>
-
-          <form id="bulkImportForm" class="space-y-6">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2"
-                >Select CSV File</label
-              >
-              <input
-                type="file"
-                id="csvFile"
-                accept=".csv"
-                required
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            <div class="flex items-center">
-              <input
-                type="checkbox"
-                id="generateCardsForAll"
-                class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-2"
-              />
-              <label class="text-sm font-medium text-gray-700"
-                >Generate cards for all imported people</label
-              >
-            </div>
-
-            <div class="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                <i class="fas fa-upload mr-2"></i>Import People
-              </button>
-              <button
-                type="button"
-                onclick="closeBulkImportModal()"
-                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <script src="/js/people-management.js"></script>
+    <script src="/js/people-management-core.js"></script>
+    <script src="/js/modals/unified-person-modal.js"></script>
+    <script src="/js/modals/person-details-modal.js"></script>
+    <script src="/js/modals/family-member-modal.js"></script>
+    <script src="/js/modals/advanced-search-modal.js"></script>
+    <script src="/js/modals/bulk-import-modal.js"></script>
     <script>
       // Enhanced modal functionality
-      // Enhanced modal functions
-      function openAddPersonModal() {
-        EnhancedModal.show('personModal', { size: 'xl' });
-      }
-
-      function closePersonModal() {
-        EnhancedModal.hide('personModal');
-      }
-
       function openBulkImportModal() {
         if (document.getElementById("bulkImportModal")) {
-          EnhancedModal.show('bulkImportModal', { size: 'lg' });
+          EnhancedModal.show("bulkImportModal", { size: "lg" });
         }
       }
 
       function closeBulkImportModal() {
         if (document.getElementById("bulkImportModal")) {
-          EnhancedModal.hide('bulkImportModal');
+          EnhancedModal.hide("bulkImportModal");
         }
       }
 
       function openAdvancedSearchModal() {
         if (document.getElementById("advancedSearchModal")) {
-          EnhancedModal.show('advancedSearchModal', { size: 'lg' });
+          EnhancedModal.show("advancedSearchModal", { size: "lg" });
         }
       }
 
       function closeAdvancedSearchModal() {
         if (document.getElementById("advancedSearchModal")) {
-          EnhancedModal.hide('advancedSearchModal');
+          EnhancedModal.hide("advancedSearchModal");
         }
       }
 
       function closePersonDetailsModal() {
         if (document.getElementById("personDetailsModal")) {
-          EnhancedModal.hide('personDetailsModal');
+          EnhancedModal.hide("personDetailsModal");
         }
       }
 
       function closeFamilyMemberModal() {
         if (document.getElementById("familyMemberModal")) {
-          EnhancedModal.hide('familyMemberModal');
+          EnhancedModal.hide("familyMemberModal");
         }
       }
 
@@ -1095,17 +579,17 @@
       // Load people statistics
       async function loadPeopleStats() {
         try {
-          const response = await fetch('/api/people/stats');
+          const response = await fetch("/api/people/stats");
           const data = await response.json();
-          
+
           if (data.success) {
-            animateCounter('totalPeople', data.totalPeople || 0);
-            animateCounter('activeMembers', data.activeMembers || 0);
-            animateCounter('familyGroups', data.familyGroups || 0);
-            animateCounter('recentAdditions', data.recentAdditions || 0);
+            animateCounter("totalPeople", data.totalPeople || 0);
+            animateCounter("activeMembers", data.activeMembers || 0);
+            animateCounter("familyGroups", data.familyGroups || 0);
+            animateCounter("recentAdditions", data.recentAdditions || 0);
           }
         } catch (error) {
-          console.error('Error loading people stats:', error);
+          console.error("Error loading people stats:", error);
         }
       }
 
@@ -1114,11 +598,13 @@
         const element = document.getElementById(elementId);
         if (!element) return;
 
-        const currentValue = parseInt(element.textContent.replace(/[^\d]/g, '')) || 0;
+        const currentValue =
+          parseInt(element.textContent.replace(/[^\d]/g, "")) || 0;
         const increment = Math.ceil((finalValue - currentValue) / 20);
-        
+
         const timer = setInterval(() => {
-          const current = parseInt(element.textContent.replace(/[^\d]/g, '')) || 0;
+          const current =
+            parseInt(element.textContent.replace(/[^\d]/g, "")) || 0;
           if (current < finalValue) {
             const newValue = Math.min(current + increment, finalValue);
             element.textContent = newValue;
@@ -1130,14 +616,25 @@
 
       function setupEventListeners() {
         // Family member toggle
-        document.getElementById("personIsFamilyMember")?.addEventListener("change", function () {
-          document.getElementById("personFamilyFields").style.display = this.checked ? "block" : "none";
-        });
+        document
+          .getElementById("personIsFamilyMember")
+          ?.addEventListener("change", function () {
+            document.getElementById("personFamilyFields").style.display = this
+              .checked
+              ? "block"
+              : "none";
+          });
 
         // Enhanced search functionality
-        document.getElementById("quickSearch")?.addEventListener("keyup", debounce(performQuickSearch, 300));
-        document.getElementById("categoryFilter")?.addEventListener("change", filterPeople);
-        document.getElementById("statusFilter")?.addEventListener("change", filterPeople);
+        document
+          .getElementById("quickSearch")
+          ?.addEventListener("keyup", debounce(performQuickSearch, 300));
+        document
+          .getElementById("categoryFilter")
+          ?.addEventListener("change", filterPeople);
+        document
+          .getElementById("statusFilter")
+          ?.addEventListener("change", filterPeople);
       }
 
       // Debounce function for search
@@ -1155,59 +652,61 @@
 
       // Enhanced search functionality
       async function performQuickSearch() {
-        const searchTerm = document.getElementById('quickSearch').value;
+        const searchTerm = document.getElementById("quickSearch").value;
         if (searchTerm.length < 2) {
           loadPeopleData();
           return;
         }
 
         try {
-          const response = await fetch(`/api/people/search?q=${encodeURIComponent(searchTerm)}`);
+          const response = await fetch(
+            `/api/people/search?q=${encodeURIComponent(searchTerm)}`
+          );
           const data = await response.json();
-          
+
           if (data.success) {
             displayPeopleData(data.people);
           }
         } catch (error) {
-          console.error('Error searching people:', error);
+          console.error("Error searching people:", error);
         }
       }
 
       async function filterPeople() {
-        const category = document.getElementById('categoryFilter').value;
-        const status = document.getElementById('statusFilter').value;
-        
+        const category = document.getElementById("categoryFilter").value;
+        const status = document.getElementById("statusFilter").value;
+
         try {
           const params = new URLSearchParams();
-          if (category) params.append('category', category);
-          if (status) params.append('status', status);
-          
+          if (category) params.append("category", category);
+          if (status) params.append("status", status);
+
           const response = await fetch(`/api/people?${params.toString()}`);
           const data = await response.json();
-          
+
           if (data.success) {
             displayPeopleData(data.people);
           }
         } catch (error) {
-          console.error('Error filtering people:', error);
+          console.error("Error filtering people:", error);
         }
       }
 
       async function loadPeopleData() {
         try {
-          const response = await fetch('/api/people');
+          const response = await fetch("/api/people");
           const data = await response.json();
-          
+
           if (data.success) {
             displayPeopleData(data.people);
           }
         } catch (error) {
-          console.error('Error loading people data:', error);
+          console.error("Error loading people data:", error);
         }
       }
 
       function displayPeopleData(people) {
-        const container = document.getElementById('peopleTableBody');
+        const container = document.getElementById("peopleTableBody");
         if (!container) return;
 
         if (people.length === 0) {
@@ -1223,100 +722,133 @@
           return;
         }
 
-        container.innerHTML = people.map((person, index) => `
-          <tr class="hover:bg-gray-50 transition-all duration-200 animate-fade-in" style="animation-delay: ${index * 0.05}s">
+        container.innerHTML = people
+          .map(
+            (person, index) => `
+          <tr class="hover:bg-gray-50 transition-all duration-200 animate-fade-in" style="animation-delay: ${
+            index * 0.05
+          }s">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   ${person.name.charAt(0).toUpperCase()}
                 </div>
                 <div class="ml-3">
-                  <div class="text-sm font-medium text-gray-900">${person.name}</div>
+                  <div class="text-sm font-medium text-gray-900">${
+                    person.name
+                  }</div>
                   <div class="text-sm text-gray-500">${person.cnic_num}</div>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${person.phone || 'N/A'}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              person.phone || "N/A"
+            }</td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                ${person.category_name || 'N/A'}
+                ${person.category_name || "N/A"}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               ${new Date(person.created_at).toLocaleDateString()}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${person.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                ${person.is_active ? 'Active' : 'Inactive'}
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                person.is_active
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }">
+                ${person.is_active ? "Active" : "Inactive"}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div class="flex items-center space-x-2">
-                <button onclick="viewPersonDetails(${person.id})" class="text-blue-600 hover:text-blue-900 transition-colors" data-tooltip="View Details">
+                <button onclick="viewPersonDetails(${
+                  person.id
+                })" class="text-blue-600 hover:text-blue-900 transition-colors" data-tooltip="View Details">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="editPerson(${person.id})" class="text-indigo-600 hover:text-indigo-900 transition-colors" data-tooltip="Edit Person">
+                <button onclick="editPerson(${
+                  person.id
+                })" class="text-indigo-600 hover:text-indigo-900 transition-colors" data-tooltip="Edit Person">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button onclick="generateCard(${person.id})" class="text-green-600 hover:text-green-900 transition-colors" data-tooltip="Generate Card">
+                <button onclick="generateCard(${
+                  person.id
+                })" class="text-green-600 hover:text-green-900 transition-colors" data-tooltip="Generate Card">
                   <i class="fas fa-id-card"></i>
                 </button>
-                <button onclick="addFamilyMember(${person.id})" class="text-purple-600 hover:text-purple-900 transition-colors" data-tooltip="Add Family Member">
+                <button onclick="addFamilyMember(${
+                  person.id
+                })" class="text-purple-600 hover:text-purple-900 transition-colors" data-tooltip="Add Family Member">
                   <i class="fas fa-user-plus"></i>
                 </button>
               </div>
             </td>
           </tr>
-        `).join('');
+        `
+          )
+          .join("");
       }
 
       function updateLastUpdateTime() {
-        const lastUpdateElement = document.getElementById('lastUpdate');
+        const lastUpdateElement = document.getElementById("lastUpdate");
         if (lastUpdateElement) {
-          lastUpdateElement.textContent = 'Updated ' + new Date().toLocaleTimeString();
+          lastUpdateElement.textContent =
+            "Updated " + new Date().toLocaleTimeString();
         }
       }
 
       // Enhanced notification system
-      function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
         const bgColor = {
-          success: 'bg-green-500',
-          error: 'bg-red-500',
-          warning: 'bg-yellow-500',
-          info: 'bg-blue-500'
+          success: "bg-green-500",
+          error: "bg-red-500",
+          warning: "bg-yellow-500",
+          info: "bg-blue-500",
         }[type];
 
         notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`;
         notification.innerHTML = `
           <div class="flex items-center">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} mr-2"></i>
+            <i class="fas fa-${
+              type === "success"
+                ? "check-circle"
+                : type === "error"
+                ? "exclamation-circle"
+                : type === "warning"
+                ? "exclamation-triangle"
+                : "info-circle"
+            } mr-2"></i>
             ${message}
           </div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
-          notification.style.opacity = '0';
+          notification.style.opacity = "0";
           setTimeout(() => notification.remove(), 300);
         }, 3000);
       }
 
       // Export functionality with enhanced UX
       function exportPeople() {
-        showNotification('Preparing export...', 'info');
-        
+        showNotification("Preparing export...", "info");
+
         setTimeout(() => {
           // Simulate export process
-          const link = document.createElement('a');
-          link.href = '/api/people/export?format=csv';
-          link.download = `people_export_${new Date().toISOString().split('T')[0]}.csv`;
+          const link = document.createElement("a");
+          link.href = "/api/people/export?format=csv";
+          link.download = `people_export_${
+            new Date().toISOString().split("T")[0]
+          }.csv`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
-          showNotification('Export completed successfully!', 'success');
+
+          showNotification("Export completed successfully!", "success");
         }, 1000);
       }
 
@@ -1324,19 +856,19 @@
       function viewPersonDetails(id) {
         // Implementation for viewing person details
         EnhancedModal.show("personDetailsModal");
-        showNotification('Loading person details...', 'info');
+        showNotification("Loading person details...", "info");
       }
 
       function editPerson(id) {
-        // Implementation for editing person
-        EnhancedModal.show("personModal");
+        // Use unified modal for editing person
+        unifiedPersonModal.openEditMode(id, "people");
       }
 
       function generateCard(id) {
         // Implementation for generating card
-        showNotification('Generating ID card...', 'info');
+        showNotification("Generating ID card...", "info");
         setTimeout(() => {
-          showNotification('ID card generated successfully!', 'success');
+          showNotification("ID card generated successfully!", "success");
         }, 2000);
       }
 
@@ -1347,9 +879,9 @@
 
       function performAdvancedSearch() {
         // Implementation for advanced search
-        showNotification('Performing advanced search...', 'info');
+        showNotification("Performing advanced search...", "info");
         setTimeout(() => {
-          showNotification('Search completed!', 'success');
+          showNotification("Search completed!", "success");
         }, 1000);
       }
 
@@ -1362,8 +894,8 @@
         document.getElementById("advSearchFamilyMembers").checked = false;
         document.getElementById("advSearchWithCards").checked = false;
         document.getElementById("advSearchWithoutCards").checked = false;
-        
-        showNotification('Search filters cleared', 'info');
+
+        showNotification("Search filters cleared", "info");
       }
 
       // Auto-refresh data every 2 minutes
@@ -1409,7 +941,11 @@
 
       /* Enhanced table hover effects */
       .enhanced-table tr:hover {
-        background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+        background: linear-gradient(
+          90deg,
+          rgba(59, 130, 246, 0.05),
+          rgba(139, 92, 246, 0.05)
+        );
         transform: scale(1.01);
       }
 
@@ -1420,7 +956,7 @@
       }
 
       .btn-loading::after {
-        content: '';
+        content: "";
         position: absolute;
         width: 16px;
         height: 16px;
@@ -1434,13 +970,72 @@
         animation: spin 1s linear infinite;
       }
 
+      /* Search dropdown styles */
+      #personHostResults {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+
+      #personHostResults.show {
+        display: block;
+      }
+
+      .search-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .search-item:hover {
+        background-color: #f9fafb;
+      }
+
+      .search-item:last-child {
+        border-bottom: none;
+      }
+
+      /* Animation for fade in */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      /* Host search field container */
+      .search-container {
+        position: relative;
+      }
+
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
     </style>
 
-    <%- include('partials/enhanced-modal') %>
-    <%- include('partials/toast') %>
+    <%- include('partials/enhanced-modal') %> <%- include('partials/toast') %>
   </body>
 </html>

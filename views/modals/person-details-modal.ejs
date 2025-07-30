@@ -1,0 +1,93 @@
+<!-- Person Details Modal -->
+<div
+  id="personDetailsModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm modal-overlay"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full mx-4 max-h-[95vh] overflow-hidden modal-container"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-green-50 to-emerald-50 px-8 py-6 border-b border-green-100"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <i class="fas fa-user-circle text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Person Details</h2>
+            <p class="text-sm text-gray-600">
+              Complete person information and history
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="closePersonDetailsModal()"
+          class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-white hover:bg-opacity-50 rounded-xl"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-8 overflow-y-auto max-h-[85vh]">
+      <div id="personDetailsContent">
+        <!-- Content will be populated by JavaScript -->
+        <div class="flex items-center justify-center py-12">
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse"
+            >
+              <i class="fas fa-user text-gray-400 text-2xl"></i>
+            </div>
+            <p class="text-gray-500">Loading person details...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer bg-gray-50 px-8 py-4 border-t border-gray-200">
+      <div class="flex justify-between items-center">
+        <div class="flex space-x-3">
+          <button
+            type="button"
+            onclick="editPersonFromDetails()"
+            class="btn btn-primary"
+            id="editPersonBtn"
+          >
+            <i class="fas fa-edit mr-2"></i>Edit Person
+          </button>
+          <button
+            type="button"
+            onclick="generateCardFromDetails()"
+            class="btn btn-success"
+            id="generateCardBtn"
+            style="display: none"
+          >
+            <i class="fas fa-id-card mr-2"></i>Generate Card
+          </button>
+          <button
+            type="button"
+            onclick="addFamilyMemberFromDetails()"
+            class="btn btn-purple"
+            id="addFamilyBtn"
+          >
+            <i class="fas fa-user-plus mr-2"></i>Add Family Member
+          </button>
+        </div>
+        <button
+          type="button"
+          onclick="closePersonDetailsModal()"
+          class="btn btn-secondary"
+        >
+          <i class="fas fa-times mr-2"></i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
