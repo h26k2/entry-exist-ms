@@ -9,7 +9,7 @@ async function checkTables() {
     database: "garrison",
   });
 
-  const requiredTables = ["cards", "people", "user_categories", "users"];
+  const requiredTables = ["cards", "people", "categories", "users"];
 
   const [rows] = await connection.query("SHOW TABLES");
   const existingTables = rows.map((row) => Object.values(row)[0]);

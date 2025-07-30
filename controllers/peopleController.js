@@ -4,7 +4,7 @@ const DatabaseHelper = require("../config/dbHelper");
 exports.renderPeoplePage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM user_categories ORDER BY name"
+      "SELECT * FROM categories ORDER BY name"
     );
     const people = await DatabaseHelper.query(`
       SELECT p.*, c.name as category_name,

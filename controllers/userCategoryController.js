@@ -3,9 +3,7 @@ const db = require("../config/db");
 // Get all user categories
 exports.getAllCategories = async (req, res) => {
   try {
-    const [rows] = await db.execute(
-      "SELECT * FROM user_categories ORDER BY name"
-    );
+    const [rows] = await db.execute("SELECT * FROM categories ORDER BY name");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch user categories" });
@@ -18,7 +16,7 @@ exports.addCategory = async (req, res) => {
   if (!name) return res.status(400).json({ error: "Name is required" });
   try {
     await db.execute(
-      "INSERT INTO user_categories (name, description) VALUES (?, ?)",
+      "INSERT INTO categories (name, description) VALUES (?, ?)",
       [name, description]
     );
     res.status(201).json({ message: "Category added" });
@@ -33,7 +31,7 @@ exports.updateCategory = async (req, res) => {
   const { name, description } = req.body;
   try {
     await db.execute(
-      "UPDATE user_categories SET name = ?, description = ? WHERE id = ?",
+      "UPDATE categories SET name = ?, description = ? WHERE id = ?",
       [name, description, id]
     );
     res.json({ message: "Category updated" });
@@ -46,7 +44,7 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   const { id } = req.params;
   try {
-    await db.execute("DELETE FROM user_categories WHERE id = ?", [id]);
+    await db.execute("DELETE FROM categories WHERE id = ?", [id]);
     res.json({ message: "Category deleted" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete category" });

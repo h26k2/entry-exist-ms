@@ -141,7 +141,7 @@ exports.generateCard = async (req, res) => {
 exports.renderEntryPage = async (req, res) => {
   try {
     const categories = await DatabaseHelper.query(
-      "SELECT * FROM user_categories WHERE id > 0 ORDER BY name"
+      "SELECT * FROM categories WHERE id > 0 ORDER BY name"
     );
     const facilities = await DatabaseHelper.query(
       "SELECT * FROM facilities WHERE is_active = 1 ORDER BY name"

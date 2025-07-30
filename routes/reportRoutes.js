@@ -32,6 +32,11 @@ router.get(
   authController.requireLogin,
   reportController.getRevenueReport
 );
+router.get(
+  "/api/revenue-summary",
+  authController.requireLogin,
+  reportController.getRevenueReport
+);
 
 // Data export
 router.get(

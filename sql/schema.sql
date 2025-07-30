@@ -131,7 +131,7 @@ AND el.id = (
 );
 
 -- User Categories Table
-CREATE TABLE IF NOT EXISTS user_categories (
+CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     description TEXT

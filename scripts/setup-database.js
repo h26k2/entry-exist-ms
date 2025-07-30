@@ -142,8 +142,8 @@ const SCHEMA = {
     ) ENGINE=InnoDB;
   `,
 
-  user_categories: `
-    CREATE TABLE IF NOT EXISTS user_categories (
+  categories: `
+    CREATE TABLE IF NOT EXISTS categories (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(100) NOT NULL UNIQUE,
       description TEXT,
@@ -197,7 +197,6 @@ async function setupDatabase() {
       "entries",
       "fee_deposits",
       "user_sessions",
-      "user_categories",
     ];
 
     for (const table of tableOrder) {
