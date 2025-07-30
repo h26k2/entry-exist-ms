@@ -189,13 +189,10 @@ async function setupDatabase() {
     ];
 
     for (const table of tableOrder) {
-      console.log(`📋 Creating table: ${table}`);
       await connection.execute(SCHEMA[table]);
-      console.log(`✅ Table ${table} created/verified`);
     }
 
     // Insert default categories
-    console.log("📦 Inserting default categories...");
     for (const category of DEFAULT_CATEGORIES) {
       try {
         await connection.execute(
@@ -206,12 +203,8 @@ async function setupDatabase() {
         // Ignore duplicate entries
       }
     }
-    console.log("✅ Default categories inserted");
-
     // Create default admin user
-    console.log("👤 Creating default admin user...");
     const hashedPassword = await bcrypt.hash(DEFAULT_ADMIN.password, 12);
-
     try {
       await connection.execute(
         "INSERT IGNORE INTO users (name, cnic_num, password, role, created_at) VALUES (?, ?, ?, ?, NOW())",
@@ -222,37 +215,20 @@ async function setupDatabase() {
           DEFAULT_ADMIN.role,
         ]
       );
-      console.log("✅ Default admin user created");
-      console.log(
-        `📝 Admin credentials: CNIC: ${DEFAULT_ADMIN.cnic_num}, Password: ${DEFAULT_ADMIN.password}`
-      );
     } catch (err) {
-      console.log("ℹ️  Admin user already exists");
+      // Ignore duplicate admin
     }
 
     // Verify setup
-    console.log("🔍 Verifying setup...");
     const [tables] = await connection.execute("SHOW TABLES");
-    console.log(`✅ Found ${tables.length} tables in database`);
-
     const [userCount] = await connection.execute(
       "SELECT COUNT(*) as count FROM users"
     );
     const [categoryCount] = await connection.execute(
       "SELECT COUNT(*) as count FROM categories"
     );
-
-    console.log(`👥 Users: ${userCount[0].count}`);
-    console.log(`📋 Categories: ${categoryCount[0].count}`);
-
-    console.log("🎉 Database setup completed successfully!");
-    console.log("");
-    console.log("📖 Next steps:");
-    console.log("1. Update your .env file with database credentials");
-    console.log("2. Run: npm start");
-    console.log("3. Login with admin credentials shown above");
+    // Optionally print summary here if needed
   } catch (error) {
-    console.error("❌ Database setup failed:", error.message);
     process.exit(1);
   } finally {
     if (connection) {
@@ -261,7 +237,6 @@ async function setupDatabase() {
   }
 }
 
-// Run setup
 if (require.main === module) {
   setupDatabase();
 }

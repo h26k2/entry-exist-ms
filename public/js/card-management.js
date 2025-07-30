@@ -46,6 +46,16 @@ class CardManagement {
       .getElementById("closeCardModal")
       .addEventListener("click", () => this.closeCardDetailsModal());
 
+    // Fix: Bind footer close button in card details modal
+    const closeCardModalFooterBtn = document.getElementById(
+      "closeCardModalFooter"
+    );
+    if (closeCardModalFooterBtn) {
+      closeCardModalFooterBtn.addEventListener("click", () =>
+        this.closeCardDetailsModal()
+      );
+    }
+
     document
       .getElementById("closeStatusModal")
       .addEventListener("click", () => this.closeStatusModal());
@@ -151,7 +161,7 @@ class CardManagement {
         this.updateStatsDisplay();
       }
     } catch (error) {
-      console.error("Error loading stats:", error);
+      // console.error("Error loading stats:", error);
     }
   }
 
@@ -171,17 +181,13 @@ class CardManagement {
 
   async loadCards() {
     try {
-      console.log("Loading cards...");
       this.showLoadingState();
-
       const params = new URLSearchParams({
-        page: this.currentPage,
         limit: this.currentLimit,
         search: this.currentSearch,
         status: this.currentStatus,
       });
 
-      console.log("Making request to:", `/cards/api/cards?${params}`);
       const response = await fetch(`/cards/api/cards?${params}`);
       console.log("Response status:", response.status);
 
@@ -204,7 +210,7 @@ class CardManagement {
         throw new Error(data.message || "Failed to load cards");
       }
     } catch (error) {
-      console.error("Error loading cards:", error);
+      // console.error("Error loading cards:", error);
       this.hideLoadingState();
       this.showToast("Error loading cards: " + error.message, "error");
     }
@@ -390,8 +396,8 @@ class CardManagement {
   }
 
   handleSearch(value) {
-    this.currentSearch = value;
     this.currentPage = 1;
+    this.currentSearch = value;
     this.loadCards();
   }
 
@@ -403,7 +409,6 @@ class CardManagement {
 
   handleLimitChange(value) {
     this.currentLimit = parseInt(value);
-    this.currentPage = 1;
     this.loadCards();
   }
 
@@ -424,7 +429,7 @@ class CardManagement {
         throw new Error(data.message || "Failed to load card details");
       }
     } catch (error) {
-      console.error("Error loading card details:", error);
+      // console.error("Error loading card details:", error);
       this.showToast("Error loading card details: " + error.message, "error");
     }
   }
@@ -432,92 +437,88 @@ class CardManagement {
   renderCardDetails(card) {
     const content = document.getElementById("cardDetailsContent");
     content.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-gray-900">Card Information</h4>
-                    <div class="space-y-2">
-                        <div><span class="font-medium">Card Number:</span> ${
-                          card.card_number
-                        }</div>
-                        <div><span class="font-medium">Status:</span> 
-                            <span class="card-status-badge status-${card.status.toLowerCase()}">${
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+          <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-id-card"></i> Card Info
+          </h3>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li><span class="font-medium text-gray-900">Card Number:</span> ${
+              card.card_number
+            }</li>
+            <li><span class="font-medium text-gray-900">Status:</span> <span class="card-status-badge status-${card.status.toLowerCase()}">${
       card.status
-    }</span>
-                        </div>
-                        <div><span class="font-medium">Issued Date:</span> ${new Date(
-                          card.issued_date
-                        ).toLocaleDateString()}</div>
-                        <div><span class="font-medium">Issued By:</span> ${
-                          card.issued_by_name || "Unknown"
-                        }</div>
-                        ${
-                          card.notes
-                            ? `<div><span class="font-medium">Notes:</span> ${card.notes}</div>`
-                            : ""
-                        }
-                        ${
-                          card.scan_count
-                            ? `<div><span class="font-medium">Scan Count:</span> ${card.scan_count}</div>`
-                            : ""
-                        }
-                        ${
-                          card.last_scanned_at
-                            ? `<div><span class="font-medium">Last Scanned:</span> ${new Date(
-                                card.last_scanned_at
-                              ).toLocaleString()}</div>`
-                            : ""
-                        }
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-gray-900">Person Information</h4>
-                    <div class="space-y-2">
-                        <div><span class="font-medium">Name:</span> ${
-                          card.person_name
-                        }</div>
-                        <div><span class="font-medium">CNIC:</span> ${
-                          card.cnic
-                        }</div>
-                        ${
-                          card.phone
-                            ? `<div><span class="font-medium">Phone:</span> ${card.phone}</div>`
-                            : ""
-                        }
-                        ${
-                          card.address
-                            ? `<div><span class="font-medium">Address:</span> ${card.address}</div>`
-                            : ""
-                        }
-                        ${
-                          card.emergency_contact
-                            ? `<div><span class="font-medium">Emergency Contact:</span> ${card.emergency_contact}</div>`
-                            : ""
-                        }
-                        <div><span class="font-medium">Category:</span> ${
-                          card.category_name || "No Category"
-                        }</div>
-                    </div>
-                </div>
-                
-                ${
-                  card.qr_code_image_path
-                    ? `
-                <div class="col-span-1 md:col-span-2 text-center">
-                    <h4 class="font-semibold text-gray-900 mb-4">QR Code</h4>
-                    <img src="${card.qr_code_image_path}" alt="QR Code" class="mx-auto" style="max-width: 200px;">
-                    <div class="mt-2">
-                        <button onclick="cardManagement.downloadQR('${card.qr_code_image_path}', '${card.card_number}')" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                            <i class="fas fa-download mr-2"></i>Download QR Code
-                        </button>
-                    </div>
-                </div>
-                `
-                    : ""
-                }
-            </div>
-        `;
+    }</span></li>
+            <li><span class="font-medium text-gray-900">Issued Date:</span> ${new Date(
+              card.issued_date
+            ).toLocaleDateString()}</li>
+            <li><span class="font-medium text-gray-900">Issued By:</span> ${
+              card.issued_by_name || "Unknown"
+            }</li>
+            ${
+              card.notes
+                ? `<li><span class="font-medium text-gray-900">Notes:</span> ${card.notes}</li>`
+                : ""
+            }
+            ${
+              card.scan_count
+                ? `<li><span class="font-medium text-gray-900">Scan Count:</span> ${card.scan_count}</li>`
+                : ""
+            }
+            ${
+              card.last_scanned_at
+                ? `<li><span class="font-medium text-gray-900">Last Scanned:</span> ${new Date(
+                    card.last_scanned_at
+                  ).toLocaleString()}</li>`
+                : ""
+            }
+          </ul>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+          <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-user"></i> Person Info
+          </h3>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li><span class="font-medium text-gray-900">Name:</span> ${
+              card.person_name
+            }</li>
+            <li><span class="font-medium text-gray-900">CNIC:</span> ${
+              card.cnic
+            }</li>
+            ${
+              card.phone
+                ? `<li><span class="font-medium text-gray-900">Phone:</span> ${card.phone}</li>`
+                : ""
+            }
+            ${
+              card.address
+                ? `<li><span class="font-medium text-gray-900">Address:</span> ${card.address}</li>`
+                : ""
+            }
+            ${
+              card.emergency_contact
+                ? `<li><span class="font-medium text-gray-900">Emergency Contact:</span> ${card.emergency_contact}</li>`
+                : ""
+            }
+            <li><span class="font-medium text-gray-900">Category:</span> ${
+              card.category_name || "No Category"
+            }</li>
+          </ul>
+        </div>
+      </div>
+      ${
+        card.qr_code_image_path
+          ? `
+        <div class="text-center mt-8">
+          <img src="${card.qr_code_image_path}" alt="QR Code" class="mx-auto mb-4 max-w-[120px] rounded-lg border border-gray-200" />
+          <button onclick="cardManagement.downloadQR('${card.qr_code_image_path}', '${card.card_number}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+            <i class="fas fa-download mr-2"></i>Download QR
+          </button>
+        </div>
+      `
+          : ""
+      }
+    `;
   }
 
   showCardDetailsModal() {
@@ -585,7 +586,8 @@ class CardManagement {
     }
 
     try {
-      const response = await fetch(`/cards/api/cards/${cardId}/regenerate-qr`, {
+      // Correct endpoint for QR regeneration
+      const response = await fetch(`/cards/api/cards/regenerate/${cardId}`, {
         method: "POST",
       });
 
@@ -789,15 +791,19 @@ class CardManagement {
 
   // Create Card Modal Methods
   openCreateCardModal() {
-    document.getElementById("createCardModal").classList.remove("hidden");
-    document.body.style.overflow = "hidden";
+    const modal = document.getElementById("createCardModal");
+    if (modal) {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex", "items-center", "justify-center");
+      document.body.style.overflow = "hidden";
 
-    // Reset form
-    document.getElementById("createCardForm").reset();
-    document.getElementById("selectedPersonId").value = "";
-    document.getElementById("selectedPersonInfo").classList.add("hidden");
-    document.getElementById("personSearchResults").classList.add("hidden");
-    document.getElementById("createCardBtn").disabled = true;
+      // Reset form
+      document.getElementById("createCardForm").reset();
+      document.getElementById("selectedPersonId").value = "";
+      document.getElementById("selectedPersonInfo").classList.add("hidden");
+      document.getElementById("personSearchResults").classList.add("hidden");
+      document.getElementById("createCardBtn").disabled = true;
+    }
   }
 
   closeCreateCardModal() {

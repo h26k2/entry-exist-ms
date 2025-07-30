@@ -32,9 +32,7 @@ try {
     },
   };
   sessionStore = new MySQLStore(sessionStoreOptions);
-  console.log("✅ MySQL session store initialized");
 } catch (error) {
-  console.error("❌ Failed to initialize MySQL session store:", error.message);
   process.exit(1);
 }
 
@@ -86,9 +84,4 @@ require("./config/db");
 const { initializeRoutes } = require("./routes");
 initializeRoutes(app);
 
-app.listen(PORT, () => {
-  console.log(`==> Server running on port ${PORT} <==`);
-  console.log(`==> Database: MySQL <==`);
-  console.log(`==> Session store: MySQL <==`);
-  console.log(`==> Environment: ${process.env.NODE_ENV || "development"} <==`);
-});
+app.listen(PORT, () => {});

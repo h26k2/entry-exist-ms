@@ -17,7 +17,7 @@ exports.renderCardManagementPage = async (req, res) => {
       title: "Card Management",
     });
   } catch (error) {
-    console.error("Error rendering card management page:", error);
+    // console.error("Error rendering card management page:", error);
     res.status(500).send("Error loading card management page");
   }
 };
@@ -162,12 +162,10 @@ exports.createCard = async (req, res) => {
     const { person_id, card_number, notes } = req.body;
 
     if (!person_id || !card_number) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Person ID and card number are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Person ID and card number are required",
+      });
     }
 
     // Check if person exists

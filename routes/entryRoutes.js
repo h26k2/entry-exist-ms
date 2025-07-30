@@ -54,13 +54,6 @@ router.post(
   entryController.processExit
 );
 
-// Occupancy tracking
-router.get(
-  "/api/current-occupancy",
-  authController.requireApiAuth,
-  entryController.getCurrentOccupancy
-);
-
 // Fee deposits
 router.post(
   "/api/add-fee-deposit",
