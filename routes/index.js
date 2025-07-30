@@ -12,6 +12,7 @@ const peopleRoutes = require("./peopleRoutes");
 const facilityRoutes = require("./facilityRoutes");
 const reportRoutes = require("./reportRoutes");
 const adminRoutes = require("./adminRoutes");
+const cardRoutes = require("./cardRoutes");
 
 /**
  * Initialize all routes with the Express app
@@ -27,6 +28,7 @@ function initializeRoutes(app) {
   app.use("/", facilityRoutes);
   app.use("/", reportRoutes);
   app.use("/", adminRoutes);
+  app.use("/cards", cardRoutes);
 }
 
 /**
@@ -67,6 +69,10 @@ const routeStructure = {
     description: "Admin-specific routes (operators, cache)",
     endpoints: ["/dashboard/operator", "/admin/cache/*"],
   },
+  cardRoutes: {
+    description: "Card and QR code management",
+    endpoints: ["/cards", "/cards/api/*", "/cards/api/scan-qr"],
+  },
 };
 
 module.exports = {
@@ -79,4 +85,5 @@ module.exports = {
   facilityRoutes,
   reportRoutes,
   adminRoutes,
+  cardRoutes,
 };

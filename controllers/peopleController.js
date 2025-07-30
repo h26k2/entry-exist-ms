@@ -119,15 +119,16 @@ exports.getAllPeople = async (req, res) => {
 // Search people for quick search
 exports.searchPeopleQuick = async (req, res) => {
   try {
-    const { q } = req.query;
+    const { query } = req.query;
 
-    if (!q || q.length < 2) {
+    if (!query || query.length < 2) {
       return res.json({ success: true, people: [] });
     }
 
     const people = await DatabaseHelper.query(
       `
       SELECT p.*, c.name as category_name,
+             p.card_number,
              (SELECT COUNT(*) FROM people p2 WHERE p2.host_person_id = p.id) as family_members_count
       FROM people p
       LEFT JOIN categories c ON p.category_id = c.id
@@ -136,12 +137,12 @@ exports.searchPeopleQuick = async (req, res) => {
       ORDER BY p.name
       LIMIT 20
     `,
-      [`%${q}%`, `%${q}%`, `%${q}%`]
+      [`%${query}%`, `%${query}%`, `%${query}%`]
     );
 
     res.json({ success: true, people });
   } catch (err) {
-    console.error(err);
+    console.error("Error in searchPeopleQuick:", err);
     res.json({ success: false, message: "Search failed" });
   }
 };

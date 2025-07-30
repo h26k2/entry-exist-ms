@@ -3,6 +3,11 @@ exports.renderCardGenerationPage = (req, res) => {
   res.render("card-generation");
 };
 
+const QRCode = require("qrcode");
+const path = require("path");
+const fs = require("fs").promises;
+const DatabaseHelper = require("../config/dbHelper");
+
 // API to generate a card for a person
 exports.generateCard = async (req, res) => {
   const { cnic, name, person_id } = req.body;
@@ -10,73 +15,127 @@ exports.generateCard = async (req, res) => {
   try {
     let cardNumber = "CARD" + Date.now().toString().slice(-8);
     let issuedDate = new Date().toISOString().split("T")[0];
+    let personToUpdate = null;
 
     // If person_id is provided, generate card for existing person
     if (person_id) {
-      await require("../config/dbHelper").query(
-        "UPDATE people SET card_number = ?, card_issued_date = ?, updated_at = NOW() WHERE id = ?",
-        [cardNumber, issuedDate, person_id]
+      const existingPerson = await DatabaseHelper.query(
+        "SELECT * FROM people WHERE id = ?",
+        [person_id]
       );
-      return res.json({
-        success: true,
-        card_number: cardNumber,
-        card_issued_date: issuedDate,
-        message: "Card generated successfully.",
-      });
-    }
+      if (existingPerson.length === 0) {
+        return res.json({
+          success: false,
+          message: "Person not found.",
+        });
+      }
+      personToUpdate = existingPerson[0];
+    } else if (cnic) {
+      // Check if person exists by CNIC
+      const people = await DatabaseHelper.query(
+        "SELECT * FROM people WHERE cnic = ?",
+        [cnic]
+      );
+      personToUpdate = people[0];
 
-    // If CNIC is provided, check if person exists
-    if (!cnic) {
+      if (!personToUpdate && !name) {
+        return res.json({
+          success: false,
+          message: "Name is required to create a new person.",
+        });
+      }
+    } else {
       return res.json({
         success: false,
         message: "CNIC or person ID is required.",
       });
     }
 
-    // Check if person exists by CNIC
-    const people = await require("../config/dbHelper").query(
-      "SELECT * FROM people WHERE cnic = ?",
-      [cnic]
-    );
-    let person = people[0];
+    // Generate QR Code data (contains CNIC and card number for verification)
+    const qrData = JSON.stringify({
+      cnic: personToUpdate ? personToUpdate.cnic : cnic,
+      cardNumber: cardNumber,
+      issuedDate: issuedDate,
+      type: "entry_card",
+    });
 
-    if (person) {
-      // Update card info if person exists
-      await require("../config/dbHelper").query(
-        "UPDATE people SET card_number = ?, card_issued_date = ?, updated_at = NOW() WHERE id = ?",
-        [cardNumber, issuedDate, person.id]
+    // Generate QR Code image
+    const qrFileName = `qr_${cardNumber}.png`;
+    const qrFilePath = path.join(__dirname, "../public/qr-codes", qrFileName);
+    const qrImagePath = `/qr-codes/${qrFileName}`;
+
+    await QRCode.toFile(qrFilePath, qrData, {
+      width: 300,
+      height: 300,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+    });
+
+    if (personToUpdate) {
+      // Update existing person
+      await DatabaseHelper.query(
+        "UPDATE people SET card_number = ?, card_issued_date = ?, qr_code_data = ?, qr_code_image_path = ?, updated_at = NOW() WHERE id = ?",
+        [cardNumber, issuedDate, qrData, qrImagePath, personToUpdate.id]
       );
+
+      // Insert into cards table
+      await DatabaseHelper.query(
+        "INSERT INTO cards (person_id, card_number, qr_code_data, qr_code_image_path, issued_date, issued_by) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          personToUpdate.id,
+          cardNumber,
+          qrData,
+          qrImagePath,
+          issuedDate,
+          req.session.user?.id || 1,
+        ]
+      );
+
       return res.json({
         success: true,
         card_number: cardNumber,
         card_issued_date: issuedDate,
+        qr_code_data: qrData,
+        qr_code_image_path: qrImagePath,
         message: "Card generated and linked to existing person.",
       });
     } else {
-      if (!name) {
-        return res.json({
-          success: false,
-          message: "Name is required to create a new person.",
-        });
-      }
       // Create new person with card info
-      await require("../config/dbHelper").query(
-        "INSERT INTO people (cnic, name, card_number, card_issued_date, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())",
-        [cnic, name, cardNumber, issuedDate]
+      const result = await DatabaseHelper.query(
+        "INSERT INTO people (cnic, name, card_number, card_issued_date, qr_code_data, qr_code_image_path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())",
+        [cnic, name, cardNumber, issuedDate, qrData, qrImagePath]
       );
+
+      // Insert into cards table
+      await DatabaseHelper.query(
+        "INSERT INTO cards (person_id, card_number, qr_code_data, qr_code_image_path, issued_date, issued_by) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          result.insertId,
+          cardNumber,
+          qrData,
+          qrImagePath,
+          issuedDate,
+          req.session.user?.id || 1,
+        ]
+      );
+
       return res.json({
         success: true,
         card_number: cardNumber,
         card_issued_date: issuedDate,
+        qr_code_data: qrData,
+        qr_code_image_path: qrImagePath,
         message: "Person created and card generated.",
       });
     }
   } catch (err) {
-    console.error(err);
+    console.error("Error generating card:", err);
     return res.json({ success: false, message: "Failed to generate card." });
   }
 };
-const DatabaseHelper = require("../config/dbHelper");
 
 // Render entry management page
 exports.renderEntryPage = async (req, res) => {
