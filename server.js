@@ -80,10 +80,21 @@ app.use(
 // DB
 require("./config/db");
 
+// Initialize ZKTeco scheduler
+const ZKTecoScheduler = require("./services/zktecoScheduler");
+const zktecoScheduler = new ZKTecoScheduler();
+
 // Initialize all routes
 const { initializeRoutes } = require("./routes");
 initializeRoutes(app);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+
+  // Initialize ZKTeco scheduler after server starts
+  try {
+    await zktecoScheduler.initialize();
+  } catch (error) {
+    console.warn("ZKTeco scheduler initialization failed:", error.message);
+  }
 });

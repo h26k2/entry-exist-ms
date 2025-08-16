@@ -7,6 +7,7 @@ const QRCode = require("qrcode");
 const path = require("path");
 const fs = require("fs").promises;
 const DatabaseHelper = require("../config/dbHelper");
+const ZKTecoService = require("../services/zktecoService");
 
 // API to generate a card for a person
 exports.generateCard = async (req, res) => {
@@ -422,6 +423,21 @@ exports.processEntry = async (req, res) => {
       }
     }
 
+    // Try to sync to ZKTeco if person has employee ID
+    try {
+      if (person.zkteco_employee_id) {
+        const zktecoService = new ZKTecoService();
+        await zktecoService.syncEntryExitToZKTeco(entryResult.insertId);
+        console.log(`✅ Entry synced to ZKTeco for ${person.name}`);
+      }
+    } catch (zkError) {
+      console.warn(
+        `⚠️ Failed to sync entry to ZKTeco for ${person.name}:`,
+        zkError.message
+      );
+      // Don't fail the entry process if ZKTeco sync fails
+    }
+
     res.json({
       success: true,
       message: "Entry recorded successfully",
@@ -468,6 +484,19 @@ exports.processExit = async (req, res) => {
     `,
       [exit_remarks || "Normal exit", entryLog[0].id]
     );
+
+    // Try to sync exit to ZKTeco
+    try {
+      const zktecoService = new ZKTecoService();
+      await zktecoService.syncEntryExitToZKTeco(entryLog[0].id);
+      console.log(`✅ Exit synced to ZKTeco for person ID ${person_id}`);
+    } catch (zkError) {
+      console.warn(
+        `⚠️ Failed to sync exit to ZKTeco for person ID ${person_id}:`,
+        zkError.message
+      );
+      // Don't fail the exit process if ZKTeco sync fails
+    }
 
     res.json({ success: true, message: "Exit recorded successfully" });
   } catch (err) {

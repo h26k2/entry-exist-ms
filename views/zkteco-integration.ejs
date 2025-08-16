@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> - Entry Management System</title>
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+    <style>
+      .zkteco-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .zkteco-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .zkteco-title {
+        color: #2c3e50;
+        font-size: 2rem;
+        margin: 0;
+      }
+
+      .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+      }
+
+      .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status-disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        border-left: 4px solid #3498db;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-card h3 {
+        margin: 0 0 15px 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #3498db;
+        margin-bottom: 10px;
+      }
+
+      .stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: #ecf0f1;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background-color: #27ae60;
+        transition: width 0.3s ease;
+      }
+
+      .actions-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .action-card {
+        padding: 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-align: center;
+        transition: border-color 0.3s ease;
+      }
+
+      .action-card:hover {
+        border-color: #3498db;
+      }
+
+      .action-card h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+      }
+
+      .action-card p {
+        color: #7f8c8d;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-success {
+        background-color: #27ae60;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background-color: #219a52;
+      }
+
+      .btn-warning {
+        background-color: #f39c12;
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background-color: #e67e22;
+      }
+
+      .btn-danger {
+        background-color: #e74c3c;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #c0392b;
+      }
+
+      .config-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #2c3e50;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .sync-logs {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .log-item {
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .log-item:last-child {
+        border-bottom: none;
+      }
+
+      .log-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .log-success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .log-error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .log-pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .zkteco-header {
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+
+        .actions-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('partials/header') %> <%- include('partials/sidebar') %>
+
+    <div class="main-content">
+      <div class="zkteco-container">
+        <div class="zkteco-header">
+          <h1 class="zkteco-title">ZKTeco BioTime Integration</h1>
+          <div
+            id="connectionStatus"
+            class="connection-status status-disconnected"
+          >
+            <span id="statusText">Checking connection...</span>
+            <button id="testConnectionBtn" class="btn btn-primary">
+              Test Connection
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>People Sync Status</h3>
+            <div class="stat-value" id="peopleTotal">
+              <%= syncStats.total_people || 0 %>
+            </div>
+            <div class="stat-label">Total People</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="peopleProgressBar"></div>
+            </div>
+            <div class="stat-label">
+              <span id="peopleSynced"><%= syncStats.synced_people || 0 %></span>
+              synced,
+              <span id="peopleUnsynced"
+                ><%= syncStats.unsynced_people || 0 %></span
+              >
+              pending
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Entries Sync Status (7 days)</h3>
+            <div class="stat-value" id="entriesTotal">
+              <%= entryStats.total_entries || 0 %>
+            </div>
+            <div class="stat-label">Total Entries</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="entriesProgressBar"></div>
+            </div>
+            <div class="stat-label">
+              <span id="entriesSynced"
+                ><%= entryStats.synced_entries || 0 %></span
+              >
+              synced,
+              <span id="entriesUnsynced"
+                ><%= entryStats.unsynced_entries || 0 %></span
+              >
+              pending
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="actions-section">
+          <h3>Synchronization Actions</h3>
+          <div class="actions-grid">
+            <div class="action-card">
+              <h4>Sync All People</h4>
+              <p>
+                Push all people from local database to ZKTeco BioTime as
+                employees
+              </p>
+              <button id="syncAllPeopleBtn" class="btn btn-primary">
+                Sync All People
+              </button>
+            </div>
+
+            <div class="action-card">
+              <h4>Sync Unsynced Entries</h4>
+              <p>Push recent entry/exit records to ZKTeco attendance system</p>
+              <button id="syncEntriesBtn" class="btn btn-success">
+                Sync Entries
+              </button>
+            </div>
+
+            <div class="action-card">
+              <h4>Pull Attendance</h4>
+              <p>Import attendance records from ZKTeco to local system</p>
+              <div class="form-group">
+                <input type="date" id="startDate" placeholder="Start Date" />
+              </div>
+              <div class="form-group">
+                <input type="date" id="endDate" placeholder="End Date" />
+              </div>
+              <button id="pullAttendanceBtn" class="btn btn-warning">
+                Pull Attendance
+              </button>
+            </div>
+
+            <div class="action-card">
+              <h4>Manual Entry Sync</h4>
+              <p>Manually sync specific entry/exit to ZKTeco</p>
+              <div class="form-group">
+                <select id="manualPersonId">
+                  <option value="">Select Person</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <select id="manualEntryType">
+                  <option value="ENTRY">Entry</option>
+                  <option value="EXIT">Exit</option>
+                </select>
+              </div>
+              <button id="manualSyncBtn" class="btn btn-danger">
+                Manual Sync
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="config-section">
+          <h3>ZKTeco Configuration</h3>
+          <div class="actions-grid">
+            <div class="form-group">
+              <label>Server URL:</label>
+              <input
+                type="text"
+                id="serverUrl"
+                value="<%= process.env.ZKTECO_BASE_URL || 'http://localhost:8000' %>"
+                placeholder="http://localhost:8000"
+              />
+            </div>
+            <div class="form-group">
+              <label>Username:</label>
+              <input
+                type="text"
+                id="username"
+                value="<%= process.env.ZKTECO_USERNAME || 'admin' %>"
+                placeholder="admin"
+              />
+            </div>
+            <div class="form-group">
+              <label>Password:</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+              />
+            </div>
+            <div class="form-group">
+              <button id="saveConfigBtn" class="btn btn-success">
+                Save Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Sync Logs -->
+        <div class="sync-logs">
+          <h3>Recent Sync Activity</h3>
+          <div id="syncLogs">
+            <div class="log-item">
+              <span>System initialized</span>
+              <span class="log-status log-pending">Ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('partials/toast') %>
+
+    <script>
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        loadPeopleForManualSync();
+        testConnectionOnLoad();
+        loadSyncStatus();
+        updateInitialProgressBars();
+
+        // Set default dates
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        document.getElementById("startDate").value = yesterday
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("endDate").value = today
+          .toISOString()
+          .split("T")[0];
+      });
+
+      // Update initial progress bars
+      function updateInitialProgressBars() {
+        const peopleTotal = parseInt("<%= syncStats.total_people || 0 %>");
+        const peopleSynced = parseInt("<%= syncStats.synced_people || 0 %>");
+        const entriesTotal = parseInt("<%= entryStats.total_entries || 0 %>");
+        const entriesSynced = parseInt("<%= entryStats.synced_entries || 0 %>");
+
+        const peopleProgress =
+          peopleTotal > 0 ? Math.round((peopleSynced / peopleTotal) * 100) : 0;
+        const entriesProgress =
+          entriesTotal > 0
+            ? Math.round((entriesSynced / entriesTotal) * 100)
+            : 0;
+
+        document.getElementById("peopleProgressBar").style.width =
+          peopleProgress + "%";
+        document.getElementById("entriesProgressBar").style.width =
+          entriesProgress + "%";
+      }
+
+      // Test connection on page load
+      async function testConnectionOnLoad() {
+        try {
+          const response = await fetch("/zkteco/test-connection", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const result = await response.json();
+          updateConnectionStatus(result.success, result.message);
+        } catch (error) {
+          updateConnectionStatus(false, "Connection test failed");
+        }
+      }
+
+      // Update connection status display
+      function updateConnectionStatus(connected, message) {
+        const statusElement = document.getElementById("connectionStatus");
+        const statusText = document.getElementById("statusText");
+
+        statusText.textContent = message;
+
+        if (connected) {
+          statusElement.className = "connection-status status-connected";
+        } else {
+          statusElement.className = "connection-status status-disconnected";
+        }
+      }
+
+      // Load people for manual sync dropdown
+      async function loadPeopleForManualSync() {
+        try {
+          const response = await fetch("/api/people/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: "" }),
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            const select = document.getElementById("manualPersonId");
+            select.innerHTML = '<option value="">Select Person</option>';
+
+            result.people.slice(0, 20).forEach((person) => {
+              const option = document.createElement("option");
+              option.value = person.id;
+              option.textContent = `${person.name} (${person.cnic})`;
+              select.appendChild(option);
+            });
+          }
+        } catch (error) {
+          console.error("Failed to load people:", error);
+        }
+      }
+
+      // Load sync status
+      async function loadSyncStatus() {
+        try {
+          const response = await fetch("/zkteco/sync-status");
+          const result = await response.json();
+
+          if (result.success) {
+            updateSyncStats(result);
+          }
+        } catch (error) {
+          console.error("Failed to load sync status:", error);
+        }
+      }
+
+      // Update sync statistics
+      function updateSyncStats(data) {
+        document.getElementById("peopleTotal").textContent =
+          data.people.total || 0;
+        document.getElementById("peopleSynced").textContent =
+          data.people.synced || 0;
+        document.getElementById("peopleUnsynced").textContent =
+          data.people.unsynced || 0;
+
+        document.getElementById("entriesTotal").textContent =
+          data.entries.total || 0;
+        document.getElementById("entriesSynced").textContent =
+          data.entries.synced || 0;
+        document.getElementById("entriesUnsynced").textContent =
+          data.entries.unsynced || 0;
+
+        // Update progress bars
+        const peopleProgress =
+          data.people.total > 0
+            ? Math.round((data.people.synced / data.people.total) * 100)
+            : 0;
+        const entriesProgress =
+          data.entries.total > 0
+            ? Math.round((data.entries.synced / data.entries.total) * 100)
+            : 0;
+
+        document.getElementById("peopleProgressBar").style.width =
+          peopleProgress + "%";
+        document.getElementById("entriesProgressBar").style.width =
+          entriesProgress + "%";
+      }
+
+      // Add log entry
+      function addLogEntry(message, status) {
+        const logsContainer = document.getElementById("syncLogs");
+        const logItem = document.createElement("div");
+        logItem.className = "log-item";
+
+        const timestamp = new Date().toLocaleString();
+        logItem.innerHTML = `
+                <span>${timestamp}: ${message}</span>
+                <span class="log-status log-${status}">${status.toUpperCase()}</span>
+            `;
+
+        logsContainer.insertBefore(logItem, logsContainer.firstChild);
+
+        // Keep only last 10 logs
+        const logs = logsContainer.querySelectorAll(".log-item");
+        if (logs.length > 10) {
+          logsContainer.removeChild(logs[logs.length - 1]);
+        }
+      }
+
+      // Event Listeners
+      document
+        .getElementById("testConnectionBtn")
+        .addEventListener("click", testConnectionOnLoad);
+
+      document
+        .getElementById("syncAllPeopleBtn")
+        .addEventListener("click", async function () {
+          const btn = this;
+          btn.disabled = true;
+          btn.textContent = "Syncing...";
+
+          try {
+            addLogEntry("Starting people sync...", "pending");
+
+            const response = await fetch("/zkteco/sync-all-people", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              addLogEntry(
+                `People sync completed: ${result.successCount} success, ${result.failureCount} failed`,
+                "success"
+              );
+              showToast(result.message, "success");
+              loadSyncStatus();
+            } else {
+              addLogEntry(`People sync failed: ${result.message}`, "error");
+              showToast(result.message, "error");
+            }
+          } catch (error) {
+            addLogEntry(`People sync error: ${error.message}`, "error");
+            showToast("Sync failed", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Sync All People";
+          }
+        });
+
+      document
+        .getElementById("syncEntriesBtn")
+        .addEventListener("click", async function () {
+          const btn = this;
+          btn.disabled = true;
+          btn.textContent = "Syncing...";
+
+          try {
+            addLogEntry("Starting entries sync...", "pending");
+
+            const response = await fetch("/zkteco/sync-unsynced-entries", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              addLogEntry(
+                `Entries sync completed: ${result.successCount} success, ${result.failureCount} failed`,
+                "success"
+              );
+              showToast(result.message, "success");
+              loadSyncStatus();
+            } else {
+              addLogEntry(`Entries sync failed: ${result.message}`, "error");
+              showToast(result.message, "error");
+            }
+          } catch (error) {
+            addLogEntry(`Entries sync error: ${error.message}`, "error");
+            showToast("Sync failed", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Sync Entries";
+          }
+        });
+
+      document
+        .getElementById("pullAttendanceBtn")
+        .addEventListener("click", async function () {
+          const btn = this;
+          const startDate = document.getElementById("startDate").value;
+          const endDate = document.getElementById("endDate").value;
+
+          if (!startDate || !endDate) {
+            showToast("Please select start and end dates", "error");
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = "Pulling...";
+
+          try {
+            addLogEntry(
+              `Pulling attendance from ${startDate} to ${endDate}...`,
+              "pending"
+            );
+
+            const response = await fetch("/zkteco/pull-attendance", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+              }),
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              addLogEntry(
+                `Attendance pulled: ${result.processedCount} records processed`,
+                "success"
+              );
+              showToast(result.message, "success");
+              loadSyncStatus();
+            } else {
+              addLogEntry(`Attendance pull failed: ${result.message}`, "error");
+              showToast(result.message, "error");
+            }
+          } catch (error) {
+            addLogEntry(`Attendance pull error: ${error.message}`, "error");
+            showToast("Pull failed", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Pull Attendance";
+          }
+        });
+
+      document
+        .getElementById("manualSyncBtn")
+        .addEventListener("click", async function () {
+          const personId = document.getElementById("manualPersonId").value;
+          const entryType = document.getElementById("manualEntryType").value;
+
+          if (!personId) {
+            showToast("Please select a person", "error");
+            return;
+          }
+
+          const btn = this;
+          btn.disabled = true;
+          btn.textContent = "Syncing...";
+
+          try {
+            addLogEntry(
+              `Manual ${entryType} sync for person ${personId}...`,
+              "pending"
+            );
+
+            const response = await fetch("/zkteco/manual-entry-sync", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                person_id: personId,
+                entry_type: entryType,
+                timestamp: new Date().toISOString(),
+              }),
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              addLogEntry(`Manual ${entryType} sync completed`, "success");
+              showToast(result.message, "success");
+            } else {
+              addLogEntry(`Manual sync failed: ${result.message}`, "error");
+              showToast(result.message, "error");
+            }
+          } catch (error) {
+            addLogEntry(`Manual sync error: ${error.message}`, "error");
+            showToast("Manual sync failed", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Manual Sync";
+          }
+        });
+
+      // Toast notification function
+      function showToast(message, type) {
+        // Implement your toast notification here
+        alert(`${type.toUpperCase()}: ${message}`);
+      }
+    </script>
+  </body>
+</html>
