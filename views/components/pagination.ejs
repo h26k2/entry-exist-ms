@@ -1,0 +1,14 @@
+<% /* Pagination Component - Beautiful Capsule Style */ %>
+<div class="my-8">
+  <% const totalPages = Math.max(1, Math.ceil(total / pageSize)); %>
+  <nav class="flex justify-center items-center space-x-2">
+    <a href="?page=1&pageSize=<%= pageSize %>" class="px-4 py-2 rounded-full border <%= page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-100 text-blue-600 border-blue-300' %>" <%= page === 1 ? 'aria-disabled="true"' : '' %>>First</a>
+    <a href="?page=<%= page - 1 %>&pageSize=<%= pageSize %>" class="px-4 py-2 rounded-full border <%= page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-100 text-blue-600 border-blue-300' %>" <%= page === 1 ? 'aria-disabled="true"' : '' %>>Previous</a>
+    <% for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) { %>
+      <a href="?page=<%= i %>&pageSize=<%= pageSize %>" class="px-4 py-2 mx-1 rounded-full border <%= i === page ? 'bg-blue-500 text-white border-blue-500 shadow' : 'bg-white hover:bg-blue-100 text-blue-600 border-blue-300' %>"><%= i %></a>
+    <% } %>
+    <a href="?page=<%= page + 1 %>&pageSize=<%= pageSize %>" class="px-4 py-2 rounded-full border <%= page === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-100 text-blue-600 border-blue-300' %>" <%= page === totalPages ? 'aria-disabled="true"' : '' %>>Next</a>
+    <a href="?page=<%= totalPages %>&pageSize=<%= pageSize %>" class="px-4 py-2 rounded-full border <%= page === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-100 text-blue-600 border-blue-300' %>" <%= page === totalPages ? 'aria-disabled="true"' : '' %>>Last</a>
+    <span class="ml-4 text-sm text-gray-600">Page <%= page %> of <%= totalPages %> | Showing <%= entries.length %> of <%= total %> records</span>
+  </nav>
+</div>

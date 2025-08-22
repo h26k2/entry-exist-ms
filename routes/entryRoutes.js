@@ -11,12 +11,6 @@ router.get(
   entryController.renderEntryPage
 );
 
-// Card generation page and API
-router.get(
-  "/card-generation",
-  authController.requireLogin,
-  entryController.renderCardGenerationPage
-);
 router.post(
   "/api/generate-card",
   authController.requireLogin,
@@ -57,11 +51,6 @@ router.post(
 // Fee deposits
 
 // Current occupancy API for header
-router.get(
-  "/api/current-occupancy",
-  authController.requireApiAuth,
-  entryController.getCurrentOccupancy
-);
 
 // Fee deposits
 router.post(

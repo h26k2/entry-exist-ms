@@ -31,25 +31,13 @@
     <div class="flex items-center space-x-2 lg:space-x-4">
       <!-- Quick Stats -->
       <div class="hidden md:flex items-center space-x-2 lg:space-x-4 text-sm">
-        <div class="bg-green-100 text-green-800 px-2 lg:px-3 py-1 rounded-full">
-          <i class="fas fa-users mr-1"></i>
-          <span id="header-occupancy">-</span> Inside
-        </div>
+        
         <div class="bg-blue-100 text-blue-800 px-2 lg:px-3 py-1 rounded-full">
           <i class="fas fa-clock mr-1"></i>
           <span id="current-time">--:--</span>
         </div>
       </div>
 
-      <!-- Notifications -->
-      <button
-        class="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
-      >
-        <i class="fas fa-bell text-base lg:text-lg"></i>
-        <span
-          class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"
-        ></span>
-      </button>
     </div>
   </div>
 </div>
@@ -72,7 +60,7 @@
   // Update occupancy in header
   async function updateHeaderOccupancy() {
     try {
-      const response = await fetch("/api/current-occupancy");
+  // Removed current-occupancy API call
       const data = await response.json();
       if (data.success) {
         const occupancyElement = document.getElementById("header-occupancy");

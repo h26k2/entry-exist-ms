@@ -37,6 +37,18 @@ router.get(
   authController.requireLogin,
   reportController.getRevenueReport
 );
+// Today's check-ins and check-outs
+router.get(
+  "/api/today-checkin-checkout",
+  authController.requireLogin,
+  reportController.getTodayCheckinCheckout
+);
+// Today's recent activities
+router.get(
+  "/api/today-recent-activities",
+  authController.requireLogin,
+  reportController.getTodayRecentActivities
+);
 
 // Data export
 router.get(

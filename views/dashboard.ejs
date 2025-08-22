@@ -65,29 +65,7 @@
           <div
             class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8"
           >
-            <!-- Total People Inside -->
-            <div
-              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs lg:text-sm font-medium text-gray-600">
-                    People Inside
-                  </p>
-                  <p
-                    class="text-lg lg:text-3xl font-bold text-green-600"
-                    id="current-occupancy"
-                  >
-                    -
-                  </p>
-                </div>
-                <div class="bg-green-100 rounded-full p-2 lg:p-3">
-                  <i class="fas fa-users text-green-600 text-lg lg:text-xl"></i>
-                </div>
-              </div>
-            </div>
-
-            <!-- Today's Entries -->
+          <!-- Today's Entries -->
             <div
               class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
             >
@@ -111,7 +89,31 @@
               </div>
             </div>
 
-            <!-- Today's Revenue -->
+            <!-- Total People Inside -->
+            <div
+              class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs lg:text-sm font-medium text-gray-600">
+                    Today's Exits
+                  </p>
+                  <p
+                    class="text-lg lg:text-3xl font-bold text-green-600"
+                    id="today-exits"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="bg-green-100 rounded-full p-2 lg:p-3">
+                  <i class="fas fa-users text-green-600 text-lg lg:text-xl"></i>
+                </div>
+              </div>
+            </div>
+
+            
+
+            <!-- Today's Revenue 
             <div
               class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
             >
@@ -133,9 +135,9 @@
                   ></i>
                 </div>
               </div>
-            </div>
+            </div>-->
 
-            <!-- Active Categories -->
+            <!-- Active Categories 
             <div
               class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow"
             >
@@ -150,7 +152,7 @@
                   <i class="fas fa-tags text-orange-600 text-lg lg:text-xl"></i>
                 </div>
               </div>
-            </div>
+            </div>-->
           </div>
 
           <!-- Quick Actions -->
@@ -191,7 +193,7 @@
               </div>
             </a>
 
-            <!-- People Management -->
+            <!-- People Management 
             <a href="/dashboard/people" class="group block">
               <div
                 class="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-lg hover:border-green-300 transition-all duration-200 group-hover:scale-[1.02]"
@@ -222,7 +224,7 @@
                   ></i>
                 </div>
               </div>
-            </a>
+            </a>-->
 
             <!-- Reports & Analytics -->
             <a href="/dashboard/reports" class="group block">
@@ -244,7 +246,7 @@
                   </h3>
                 </div>
                 <p class="text-gray-600 text-xs lg:text-sm">
-                  View detailed reports, analytics, and export data.
+                  View detailed reports, analytics, and export data on demand.
                 </p>
                 <div
                   class="mt-3 lg:mt-4 flex items-center text-purple-600 text-xs lg:text-sm font-medium"
@@ -268,7 +270,7 @@
               </h2>
               <button
                 class="text-blue-600 hover:text-blue-700 text-xs lg:text-sm font-medium"
-                onclick="window.location.href='/dashboard/all-activities'"
+                onclick="window.location.href='/dashboard/entry'"
               >
                 View All
               </button>
@@ -322,24 +324,54 @@
           try {
             summaryData = await summaryResponse.json();
           } catch (jsonError) {
-            // If response is not JSON, show error and exit
-            document.getElementById("today-entries").textContent = "-";
-            document.getElementById("today-revenue").textContent = "-";
-            document.getElementById("current-occupancy").textContent = "-";
+            const todayEntriesEl = document.getElementById("today-entries");
+            const todayRevenueEl = document.getElementById("today-revenue");
+            if (todayEntriesEl) todayEntriesEl.textContent = "-";
+            if (todayRevenueEl) todayRevenueEl.textContent = "-";
             console.error(
               "API did not return JSON. Possible session/auth error."
             );
             return;
           }
           if (summaryData.success) {
-            document.getElementById("today-entries").textContent =
-              summaryData.summary.total_entries || 0;
-            document.getElementById("today-revenue").textContent =
-              "Rs. " + (summaryData.summary.total_revenue || 0);
-            // Optionally, update occupancy if available in summary
-            if (typeof summaryData.currentOccupancy !== "undefined") {
-              document.getElementById("current-occupancy").textContent =
-                summaryData.currentOccupancy;
+            const todayEntriesEl = document.getElementById("today-entries");
+            const todayRevenueEl = document.getElementById("today-revenue");
+            if (todayEntriesEl) todayEntriesEl.textContent = summaryData.summary.total_entries || 0;
+            if (todayRevenueEl) todayRevenueEl.textContent = "Rs. " + (summaryData.summary.total_revenue || 0);
+          }
+          // Fetch today's check-ins and check-outs from ZKBioTime
+          const checkinRes = await fetch("/api/today-checkin-checkout");
+          const checkinData = await checkinRes.json();
+          if (checkinData.success) {
+            const todayEntriesEl = document.getElementById("today-entries");
+            if (todayEntriesEl) todayEntriesEl.textContent = checkinData.total_checkins;
+            const todayExitsEl = document.getElementById("today-exits");
+            if (todayExitsEl) todayExitsEl.textContent = checkinData.total_checkouts;
+          }
+          // Fetch today's recent activities from ZKBioTime
+          const activitiesRes = await fetch("/api/today-recent-activities");
+          const activitiesData = await activitiesRes.json();
+          const recentActivityEl = document.getElementById("recent-activity");
+          if (recentActivityEl) {
+            if (activitiesData.success && activitiesData.activities.length > 0) {
+              recentActivityEl.innerHTML = activitiesData.activities.slice(0, 5).map(activity => `
+                <div class="flex items-center justify-between bg-gray-50 rounded-md p-3 lg:p-4 shadow-sm border border-gray-100">
+                  <div>
+                    <div class="font-semibold text-gray-800">${activity.name}</div>
+                    <div class="text-xs text-gray-500">
+                      ${activity.cnic} | ${activity.entry_type === 'ENTRY' ? 'Entry' : 'Exit'}
+                      ${activity.entry_time ? 'at ' + new Date(activity.entry_time).toLocaleString() : ''}
+                      ${activity.exit_time ? ' | Exit at ' + new Date(activity.exit_time).toLocaleString() : ''}
+                      ${activity.remarks ? ' | ' + activity.remarks : ''}
+                    </div>
+                  </div>
+                  <div>
+                    <i class="fas ${activity.entry_type === 'ENTRY' ? 'fa-sign-in-alt text-blue-500' : 'fa-sign-out-alt text-red-500'} text-lg"></i>
+                  </div>
+                </div>
+              `).join("");
+            } else {
+              recentActivityEl.innerHTML = `<div class='flex items-center justify-center py-6 lg:py-8 text-gray-500'><i class='fas fa-clock text-2xl mb-2'></i><span class='text-sm lg:text-base'>No recent activity</span></div>`;
             }
           }
         } catch (error) {

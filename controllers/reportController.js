@@ -1,4 +1,5 @@
 const DatabaseHelper = require("../config/dbHelper");
+const { createAuthenticatedClient } = require('../utils/zkbiotime');
 
 // Render reports page
 exports.renderReportsPage = async (req, res) => {
@@ -39,70 +40,27 @@ exports.getDailySummary = async (req, res) => {
   const reportDate = date || new Date().toISOString().split("T")[0];
 
   try {
-    // Total entries and exits for the day
-    const entriesExits = await DatabaseHelper.query(
-      `
-      SELECT 
-        COUNT(CASE WHEN entry_type = 'ENTRY' THEN 1 END) as total_entries,
-        COUNT(CASE WHEN entry_type = 'EXIT' THEN 1 END) as total_exits,
-        SUM(CASE WHEN entry_type = 'ENTRY' THEN total_amount ELSE 0 END) as total_revenue
-      FROM entry_logs 
-      WHERE DATE(entry_time) = ?
-    `,
-      [reportDate]
-    );
-
-    // Category-wise breakdown
-    const categoryBreakdown = await DatabaseHelper.query(
-      `
-      SELECT 
-        c.name as category,
-        COUNT(el.id) as entries,
-        SUM(el.total_amount) as revenue,
-        SUM(CASE WHEN el.is_guest = 1 THEN el.guest_count ELSE 1 END) as total_people
-      FROM entry_logs el
-      JOIN people p ON el.person_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      WHERE DATE(el.entry_time) = ? AND el.entry_type = 'ENTRY'
-      GROUP BY c.id, c.name
-      ORDER BY entries DESC
-    `,
-      [reportDate]
-    );
-
-    // Facility usage
-    const facilityUsage = await DatabaseHelper.query(
-      `
-      SELECT
-        f.name as facility,
-        COUNT(ef.id) as usage_count,
-        SUM(ef.quantity) as total_quantity,
-        SUM(ef.total_price) as total_revenue
-      FROM entry_facilities ef
-      JOIN facilities f ON ef.facility_id = f.id
-      JOIN entry_logs el ON ef.entry_log_id = el.id
-      JOIN people p ON el.person_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      WHERE DATE(el.entry_time) = ?
-      GROUP BY f.id, f.name
-      ORDER BY usage_count DESC
-    `,
-      [reportDate]
-    );
-
-    // Current occupancy
-    const currentOccupancy = await DatabaseHelper.query(`
-      SELECT COUNT(*) as current_people
-      FROM entry_logs el
-      WHERE el.entry_type = 'ENTRY' AND el.exit_time IS NULL
-    `);
-
+    // Fetch all transactions from ZKBioTime API for the given date
+    const client = await createAuthenticatedClient();
+    const response = await client.get(`/iclock/api/transactions/?start_time=${reportDate} 00:00:00&end_time=${reportDate} 23:59:59&page_size=1000`);
+    const data = response.data.data || [];
+    // Calculate summary
+    const total_entries = data.filter(e => e.punch_state_display === 'Check In').length;
+    const total_exits = data.filter(e => e.punch_state_display === 'Check Out').length;
+    // No revenue field in ZKBioTime, so set to 0
+    const total_revenue = 0;
+    // Category breakdown not available, set empty
+    const categoryBreakdown = [];
+    // Facility usage not available, set empty
+    const facilityUsage = [];
+    // Current occupancy: count of last Check In without Check Out
+    const currentOccupancy = total_entries - total_exits;
     res.json({
       success: true,
-      summary: entriesExits[0],
+      summary: { total_entries, total_exits, total_revenue },
       categoryBreakdown,
       facilityUsage,
-      currentOccupancy: currentOccupancy[0].current_people,
+      currentOccupancy,
       reportDate,
     });
   } catch (err) {
@@ -113,112 +71,25 @@ exports.getDailySummary = async (req, res) => {
 
 // Historical report for a specific person
 exports.getPersonHistory = async (req, res) => {
-  const { query, person_id, start_date, end_date } = req.query;
-
+  const { emp_code, start_date, end_date } = req.query;
   try {
-    let personInfo;
-
-    if (query) {
-      // Search by CNIC or name
-      personInfo = await DatabaseHelper.query(
-        `
-        SELECT p.*, c.name as category_name
-        FROM people p
-        JOIN categories c ON p.category_id = c.id
-        WHERE p.cnic = ? OR p.name LIKE ?
-        LIMIT 1
-      `,
-        [query, `%${query}%`]
-      );
-    } else if (person_id) {
-      // Search by person ID
-      personInfo = await DatabaseHelper.query(
-        `
-        SELECT p.*, c.name as category_name
-        FROM people p
-        JOIN categories c ON p.category_id = c.id
-        WHERE p.id = ?
-      `,
-        [person_id]
-      );
-    } else {
-      return res.json({
-        success: false,
-        message: "Please provide a search query or person ID",
-      });
+    if (!emp_code) {
+      return res.json({ success: false, message: "Please provide emp_code" });
     }
-
-    if (personInfo.length === 0) {
-      return res.json({ success: false, message: "Person not found" });
-    }
-
-    const person = personInfo[0];
-
-    // Entry/Exit history
-    let historyQuery = `
-      SELECT 
-        el.*,
-        u.name as operator_name,
-        TIMESTAMPDIFF(MINUTE, el.entry_time, el.exit_time) as duration_minutes,
-        p.name as person_name,
-        p.cnic,
-        c.name as category_name
-      FROM entry_logs el
-      JOIN users u ON el.operator_id = u.id
-      JOIN people p ON el.person_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      WHERE el.person_id = ?
-    `;
-
-    const queryParams = [person.id];
-
-    if (start_date) {
-      historyQuery += " AND DATE(el.entry_time) >= ?";
-      queryParams.push(start_date);
-    }
-
-    if (end_date) {
-      historyQuery += " AND DATE(el.entry_time) <= ?";
-      queryParams.push(end_date);
-    }
-
-    historyQuery += " ORDER BY el.entry_time DESC LIMIT 100";
-
-    const history = await DatabaseHelper.query(historyQuery, queryParams);
-
-    // Get facility usage for each entry
-    for (let entry of history) {
-      const facilities = await DatabaseHelper.query(
-        `
-        SELECT ef.*, f.name as facility_name
-        FROM entry_facilities ef
-        JOIN facilities f ON ef.facility_id = f.id
-        WHERE ef.entry_log_id = ?
-      `,
-        [entry.id]
-      );
-      entry.facilities = facilities;
-    }
-
-    // Summary statistics
-    const stats = await DatabaseHelper.query(
-      `
-      SELECT 
-        COUNT(*) as total_visits,
-        SUM(total_amount) as total_spent,
-        AVG(TIMESTAMPDIFF(MINUTE, entry_time, exit_time)) as avg_duration_minutes,
-        MAX(entry_time) as last_visit
-      FROM entry_logs 
-      WHERE person_id = ? AND entry_type = 'ENTRY'
-    `,
-      [person_id]
-    );
-
+    const client = await createAuthenticatedClient();
+    let url = `/iclock/api/transactions/?emp_code=${emp_code}`;
+    if (start_date) url += `&start_time=${start_date} 00:00:00`;
+    if (end_date) url += `&end_time=${end_date} 23:59:59`;
+    url += `&page_size=1000`;
+    const response = await client.get(url);
+    const history = response.data.data || [];
+    // Basic stats
+    const total_visits = history.length;
+    const last_visit = history.length > 0 ? history[0].punch_time : null;
     res.json({
       success: true,
-      person: personInfo[0],
       history,
-      stats: stats[0],
+      stats: { total_visits, last_visit },
     });
   } catch (err) {
     console.error(err);
@@ -228,66 +99,23 @@ exports.getPersonHistory = async (req, res) => {
 
 // Category-wise report
 exports.getCategoryReport = async (req, res) => {
-  const { category_id, start_date, end_date } = req.query;
-
+  const { terminal_alias, start_date, end_date } = req.query;
   try {
-    let query = `
-      SELECT 
-        p.name as person_name,
-        p.cnic,
-        COUNT(el.id) as total_visits,
-        SUM(el.total_amount) as total_spent,
-        MAX(el.entry_time) as last_visit,
-        MIN(el.entry_time) as first_visit
-      FROM entry_logs el
-      JOIN people p ON el.person_id = p.id
-      WHERE el.entry_type = 'ENTRY' AND p.category_id = ?
-    `;
-
-    const queryParams = [category_id];
-
-    if (start_date) {
-      query += " AND DATE(el.entry_time) >= ?";
-      queryParams.push(start_date);
+    if (!terminal_alias) {
+      return res.json({ success: false, message: "Please provide terminal_alias" });
     }
-
-    if (end_date) {
-      query += " AND DATE(el.entry_time) <= ?";
-      queryParams.push(end_date);
-    }
-
-    query += " GROUP BY p.id ORDER BY total_visits DESC";
-
-    const categoryReport = await DatabaseHelper.query(query, queryParams);
-
-    // Get category info
-    const categoryInfo = await DatabaseHelper.query(
-      "SELECT * FROM categories WHERE id = ?",
-      [category_id]
-    );
-
-    // Summary stats
-    const summary = await DatabaseHelper.query(
-      `
-      SELECT 
-        COUNT(DISTINCT p.id) as unique_people,
-        COUNT(el.id) as total_entries,
-        SUM(el.total_amount) as total_revenue,
-        AVG(el.total_amount) as avg_per_visit
-      FROM entry_logs el
-      JOIN people p ON el.person_id = p.id
-      WHERE el.entry_type = 'ENTRY' AND p.category_id = ?
-      ${start_date ? "AND DATE(el.entry_time) >= ?" : ""}
-      ${end_date ? "AND DATE(el.entry_time) <= ?" : ""}
-    `,
-      queryParams
-    );
-
+    const client = await createAuthenticatedClient();
+    let url = `/iclock/api/transactions/?terminal_alias=${terminal_alias}`;
+    if (start_date) url += `&start_time=${start_date} 00:00:00`;
+    if (end_date) url += `&end_time=${end_date} 23:59:59`;
+    url += `&page_size=1000`;
+    const response = await client.get(url);
+    const report = response.data.data || [];
+    const total_entries = report.length;
     res.json({
       success: true,
-      category: categoryInfo[0],
-      report: categoryReport,
-      summary: summary[0],
+      report,
+      summary: { total_entries },
     });
   } catch (err) {
     console.error(err);
@@ -297,94 +125,21 @@ exports.getCategoryReport = async (req, res) => {
 
 // Revenue report
 exports.getRevenueReport = async (req, res) => {
-  const { period, start_date, end_date } = req.query;
-
+  const { start_date, end_date } = req.query;
   try {
-    let dateFormat,
-      dateFilter = "";
-    const queryParams = [];
-
-    // Determine date grouping based on period
-    switch (period) {
-      case "daily":
-        dateFormat = "%Y-%m-%d";
-        break;
-      case "weekly":
-        dateFormat = "%Y-%u";
-        break;
-      case "monthly":
-        dateFormat = "%Y-%m";
-        break;
-      default:
-        dateFormat = "%Y-%m-%d";
-    }
-
-    if (start_date) {
-      dateFilter += " AND DATE(el.entry_time) >= ?";
-      queryParams.push(start_date);
-    }
-
-    if (end_date) {
-      dateFilter += " AND DATE(el.entry_time) <= ?";
-      queryParams.push(end_date);
-    }
-
-    // Revenue by period
-    const revenueByPeriod = await DatabaseHelper.query(
-      `
-      SELECT 
-        DATE_FORMAT(el.entry_time, '${dateFormat}') as period,
-        COUNT(el.id) as entries,
-        SUM(el.total_amount) as revenue,
-        AVG(el.total_amount) as avg_per_entry
-      FROM entry_logs el
-      WHERE el.entry_type = 'ENTRY' ${dateFilter}
-      GROUP BY DATE_FORMAT(el.entry_time, '${dateFormat}')
-      ORDER BY period DESC
-      LIMIT 30
-    `,
-      queryParams
-    );
-
-    // Revenue by category
-    const revenueByCategory = await DatabaseHelper.query(
-      `
-      SELECT 
-        c.name as category,
-        COUNT(el.id) as entries,
-        SUM(el.total_amount) as revenue
-      FROM entry_logs el
-      JOIN people p ON el.person_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      WHERE el.entry_type = 'ENTRY' ${dateFilter}
-      GROUP BY c.id, c.name
-      ORDER BY revenue DESC
-    `,
-      queryParams
-    );
-
-    // Revenue by facility
-    const revenueByFacility = await DatabaseHelper.query(
-      `
-      SELECT 
-        f.name as facility,
-        COUNT(ef.id) as usage_count,
-        SUM(ef.total_price) as revenue
-      FROM entry_facilities ef
-      JOIN facilities f ON ef.facility_id = f.id
-      JOIN entry_logs el ON ef.entry_log_id = el.id
-      WHERE 1=1 ${dateFilter}
-      GROUP BY f.id, f.name
-      ORDER BY revenue DESC
-    `,
-      queryParams
-    );
-
+    const client = await createAuthenticatedClient();
+    let url = `/iclock/api/transactions/?`;
+    if (start_date) url += `start_time=${start_date} 00:00:00&`;
+    if (end_date) url += `end_time=${end_date} 23:59:59&`;
+    url += `page_size=1000`;
+    const response = await client.get(url);
+    const data = response.data.data || [];
+    // No revenue field, so just count entries
+    const total_entries = data.length;
     res.json({
       success: true,
-      revenueByPeriod,
-      revenueByCategory,
-      revenueByFacility,
+      total_entries,
+      data,
     });
   } catch (err) {
     console.error(err);
@@ -394,78 +149,24 @@ exports.getRevenueReport = async (req, res) => {
 
 // Export data to CSV
 exports.exportData = async (req, res) => {
-  const { type, start_date, end_date } = req.query;
-
+  const { start_date, end_date } = req.query;
   try {
-    let query, filename;
-
-    switch (type) {
-      case "entries":
-        query = `
-          SELECT 
-            el.id,
-            p.name as person_name,
-            p.cnic,
-            c.name as category,
-            el.entry_time,
-            el.exit_time,
-            el.total_amount,
-            el.payment_status,
-            el.has_stroller,
-            el.vehicle_number,
-            u.name as operator_name
-          FROM entry_logs el
-          JOIN people p ON el.person_id = p.id
-          JOIN categories c ON p.category_id = c.id
-          JOIN users u ON el.operator_id = u.id
-          WHERE el.entry_type = 'ENTRY'
-          ${start_date ? "AND DATE(el.entry_time) >= ?" : ""}
-          ${end_date ? "AND DATE(el.entry_time) <= ?" : ""}
-          ORDER BY el.entry_time DESC
-        `;
-        filename = "entries_export.csv";
-        break;
-
-      case "people":
-        query = `
-          SELECT 
-            p.id,
-            p.name,
-            p.cnic,
-            p.phone,
-            p.address,
-            c.name as category,
-            p.created_at
-          FROM people p
-          JOIN categories c ON p.category_id = c.id
-          WHERE p.is_active = 1
-          ORDER BY p.name
-        `;
-        filename = "people_export.csv";
-        break;
-
-      default:
-        return res.json({ success: false, message: "Invalid export type" });
-    }
-
-    const params = [];
-    if (start_date && type === "entries") params.push(start_date);
-    if (end_date && type === "entries") params.push(end_date);
-
-    const data = await DatabaseHelper.query(query, params);
-
+    const client = await createAuthenticatedClient();
+    let url = `/iclock/api/transactions/?`;
+    if (start_date) url += `start_time=${start_date} 00:00:00&`;
+    if (end_date) url += `end_time=${end_date} 23:59:59&`;
+    url += `page_size=1000`;
+    const response = await client.get(url);
+    const data = response.data.data || [];
     if (data.length === 0) {
       return res.json({ success: false, message: "No data to export" });
     }
-
     // Convert to CSV
     const headers = Object.keys(data[0]);
     let csv = headers.join(",") + "\n";
-
     data.forEach((row) => {
       const values = headers.map((header) => {
         const value = row[header];
-        // Escape commas and quotes in CSV
         if (
           typeof value === "string" &&
           (value.includes(",") || value.includes('"'))
@@ -476,12 +177,69 @@ exports.exportData = async (req, res) => {
       });
       csv += values.join(",") + "\n";
     });
-
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Disposition", `attachment; filename="entries_export.csv"`);
     res.send(csv);
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: "Export failed" });
+  }
+};
+
+// API for today's check-ins and check-outs
+exports.getTodayCheckinCheckout = async (req, res) => {
+  function formatDate(date, hour, minute, second) {
+    // Returns YYYY-MM-DD HH:mm:ss
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:${String(second).padStart(2,'0')}`;
+  }
+  try {
+    const today = new Date();
+    const start = formatDate(today, 0, 0, 0); // 12:00am
+    const end = formatDate(today, 23, 59, 59); // 11:59pm
+    const client = await require('../utils/zkbiotime').createAuthenticatedClient();
+    const response = await client.get(`/iclock/api/transactions/?start_time=${start}&end_time=${end}&page_size=1000`);
+    const data = response.data.data || [];
+    const checkins = data.filter(e => e.punch_state_display === 'Check In');
+    const checkouts = data.filter(e => e.punch_state_display === 'Check Out');
+    res.json({
+      success: true,
+      checkins,
+      checkouts,
+      total_checkins: checkins.length,
+      total_checkouts: checkouts.length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Failed to fetch today's check-ins/check-outs" });
+  }
+};
+
+// API for today's recent activities from ZKBioTime
+exports.getTodayRecentActivities = async (req, res) => {
+  function formatDate(date, hour, minute, second) {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:${String(second).padStart(2,'0')}`;
+  }
+  try {
+    const today = new Date();
+    const start = formatDate(today, 0, 0, 0);
+    const end = formatDate(today, 23, 59, 59);
+    const client = await require('../utils/zkbiotime').createAuthenticatedClient();
+    const response = await client.get(`/iclock/api/transactions/?start_time=${start}&end_time=${end}&page_size=100`);
+    const data = response.data.data || [];
+    // Sort by punch_time descending (latest first)
+    data.sort((a, b) => new Date(b.punch_time) - new Date(a.punch_time));
+    // Map to activity format for dashboard
+    const activities = data.map(e => ({
+      name: `${e.first_name || ''} ${e.last_name || ''}`.trim(),
+      cnic: e.cnic || '',
+      entry_type: e.punch_state_display === 'Check In' ? 'ENTRY' : 'EXIT',
+      entry_time: e.punch_state_display === 'Check In' ? e.punch_time : null,
+      exit_time: e.punch_state_display === 'Check Out' ? e.punch_time : null,
+      remarks: e.remarks || ''
+    }));
+    res.json({ success: true, activities });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Failed to fetch today's recent activities" });
   }
 };

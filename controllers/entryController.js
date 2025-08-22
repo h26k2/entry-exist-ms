@@ -1,12 +1,50 @@
-// Render card generation page
-exports.renderCardGenerationPage = (req, res) => {
-  res.render("card-generation");
-};
-
 const QRCode = require("qrcode");
 const path = require("path");
 const fs = require("fs").promises;
 const DatabaseHelper = require("../config/dbHelper");
+const { createAuthenticatedClient } = require('../utils/zkbiotime');
+
+/**
+ * Get entries/transactions from ZKBioTime
+ */
+async function getZKEntries(options = {}) {
+    try {
+    const client = await createAuthenticatedClient();
+    const params = new URLSearchParams();
+    if (options.startTime) params.append('start_time', options.startTime);
+    if (options.endTime) params.append('end_time', options.endTime);
+    if (options.page) params.append('page', options.page);
+    if (options.pageSize) params.append('page_size', options.pageSize);
+    // Fetch from local ZKBioTime server
+    const response = await client.get(`/iclock/api/transactions/?${params.toString()}`);
+    if (response.data.code !== 0) {
+      throw new Error(response.data.msg || 'Failed to fetch entries');
+    }
+    // Only map required fields and format date
+    const entries = response.data.data.map(entry => ({
+      id: entry.id,
+      first_name: entry.first_name,
+      last_name: entry.last_name,
+      punch_state_display: entry.punch_state_display,
+      punch_time: entry.punch_time ? new Date(entry.punch_time.replace(/-/g, '/')).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) : ''
+    }));
+    return {
+      entries,
+      total: response.data.count,
+      hasMore: !!response.data.next
+    };
+    } catch (error) {
+        console.error('Failed to fetch ZKBioTime entries:', error);
+        throw error;
+    }
+}
 
 // API to generate a card for a person
 exports.generateCard = async (req, res) => {
@@ -146,12 +184,17 @@ exports.renderEntryPage = async (req, res) => {
     const facilities = await DatabaseHelper.query(
       "SELECT * FROM facilities WHERE is_active = 1 ORDER BY name"
     );
-    const currentOccupancy = await DatabaseHelper.query(`
-      SELECT COUNT(*) as total_people,
-             SUM(CASE WHEN is_guest = 1 THEN guest_count ELSE 1 END) as total_count,
-             SUM(CASE WHEN is_cricket_team = 1 THEN team_members_count ELSE 1 END) as team_members
-      FROM current_occupancy
-    `);
+  
+    // Fetch entries from ZKBioTime
+    // Get page and pageSize from query params for pagination
+  const page = parseInt(req.query.page, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const zkResponse = await getZKEntries({
+      pageSize,
+      page
+    });
+    // Only show required fields
+    const entries = zkResponse.entries || [];
 
     res.render("entry-management", {
       user: req.session.user,
@@ -159,7 +202,11 @@ exports.renderEntryPage = async (req, res) => {
       title: "Entry Management",
       categories,
       facilities,
-      currentCount: currentOccupancy[0]?.total_count || 0,
+      entries,
+      currentCount: entries.length || 0,
+      page,
+      pageSize,
+      total: zkResponse.total || 0,
       error: req.query.error || null,
       success: req.query.success || null,
     });
@@ -171,6 +218,7 @@ exports.renderEntryPage = async (req, res) => {
       title: "Entry Management",
       categories: [],
       facilities: [],
+      entries: [], // Ensure entries is always defined
       currentCount: 0,
       error: "Error loading entry page",
       success: null,
@@ -212,24 +260,11 @@ exports.searchPersonInside = async (req, res) => {
   const { query } = req.body;
 
   try {
+    // entry_logs table removed, so only search people table and categories
     const people = await DatabaseHelper.query(
-      `
-      SELECT p.*, c.name as category_name, el.entry_time, el.total_amount
-      FROM people p 
-      LEFT JOIN categories c ON p.category_id = c.id
-      JOIN entry_logs el ON p.id = el.person_id
-      WHERE (p.cnic LIKE ? OR p.name LIKE ?) 
-        AND el.entry_type = 'ENTRY' 
-        AND el.exit_time IS NULL
-        AND el.id = (
-          SELECT MAX(id) FROM entry_logs el2 
-          WHERE el2.person_id = p.id
-        )
-      ORDER BY p.name LIMIT 10
-    `,
+      `SELECT p.*, c.name as category_name FROM people p LEFT JOIN categories c ON p.category_id = c.id WHERE p.cnic LIKE ? OR p.name LIKE ? ORDER BY p.name LIMIT 10`,
       [`%${query}%`, `%${query}%`]
     );
-
     res.json({ success: true, people });
   } catch (err) {
     console.error(err);
@@ -308,17 +343,14 @@ exports.processEntry = async (req, res) => {
   } = req.body;
 
   try {
-    // Check if person is already inside
-    const existingEntry = await DatabaseHelper.query(
-      `
-      SELECT id FROM entry_logs 
-      WHERE person_id = ? AND entry_type = 'ENTRY' AND exit_time IS NULL
-      ORDER BY id DESC LIMIT 1
-    `,
-      [person_id]
-    );
-
-    if (existingEntry.length > 0) {
+    // Check if person is already inside using ZKBioTime API
+    const { createAuthenticatedClient } = require('../utils/zkbiotime');
+    const client = await createAuthenticatedClient();
+    const response = await client.get(`/iclock/api/transactions/?emp_code=${person_id}&page_size=10`);
+    const entries = response.data.data || [];
+    const lastEntry = entries.find(e => e.punch_state_display === 'Check In');
+    const lastExit = entries.find(e => e.punch_state_display === 'Check Out');
+    if (lastEntry && (!lastExit || new Date(lastEntry.punch_time) > new Date(lastExit.punch_time))) {
       return res.json({
         success: false,
         message: "Person is already inside the facility",
@@ -373,32 +405,7 @@ exports.processEntry = async (req, res) => {
     // Get user ID from session
     const operatorId = req.session.user.id || 1;
 
-    // Create entry log
-    const entryResult = await DatabaseHelper.query(
-      `
-      INSERT INTO entry_logs (
-        person_id, entry_type, operator_id, has_stroller, vehicle_number,
-        is_guest, host_person_id, guest_count, is_cricket_team, team_name,
-        team_members_count, total_amount, payment_status, remarks, is_fee_locked
-      ) VALUES (?, 'ENTRY', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-      [
-        person_id,
-        operatorId,
-        has_stroller === "1",
-        vehicle_number,
-        is_guest === "1",
-        host_person_id || null,
-        guest_count || 1,
-        is_cricket_team === "1",
-        team_name,
-        team_members_count || 0,
-        totalAmount,
-        paymentStatus,
-        remarks,
-        req.session.user.role !== "admin", // Lock fee for operators
-      ]
-    );
+  // Entry creation now handled by ZKBioTime device, not local DB
 
     // Add facility usage records
     for (const facility of facilities) {
@@ -443,33 +450,8 @@ exports.processExit = async (req, res) => {
 
   try {
     // Find the latest entry without exit
-    const entryLog = await DatabaseHelper.query(
-      `
-      SELECT * FROM entry_logs 
-      WHERE person_id = ? AND entry_type = 'ENTRY' AND exit_time IS NULL
-      ORDER BY id DESC LIMIT 1
-    `,
-      [person_id]
-    );
-
-    if (entryLog.length === 0) {
-      return res.json({
-        success: false,
-        message: "No active entry found for this person",
-      });
-    }
-
-    // Update exit time
-    await DatabaseHelper.query(
-      `
-      UPDATE entry_logs 
-      SET exit_time = NOW(), remarks = CONCAT(IFNULL(remarks, ''), ' | Exit: ', ?)
-      WHERE id = ?
-    `,
-      [exit_remarks || "Normal exit", entryLog[0].id]
-    );
-
-    res.json({ success: true, message: "Exit recorded successfully" });
+  // Exit update now handled by ZKBioTime device, not local DB
+  res.json({ success: true, message: "Exit recorded successfully (via ZKBioTime)" });
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: "Exit processing failed" });
@@ -477,43 +459,58 @@ exports.processExit = async (req, res) => {
 };
 
 // Get current occupancy
-exports.getCurrentOccupancy = async (req, res) => {
-  try {
-    const occupancy = await DatabaseHelper.query(`
-      SELECT 
-        p.name,
-        p.cnic,
-        c.name as category,
-        el.entry_time,
-        el.has_stroller,
-        el.is_guest,
-        el.guest_count,
-        el.is_cricket_team,
-        el.team_name,
-        el.team_members_count,
-        TIMESTAMPDIFF(HOUR, el.entry_time, NOW()) as hours_inside
-      FROM entry_logs el
-      JOIN people p ON el.person_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      WHERE el.entry_type = 'ENTRY' AND el.exit_time IS NULL
-      ORDER BY el.entry_time DESC
-    `);
 
-    const totalCount = occupancy.reduce((sum, person) => {
-      if (person.is_cricket_team) {
-        return sum + person.team_members_count;
-      } else if (person.is_guest) {
-        return sum + person.guest_count;
-      } else {
-        return sum + 1;
-      }
-    }, 0);
+// Render entry management page
+exports.renderEntryManagementPage = async (req, res) => {
+    try {
+        // Get today's entries
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const entries = await getZKEntries({
+            startTime: today.toISOString().slice(0, 19).replace('T', ' '),
+            endTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            pageSize: 50
+        });
 
-    res.json({ success: true, occupancy, totalCount });
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false, message: "Failed to get occupancy data" });
-  }
+        res.render("entry-management", {
+            title: "Entry Management",
+            activePage: "entry",
+            entries: entries.entries,
+            user: req.session.user
+        });
+    } catch (error) {
+        console.error('Error fetching entries:', error);
+        res.status(500).render("error", {
+            message: "Failed to load entries",
+            error: error
+        });
+    }
+};
+
+// API endpoint to get recent entries
+exports.getRecentEntries = async (req, res) => {
+    try {
+        const { startTime, endTime, page = 1, pageSize = 50 } = req.query;
+        
+        const entries = await getZKEntries({
+            startTime,
+            endTime,
+            page,
+            pageSize
+        });
+
+        res.json({
+            success: true,
+            ...entries
+        });
+    } catch (error) {
+        console.error('Error fetching recent entries:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 // Fee deposit management

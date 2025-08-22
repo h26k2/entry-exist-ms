@@ -3,10 +3,21 @@ const dotenv = require("dotenv");
 const path = require("path");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
+const { getAuthToken } = require('./utils/zkbiotime');
 dotenv.config();
 
-const app = express();
+app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize ZKBioTime Authentication
+async function initializeZKBioTime() {
+  try {
+    const token = await getAuthToken();
+    console.log('Successfully authenticated with ZKBioTime server');
+  } catch (error) {
+    console.error('Failed to authenticate with ZKBioTime server:', error.message);
+  }
+}
 
 // Create session store for MySQL
 let sessionStore;
@@ -84,6 +95,8 @@ require("./config/db");
 const { initializeRoutes } = require("./routes");
 initializeRoutes(app);
 
-app.listen(PORT, () => {
+// Start server and initialize ZKBioTime
+app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  await initializeZKBioTime();
 });

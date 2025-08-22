@@ -272,7 +272,6 @@ document
   .addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const formData = new FormData(this);
     const facilityId = document.getElementById("facilityId").value;
     const isUpdate = facilityId !== "";
 
@@ -280,9 +279,20 @@ document
       ? `/api/update-facility/${facilityId}`
       : "/api/add-facility";
 
+    // Collect form data as JSON
+    const payload = {
+      name: document.getElementById("facilityName").value,
+      price: document.getElementById("facilityPrice").value,
+      description: document.getElementById("facilityDescription").value,
+      is_active: document.getElementById("facilityActive").checked ? "1" : "0"
+    };
+
     fetch(url, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload),
     })
       .then((response) => response.json())
       .then((data) => {

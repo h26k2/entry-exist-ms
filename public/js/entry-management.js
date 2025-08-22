@@ -8,8 +8,8 @@ class EntryManagementController {
   }
 
   init() {
-    this.bindEvents();
-    this.refreshOccupancy();
+  this.bindEvents();
+  // Removed call to refreshOccupancy()
   }
 
   bindEvents() {
@@ -367,52 +367,6 @@ class EntryManagementController {
       `;
     }
 
-    fetch("/api/current-occupancy")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.success) {
-          this.displayCurrentOccupancyInModal(data.occupancy, data.totalCount);
-        } else {
-          if (container) {
-            container.innerHTML = `
-              <div class="text-center py-8">
-                <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-4"></i>
-                <p class="text-red-500 text-lg">${
-                  data.message || "Failed to get occupancy data"
-                }</p>
-                <button onclick="entryController.viewCurrentOccupancy()" class="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                  Try Again
-                </button>
-              </div>
-            `;
-          }
-          this.showMessage(
-            data.message || "Failed to get occupancy data",
-            "error"
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        if (container) {
-          container.innerHTML = `
-            <div class="text-center py-8">
-              <i class="fas fa-wifi text-red-400 text-4xl mb-4"></i>
-              <p class="text-red-500 text-lg">Network error occurred</p>
-              <p class="text-gray-500 text-sm mb-4">Please check your connection and try again</p>
-              <button onclick="entryController.viewCurrentOccupancy()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                Try Again
-              </button>
-            </div>
-          `;
-        }
-        this.showMessage("Network error occurred", "error");
-      });
   }
 
   displayCurrentOccupancyInModal(occupancy, totalCount) {
@@ -546,51 +500,7 @@ class EntryManagementController {
   }
 
   refreshOccupancyModal() {
-    this.viewCurrentOccupancy();
-  }
-
-  quickExitFromModal(name, cnic) {
-    this.closeOccupancyModal();
-    this.openExitModal();
-    setTimeout(() => {
-      const searchInput = document.getElementById("exitPersonSearch");
-      if (searchInput) {
-        searchInput.value = name;
-        if (window.exitModalManager) {
-          window.exitModalManager.searchPersonInside(name);
-        }
-      }
-    }, 300);
-  }
-
-  refreshOccupancy() {
-    fetch("/api/current-occupancy")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          const countElement = document.getElementById("currentCount");
-          if (countElement) {
-            countElement.textContent = data.totalCount;
-          }
-        }
-      })
-      .catch((error) => console.error("Error refreshing occupancy:", error));
-  }
-
-  // Quick Actions
-  quickEntry(personId) {
-    this.openEntryModal();
-    // Pre-fill functionality will be handled by EntryModalManager
-  }
-
-  addDeposit(personId, name, currentBalance) {
-    const depositPersonId = document.getElementById("depositPersonId");
-    const depositPersonName = document.getElementById("depositPersonName");
-    const depositCurrentBalance = document.getElementById(
-      "depositCurrentBalance"
-    );
-
-    if (depositPersonId) depositPersonId.value = personId;
+  // Occupancy modal and API removed
     if (depositPersonName) depositPersonName.textContent = name;
     if (depositCurrentBalance)
       depositCurrentBalance.textContent = currentBalance.toFixed(2);
@@ -800,6 +710,15 @@ document.addEventListener("DOMContentLoaded", function () {
           console.error("Error:", error);
           entryController.showMessage("Network error occurred", "error");
         });
+    });
+  }
+
+  // Add refresh button logic
+  const refreshBtn = document.getElementById('refreshEntriesBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      // Reload page to refetch latest entries
+      window.location.reload();
     });
   }
 });

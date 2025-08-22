@@ -161,26 +161,13 @@
                         Reports & Analytics
                       </h1>
                       <p class="text-gray-600 mt-1 text-lg">
-                        Real-time insights and comprehensive analytics for your
+                        Insights and comprehensive analytics for your
                         facility
                       </p>
                     </div>
                   </div>
 
-                  <!-- Live Status Indicator -->
-                  <div
-                    class="flex items-center gap-3 bg-green-50 px-4 py-2 rounded-full border border-green-200"
-                  >
-                    <div
-                      class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                    ></div>
-                    <span class="text-green-700 text-sm font-medium"
-                      >Live Data</span
-                    >
-                    <span class="text-green-600 text-xs" id="lastUpdate"
-                      >Updated now</span
-                    >
-                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -204,26 +191,26 @@
                   <i class="fas fa-calendar-day text-lg"></i
                   ><span>Daily Summary</span>
                 </button>
-                <button
+                <!--<button
                   class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
                   data-tab="person-history"
                 >
                   <i class="fas fa-user-clock text-lg"></i
                   ><span>Person History</span>
-                </button>
-                <button
+                </button>-->
+                <!--<button
                   class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
                   data-tab="category-report"
                 >
                   <i class="fas fa-chart-pie text-lg"></i
                   ><span>Categories</span>
-                </button>
-                <button
+                </button> -->
+                <!--<button
                   class="relative py-4 px-6 font-semibold text-sm transition-all duration-300 tab-btn whitespace-nowrap flex items-center gap-2 min-w-fit"
                   data-tab="revenue-report"
                 >
                   <i class="fas fa-dollar-sign text-lg"></i><span>Revenue</span>
-                </button>
+                </button> -->
               </nav>
             </div>
           </div>
@@ -331,7 +318,7 @@
                     </div>
                   </div>
 
-                  <div
+                  <!--<div
                     class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg"
                   >
                     <div class="flex items-center justify-between">
@@ -350,9 +337,9 @@
                         <i class="fas fa-users text-xl"></i>
                       </div>
                     </div>
-                  </div>
+                  </div>-->
 
-                  <div
+                  <!--<div
                     class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl shadow-lg"
                   >
                     <div class="flex items-center justify-between">
@@ -371,7 +358,7 @@
                         <i class="fas fa-rupee-sign text-xl"></i>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -723,6 +710,7 @@
         loadInitialData();
         setupAutoRefresh();
         setupTooltips();
+        loadTodayOverview();
       }
 
       function setupTabNavigation() {
@@ -824,7 +812,6 @@
         Promise.all([
           loadTodayStats(),
           loadRevenueSummary(),
-          loadLiveOccupancy(),
           populateCategoryDropdown(),
         ]).finally(() => {
           hideLoadingState();
@@ -868,7 +855,6 @@
           }
 
           loadTodayStats();
-          loadLiveOccupancy();
           updateLastUpdateTime();
         }, 30000);
       }
@@ -1887,7 +1873,7 @@
       // Data loading functions
       async function loadTodayStats() {
         try {
-          const response = await fetch("/api/current-occupancy");
+          // Removed current-occupancy API call
           const data = await response.json();
           if (data.success) {
             document.getElementById("todayEntries").textContent =
@@ -1906,7 +1892,7 @@
           document.getElementById("todayExits").textContent = "0";
           document.getElementById("currentOccupancy").textContent = "0";
           document.getElementById("todayRevenue").textContent = "RS0";
-        }
+               }
       }
 
       async function loadRevenueSummary() {
@@ -1930,75 +1916,28 @@
         }
       }
 
-      async function loadLiveOccupancy() {
+      // Fetch and display today's check-in and check-out in overview card
+      async function loadTodayOverview() {
         try {
-          const response = await fetch("/api/current-occupancy");
-          const data = await response.json();
+          const res = await fetch('/api/today-checkin-checkout');
+          const data = await res.json();
+          const todayEntriesEl = document.getElementById('todayEntries');
+          const todayExitsEl = document.getElementById('todayExits');
           if (data.success) {
-            document.getElementById("liveOccupancyCount").textContent =
-              data.totalCount || "0";
-            document.getElementById("todayTotalEntries").textContent =
-              data.todayEntries || "0";
-            document.getElementById("todayTotalExits").textContent =
-              data.todayExits || "0";
+            if (todayEntriesEl) todayEntriesEl.textContent = data.total_checkins;
+            if (todayExitsEl) todayExitsEl.textContent = data.total_checkouts;
+          } else {
+            if (todayEntriesEl) todayEntriesEl.textContent = '0';
+            if (todayExitsEl) todayExitsEl.textContent = '0';
           }
         } catch (error) {
-          console.error("Error loading live occupancy:", error);
-          // Set default values
-          document.getElementById("liveOccupancyCount").textContent = "0";
-          document.getElementById("todayTotalEntries").textContent = "0";
-          document.getElementById("todayTotalExits").textContent = "0";
+          if (document.getElementById('todayEntries')) document.getElementById('todayEntries').textContent = '0';
+          if (document.getElementById('todayExits')) document.getElementById('todayExits').textContent = '0';
         }
       }
-
-      // Auto-refresh live data every 30 seconds
-      setInterval(() => {
-        loadLiveOccupancy();
-        loadTodayStats();
-        updateLastUpdateTime();
-      }, 30000);
-
-      function updateLastUpdateTime() {
-        const lastUpdateElement = document.getElementById("lastUpdate");
-        if (lastUpdateElement) {
-          lastUpdateElement.textContent =
-            "Updated " + new Date().toLocaleTimeString();
-        }
-      }
-
-      // Enhanced notification system
-      function showNotification(message, type = "info") {
-        const notification = document.createElement("div");
-        const bgColor = {
-          success: "bg-green-500",
-          error: "bg-red-500",
-          warning: "bg-yellow-500",
-          info: "bg-blue-500",
-        }[type];
-
-        notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`;
-        notification.innerHTML = `
-          <div class="flex items-center">
-            <i class="fas fa-${
-              type === "success"
-                ? "check-circle"
-                : type === "error"
-                ? "exclamation-circle"
-                : type === "warning"
-                ? "exclamation-triangle"
-                : "info-circle"
-            } mr-2"></i>
-            ${message}
-          </div>
-        `;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          notification.style.opacity = "0";
-          setTimeout(() => notification.remove(), 300);
-        }, 3000);
-      }
+      document.addEventListener('DOMContentLoaded', function() {
+        loadTodayOverview();
+      });
     </script>
 
     <style>

@@ -325,11 +325,11 @@ exports.requireRole = (roles) => {
 };
 
 exports.dashboard = (req, res) => {
-  require("../config/dbHelper")
-    .query(
-      `SELECT e.id, e.person_id, e.entry_time, e.exit_time, e.entry_type, e.remarks, p.name, p.cnic FROM entry_logs e LEFT JOIN people p ON e.person_id = p.id ORDER BY e.entry_time DESC LIMIT 10`
-    )
-    .then((recentActivities) => {
+  const { createAuthenticatedClient } = require('../utils/zkbiotime');
+  createAuthenticatedClient()
+    .then(async (client) => {
+      const response = await client.get('/iclock/api/transactions/?page_size=10');
+      const recentActivities = response.data.data || [];
       res.render("dashboard", {
         user: req.session.user,
         activePage: "dashboard",
@@ -350,11 +350,10 @@ exports.dashboard = (req, res) => {
 };
 
 exports.allActivities = (req, res) => {
-  require("../config/dbHelper")
-    .query(
-      `SELECT e.id, e.person_id, e.entry_time, e.exit_time, e.entry_type, e.remarks, p.name, p.cnic FROM entry_logs e LEFT JOIN people p ON e.person_id = p.id ORDER BY e.entry_time DESC`
-    )
-    .then((recentActivities) => {
+  createAuthenticatedClient()
+    .then(async (client) => {
+      const response = await client.get('/iclock/api/transactions/?page_size=100');
+      const recentActivities = response.data.data || [];
       res.render("all-activities", {
         user: req.session.user,
         activePage: "dashboard",

@@ -67,26 +67,13 @@
                       </p>
                     </div>
                   </div>
-                  <!-- Live Status Indicator -->
-                  <div
-                    class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full border border-blue-200"
-                  >
-                    <div
-                      class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
-                    ></div>
-                    <span class="text-blue-700 text-sm font-medium"
-                      >Live Data</span
-                    >
-                    <span class="text-blue-600 text-xs" id="lastUpdate"
-                      >Updated now</span
-                    >
-                  </div>
+                  
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Current Occupancy Card -->
+          <!-- Current Occupancy Card 
           <div
             class="stat-card p-6 mb-8"
             style="
@@ -116,20 +103,77 @@
             <div class="flex space-x-3 mt-6">
               <button
                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium py-2 px-4 rounded-xl transition-all duration-200 flex items-center text-sm lg:text-base backdrop-blur-sm"
-                onclick="viewCurrentOccupancy()"
-              >
-                <i class="fas fa-eye mr-2"></i>
-                <span class="hidden sm:inline">View Details</span>
-                <span class="sm:hidden">Details</span>
-              </button>
-              <button
-                class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium py-2 px-4 rounded-xl transition-all duration-200 flex items-center text-sm lg:text-base backdrop-blur-sm"
-                onclick="refreshOccupancy()"
+                onclick="window.location.reload()"
               >
                 <i class="fas fa-sync-alt mr-2"></i>
                 <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
+          </div>-->
+
+          <!-- Recent Entries Table -->
+          <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-900">Recent Entries</h3>
+              <p class="text-sm text-gray-600">Real-time entry/exit records from devices</p>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Punch Time</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <% if (entries && entries.length > 0) { %>
+                    <% entries.forEach(entry => { %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div>
+                              <div class="text-sm font-medium text-gray-900"><%= entry.first_name %></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div>
+                              <div class="text-sm font-medium text-gray-900"><%= entry.last_name %></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= entry.id %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <% if (entry.punch_state_display === 'Check In') { %>
+                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">Check In</span>
+                          <% } else { %>
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Check Out</span>
+                          <% } %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= entry.punch_time %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                        No entries found for today
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Beautiful Pagination Component -->
+            <%- include('components/pagination', { page, pageSize, total, entries }) %>
           </div>
 
           <!-- Quick Actions Grid -->

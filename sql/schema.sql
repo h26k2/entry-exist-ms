@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 -- Entry Exit Management System Database Schema
 
-
 -- Facilities table
 CREATE TABLE facilities (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -106,29 +105,7 @@ CREATE TABLE fee_deposits (
     FOREIGN KEY (deposited_by) REFERENCES users(id)
 );
 
--- Current occupancy view
-CREATE VIEW current_occupancy AS
-SELECT 
-    el.person_id,
-    p.name,
-    p.cnic,
-    c.name as category,
-    el.entry_time,
-    el.has_stroller,
-    el.is_guest,
-    el.guest_count,
-    el.is_cricket_team,
-    el.team_members_count
-FROM entry_logs el
-JOIN people p ON el.person_id = p.id
-JOIN categories c ON p.category_id = c.id
-WHERE el.entry_type = 'ENTRY' 
-AND el.exit_time IS NULL
-AND el.id = (
-    SELECT MAX(id) 
-    FROM entry_logs el2 
-    WHERE el2.person_id = el.person_id
-);
+-- Current occupancy view removed
 
 -- User Categories Table
 CREATE TABLE IF NOT EXISTS categories (

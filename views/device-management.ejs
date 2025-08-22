@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> - Entry/Exit Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1e40af",
+                        secondary: "#3b82f6",
+                        accent: "#06b6d4",
+                        dark: "#1f2937",
+                        light: "#f8fafc",
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/device-management.css" />
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar') %>
+
+        <main class="flex-1 overflow-y-auto">
+            <%- include('partials/header', { title: 'Device Management' }) %>
+
+            <!-- Main Content -->
+            <div class="p-4 lg:p-6 animate-fade-in">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Connected Devices</h2>
+                            <p class="mt-1 text-sm text-gray-600">Monitor and manage your access control devices</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2" onclick="window.location.reload()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Devices Grid -->
+                <div class="devices-grid">
+                    <% if (devices && devices.length > 0) { %>
+                        <% devices.forEach((device, index) => { %>
+                            <% 
+                                const lastActivity = new Date(device.lastActivity);
+                                const now = new Date();
+                                const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
+                                let statusClass = '';
+                                let statusText = '';
+                                let statusIcon = '';
+                                
+                                if (diffMinutes < 5) {
+                                    statusClass = 'online';
+                                    statusText = 'Online';
+                                    statusIcon = 'fa-circle-check';
+                                } else if (diffMinutes < 60) {
+                                    statusClass = 'idle';
+                                    statusText = 'Idle';
+                                    statusIcon = 'fa-clock';
+                                } else {
+                                    statusClass = 'offline';
+                                    statusText = 'Offline';
+                                    statusIcon = 'fa-circle-exclamation';
+                                }
+                            %>
+                            <div class="device-card bg-white rounded-xl shadow-sm p-6 animate-fade-in">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-fingerprint text-blue-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900"><%= device.alias %></h3>
+                                            <p class="text-sm text-gray-500">SN: <%= device.serialNumber %></p>
+                                        </div>
+                                    </div>
+                                    <span class="device-status <%= statusClass %>">
+                                        <i class="fas <%= statusIcon %> mr-1"></i>
+                                        <%= statusText %>
+                                    </span>
+                                </div>
+                                <div class="border-t border-gray-100 pt-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-xs text-gray-500 mb-1">IP Address</p>
+                                            <p class="text-sm font-medium text-gray-900"><%= device.ipAddress %></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 mb-1">Last Active</p>
+                                            <p class="text-sm font-medium text-gray-900"><%= new Date(device.lastActivity).toLocaleString() %></p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="col-span-full bg-white rounded-xl shadow-sm p-8 text-center">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i class="fas fa-radar text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">No Devices Found</h3>
+                            <p class="text-gray-500">No access control devices are currently connected to the system.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <%- include('partials/toast') %>
+
+    <!-- Scripts -->
+    <script>
+        // Toast notification system
+        const Toast = {
+            success: function(message) {
+                this._show(message, 'success');
+            },
+            error: function(message) {
+                this._show(message, 'error');
+            },
+            info: function(message) {
+                this._show(message, 'info');
+            },
+            warning: function(message) {
+                this._show(message, 'warning');
+            },
+            _show: function(message, type) {
+                const toastContainer = document.getElementById('toast-container');
+                const toastDiv = document.createElement('div');
+                toastDiv.className = `fixed bottom-4 right-4 px-4 py-2 rounded text-white ${
+                    type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' :
+                    type === 'info' ? 'bg-blue-500' :
+                    'bg-yellow-500'
+                }`;
+                toastDiv.textContent = message;
+                toastContainer.appendChild(toastDiv);
+                setTimeout(() => {
+                    toastDiv.remove();
+                }, 3000);
+            }
+        };
+    </script>
+    <div id="toast-container"></div>
+</body>
+</html>
+
+<%- include('partials/toast') %>

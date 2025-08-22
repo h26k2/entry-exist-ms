@@ -1,7 +1,11 @@
 /**
  * Route Index File
  *
- * This file provides a central location to manage all route imports
+   app.use("/", adminRoutes);
+  app.use("/", deviceRoutes);
+  // Register user category routes
+  app.use("/user-category", require("./userCategoryRoutes"));
+  app.use("/api/user-categories", userCategoryRoutes);is file provides a central location to manage all route imports
  * and can be used for route documentation or middleware application.
  */
 
@@ -12,8 +16,8 @@ const peopleRoutes = require("./peopleRoutes");
 const facilityRoutes = require("./facilityRoutes");
 const reportRoutes = require("./reportRoutes");
 const adminRoutes = require("./adminRoutes");
-const cardRoutes = require("./cardRoutes");
 const userCategoryRoutes = require("./userCategoryRoutes");
+const deviceRoutes = require("./deviceRoutes");
 
 /**
  * Initialize all routes with the Express app
@@ -29,7 +33,7 @@ function initializeRoutes(app) {
   app.use("/", facilityRoutes);
   app.use("/", reportRoutes);
   app.use("/", adminRoutes);
-  app.use("/cards", cardRoutes);
+  app.use("/", deviceRoutes);
   // Register user category routes
   app.use("/user-category", require("./userCategoryRoutes"));
   app.use("/api/user-categories", userCategoryRoutes);
@@ -73,13 +77,14 @@ const routeStructure = {
     description: "Admin-specific routes (operators, cache)",
     endpoints: ["/dashboard/operator", "/admin/cache/*"],
   },
-  cardRoutes: {
-    description: "Card and QR code management",
-    endpoints: ["/cards", "/cards/api/*", "/cards/api/scan-qr"],
-  },
+
   userCategoryRoutes: {
     description: "User category management",
     endpoints: ["/user-category", "/api/user-categories"],
+  },
+  deviceRoutes: {
+    description: "Device management and monitoring",
+    endpoints: ["/dashboard/devices"],
   },
 };
 
@@ -93,6 +98,6 @@ module.exports = {
   facilityRoutes,
   reportRoutes,
   adminRoutes,
-  cardRoutes,
   userCategoryRoutes,
+  deviceRoutes,
 };
