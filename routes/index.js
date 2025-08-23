@@ -18,6 +18,7 @@ const reportRoutes = require("./reportRoutes");
 const adminRoutes = require("./adminRoutes");
 const userCategoryRoutes = require("./userCategoryRoutes");
 const deviceRoutes = require("./deviceRoutes");
+const userRoutes = require("./userRoutes");
 
 /**
  * Initialize all routes with the Express app
@@ -34,6 +35,7 @@ function initializeRoutes(app) {
   app.use("/", reportRoutes);
   app.use("/", adminRoutes);
   app.use("/", deviceRoutes);
+  app.use("/", userRoutes);
   // Register user category routes
   app.use("/user-category", require("./userCategoryRoutes"));
   app.use("/api/user-categories", userCategoryRoutes);
@@ -82,6 +84,10 @@ const routeStructure = {
     description: "User category management",
     endpoints: ["/user-category", "/api/user-categories"],
   },
+  userRoutes: {
+    description: "ZKBioTime user management",
+    endpoints: ["/dashboard/users", "/api/users", "/api/add-user"],
+  },
   deviceRoutes: {
     description: "Device management and monitoring",
     endpoints: ["/dashboard/devices"],
@@ -99,5 +105,6 @@ module.exports = {
   reportRoutes,
   adminRoutes,
   userCategoryRoutes,
+  userRoutes,
   deviceRoutes,
 };
