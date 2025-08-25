@@ -55,6 +55,66 @@
             </div>
           </div>
 
+          <!-- Search and Filter Section -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-4">
+            <div class="flex flex-col lg:flex-row gap-4">
+              <!-- Search Bar -->
+              <div class="flex-1">
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
+                  Search Users
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    id="searchInput"
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Search by name or CNIC number..."
+                  />
+                </div>
+              </div>
+              
+              <!-- Type Filter -->
+              <div class="lg:w-64">
+                <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Type
+                </label>
+                <select
+                  id="typeFilter"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Users</option>
+                  <option value="unregistered">Unregistered</option>
+                  <option value="Civilian">Civilian</option>
+                  <option value="Retired Officer">Retired Officer</option>
+                  <option value="Serving personnel">Serving personnel</option>
+                </select>
+              </div>
+              
+              <!-- Search and Clear Buttons -->
+              <div class="flex gap-2 lg:w-48 lg:items-end">
+                <button
+                  id="searchBtn"
+                  onclick="performSearch()"
+                  class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <i class="fas fa-search"></i>
+                  Search
+                </button>
+                <button
+                  id="clearBtn"
+                  onclick="clearSearch()"
+                  class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <i class="fas fa-times"></i>
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Users Table -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6 border-b border-gray-200">
@@ -69,13 +129,19 @@
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
+                      S#
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      First Name
+                      Full Name
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Name
+                      CNIC Number
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User Type
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -83,6 +149,31 @@
                   <!-- Users will be loaded here -->
                 </tbody>
               </table>
+            </div>
+
+            <!-- Pagination and Record Count -->
+            <div id="paginationContainer" class="hidden">
+              <!-- Record Count Display -->
+              <div class="flex justify-between items-center mt-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
+                <div class="text-sm text-gray-700">
+                  Showing <span class="font-medium" id="recordStart">1</span> to <span class="font-medium" id="recordEnd">100</span> of <span class="font-medium" id="totalRecords">0</span> results
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div class="flex items-center space-x-2">
+                  <button id="prevPageBtn" onclick="changePage('prev')" class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-chevron-left mr-1"></i>Previous
+                  </button>
+                  
+                  <div id="pageNumbers" class="flex space-x-1">
+                    <!-- Page numbers will be dynamically generated -->
+                  </div>
+                  
+                  <button id="nextPageBtn" onclick="changePage('next')" class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next<i class="fas fa-chevron-right ml-1"></i>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div id="loadingState" class="p-8 text-center">
@@ -101,7 +192,7 @@
       </main>
     </div>
 
-    <!-- Add User Modal -->
+    <!-- Add User Modal (Step 1: Basic Info) -->
     <div
       id="addUserModal"
       class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
@@ -174,41 +265,420 @@
       </div>
     </div>
 
+    <!-- Registration Modal (Step 2: Detailed Registration) -->
+    <div
+      id="registrationModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        <div class="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-b border-green-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+              <div class="p-2 bg-green-500 rounded-lg text-white">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              Complete User Registration
+            </h2>
+            <button
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              onclick="closeRegistrationModal()"
+            >
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">
+            User successfully created in ZKBioTime. Please complete the registration process.
+          </p>
+        </div>
+
+        <div class="overflow-y-auto max-h-[75vh]">
+          <form id="registrationForm" class="p-6">
+            <!-- Hidden field for emp_code -->
+            <input type="hidden" id="empCode" name="emp_code" />
+
+            <!-- Step 1: User Type Selection -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Who is this person? *</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="cursor-pointer">
+                  <input type="radio" name="type" value="Civilian" class="sr-only user-type-radio" required />
+                  <div class="p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-500 transition-colors user-type-card">
+                    <i class="fas fa-user text-2xl text-gray-600 mb-2"></i>
+                    <div class="font-medium">Civilian</div>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="type" value="Retired Officer" class="sr-only user-type-radio" required />
+                  <div class="p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-500 transition-colors user-type-card">
+                    <i class="fas fa-medal text-2xl text-gray-600 mb-2"></i>
+                    <div class="font-medium">Retired Officer</div>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="type" value="Serving personnel" class="sr-only user-type-radio" required />
+                  <div class="p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-500 transition-colors user-type-card">
+                    <i class="fas fa-shield-alt text-2xl text-gray-600 mb-2"></i>
+                    <div class="font-medium">Serving Personnel</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Dynamic content will be loaded here based on user type -->
+            <div id="dynamicContent"></div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-3 pt-6 border-t">
+              <button
+                type="button"
+                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors"
+                onclick="closeRegistrationModal()"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                id="submitRegistrationBtn"
+              >
+                <i class="fas fa-check"></i>
+                Complete Registration
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden"
+      id="editUserModal"
+    >
+      <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">Edit User Details</h2>
+            </div>
+            <button
+              type="button"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              onclick="closeEditUserModal()"
+            >
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Edit Form -->
+          <form id="editUserForm">
+            <input type="hidden" id="editEmpCode" name="emp_code" />
+            
+            <!-- Basic Information -->
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-800 mb-4">Basic Information</h3>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                  <span class="text-sm text-yellow-800">User Type and CNIC Number cannot be modified after registration.</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">User Type * <span class="text-xs text-gray-500">(Read-only)</span></label>
+                  <select
+                    id="editUserType"
+                    name="type"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    disabled
+                    required
+                  >
+                    <option value="Civilian">Civilian</option>
+                    <option value="Retired Officer">Retired Officer</option>
+                    <option value="Serving personnel">Serving Personnel</option>
+                  </select>
+                  <!-- Hidden input to ensure the value is still submitted -->
+                  <input type="hidden" id="editUserTypeHidden" name="type" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">CNIC Number * <span class="text-xs text-gray-500">(Read-only)</span></label>
+                  <input
+                    type="text"
+                    id="editCnicNumber"
+                    name="cnic_number"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    readonly
+                    required
+                    placeholder="13 digits without dashes"
+                    maxlength="13"
+                    pattern="[0-9]{13}"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Content for Edit -->
+            <div id="editDynamicContent"></div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-3 pt-6 border-t">
+              <button
+                type="button"
+                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors"
+                onclick="closeEditUserModal()"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                id="updateUserBtn"
+              >
+                <i class="fas fa-save"></i>
+                Update User
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script>
+      // Global variables
+      let currentEmpCode = null;
+      let currentFirstName = null;
+      let currentLastName = null;
+
       // Load users on page load
       document.addEventListener("DOMContentLoaded", function () {
         loadUsers();
+        setupFormListeners();
+        setupSearchListeners();
       });
 
-      // Load users from ZKBioTime API
-      async function loadUsers() {
+      // Setup form event listeners
+      function setupFormListeners() {
+        // User type selection
+        document.addEventListener('change', function(e) {
+          if (e.target.classList.contains('user-type-radio')) {
+            updateUserTypeSelection();
+            loadDynamicContent(e.target.value);
+          }
+        });
+
+        // Net payable calculation
+        document.addEventListener('input', function(e) {
+          if (e.target.name === 'amount_payable' || e.target.name === 'discount') {
+            calculateNetPayable();
+          }
+        });
+
+        // Conditional field toggles
+        document.addEventListener('change', function(e) {
+          if (e.target.name === 'sponsored_serving_military_officer') {
+            toggleConditionalFields('sponsoredFields', e.target.value === 'yes');
+          }
+          if (e.target.name === 'verified_by_rac') {
+            toggleConditionalFields('racFields', e.target.value === 'yes');
+          }
+          if (e.target.name === 'ctr_signed_by_hq_malir') {
+            toggleConditionalFields('hqMalirFields', e.target.value === 'yes');
+          }
+        });
+      }
+
+      // Setup search and filter listeners
+      function setupSearchListeners() {
+        // Search on Enter key
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              performSearch();
+            }
+          });
+        }
+
+        // Auto-search on type filter change
+        const typeFilter = document.getElementById('typeFilter');
+        if (typeFilter) {
+          typeFilter.addEventListener('change', performSearch);
+        }
+      }
+
+      // Setup edit form submission
+      document.addEventListener("DOMContentLoaded", function () {
+        const editForm = document.getElementById("editUserForm");
+        if (editForm) {
+          editForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            
+            const updateBtn = document.getElementById("updateUserBtn");
+            const originalText = updateBtn.innerHTML;
+            
+            // Show loading state
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            updateBtn.disabled = true;
+            
+            try {
+              const formData = new FormData(e.target);
+              const data = Object.fromEntries(formData.entries());
+              
+              const empCode = data.emp_code;
+              delete data.emp_code; // Remove from data object as it's in the URL
+              
+              console.log('Form data being sent:', data);
+              console.log('Employee code:', empCode);
+              console.log('Update URL:', `/api/update-app-user/${empCode}`);
+              
+              const response = await fetch(`/api/update-app-user/${empCode}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              });
+              
+              console.log('Response status:', response.status);
+              console.log('Response headers:', response.headers);
+              
+              const result = await response.json();
+              console.log('Response result:', result);
+              
+              if (result.success) {
+                showToast("User updated successfully!", "success");
+                closeEditUserModal();
+                loadUsers(); // Reload the users table
+              } else {
+                showToast(result.message || "Failed to update user", "error");
+              }
+            } catch (error) {
+              console.error("Error updating user:", error);
+              showToast("Failed to update user", "error");
+            } finally {
+              // Reset button state
+              updateBtn.innerHTML = originalText;
+              updateBtn.disabled = false;
+            }
+          });
+        }
+      });
+
+      // Update user type visual selection
+      function updateUserTypeSelection() {
+        document.querySelectorAll('.user-type-card').forEach(card => {
+          card.classList.remove('border-blue-500', 'bg-blue-50');
+          card.classList.add('border-gray-200');
+        });
+
+        const selectedRadio = document.querySelector('input[name="type"]:checked');
+        if (selectedRadio) {
+          const selectedCard = selectedRadio.closest('label').querySelector('.user-type-card');
+          selectedCard.classList.remove('border-gray-200');
+          selectedCard.classList.add('border-blue-500', 'bg-blue-50');
+        }
+      }
+
+      // Global pagination variables
+      let currentPage = 1;
+      let totalPages = 1;
+      let totalRecords = 0;
+      let currentSearch = '';
+      let currentTypeFilter = '';
+
+      // Load users from ZKBioTime API with pagination, search, and filter
+      async function loadUsers(page = 1, search = '', typeFilter = '') {
         const loadingState = document.getElementById("loadingState");
         const emptyState = document.getElementById("emptyState");
         const tableBody = document.getElementById("usersTableBody");
+        const paginationContainer = document.getElementById("paginationContainer");
+
+        // Update current search parameters
+        currentSearch = search;
+        currentTypeFilter = typeFilter;
 
         try {
           loadingState.style.display = "block";
           emptyState.style.display = "none";
+          paginationContainer.classList.add("hidden");
 
-          const response = await fetch("/api/users");
+          // Build query parameters
+          const params = new URLSearchParams({
+            page: page,
+            limit: 100
+          });
+
+          if (search.trim()) {
+            params.append('search', search.trim());
+          }
+
+          if (typeFilter.trim()) {
+            params.append('type', typeFilter.trim());
+          }
+
+          const response = await fetch(`/api/users?${params.toString()}`);
           const data = await response.json();
 
           loadingState.style.display = "none";
 
           if (data.success && data.users.length > 0) {
-            tableBody.innerHTML = data.users.map(user => `
-              <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  ${user.id}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${user.first_name || '-'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${user.last_name || '-'}
-                </td>
-              </tr>
-            `).join("");
+            // Update pagination variables
+            currentPage = data.pagination.currentPage;
+            totalPages = data.pagination.totalPages;
+            totalRecords = data.pagination.totalRecords;
+
+            // Calculate row numbers for current page
+            const startIndex = data.pagination.startRecord - 1;
+
+            tableBody.innerHTML = data.users.map((user, index) => {
+              const userType = user.registrationData.isRegistered ? user.registrationData.type : '';
+              const userTypeDisplay = userType ? `<span class="px-2 py-1 text-xs rounded-full ${getUserTypeBadgeClass(userType)}">${userType}</span>` : '<span class="text-gray-400 text-sm">Not Registered</span>';
+              
+              // Get CNIC number from registration data if available
+              const cnicNumber = user.registrationData.isRegistered && user.registrationData.cnic_number 
+                ? user.registrationData.cnic_number 
+                : '<span class="text-gray-400 text-sm">Not Available</span>';
+              
+              const actionButtons = user.registrationData.isRegistered ? `
+                <div class="flex space-x-2">
+                  <button onclick="viewUserDetails('${user.emp_code}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded transition-colors">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                  <button onclick="editUser('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded transition-colors">
+                    <i class="fas fa-edit mr-1"></i>Edit
+                  </button>
+                </div>
+              ` : `
+                <button onclick="completeRegistration('${user.emp_code}', '${user.displayFirstName || ''}', '${user.displayLastName || ''}')" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1 rounded transition-colors">
+                  <i class="fas fa-clipboard-check mr-1"></i>Complete Registration
+                </button>
+              `;
+
+              return `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${startIndex + index + 1}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${user.fullName || '-'}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${cnicNumber}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${userTypeDisplay}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${actionButtons}
+                  </td>
+                </tr>
+              `;
+            }).join("");
+
+            // Update pagination UI
+            updatePaginationUI(data.pagination);
+            paginationContainer.classList.remove("hidden");
           } else {
             tableBody.innerHTML = "";
             emptyState.style.display = "block";
@@ -219,6 +689,123 @@
           emptyState.style.display = "block";
           showToast("Failed to load users", "error");
         }
+      }
+
+      // Update pagination UI
+      function updatePaginationUI(pagination) {
+        // Update record count display
+        document.getElementById("recordStart").textContent = pagination.startRecord;
+        document.getElementById("recordEnd").textContent = pagination.endRecord;
+        document.getElementById("totalRecords").textContent = pagination.totalRecords;
+
+        // Update pagination buttons
+        const prevBtn = document.getElementById("prevPageBtn");
+        const nextBtn = document.getElementById("nextPageBtn");
+        
+        prevBtn.disabled = pagination.currentPage <= 1;
+        nextBtn.disabled = pagination.currentPage >= pagination.totalPages;
+
+        // Generate page numbers
+        generatePageNumbers(pagination);
+      }
+
+      // Generate page number buttons
+      function generatePageNumbers(pagination) {
+        const pageNumbersContainer = document.getElementById("pageNumbers");
+        pageNumbersContainer.innerHTML = "";
+
+        const { currentPage, totalPages } = pagination;
+        
+        // Show max 5 page numbers at a time
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // Adjust start if we're near the end
+        if (endPage - startPage < 4) {
+          startPage = Math.max(1, endPage - 4);
+        }
+
+        // Add "First" button if not showing page 1
+        if (startPage > 1) {
+          pageNumbersContainer.appendChild(createPageButton(1, "1"));
+          if (startPage > 2) {
+            pageNumbersContainer.appendChild(createEllipsis());
+          }
+        }
+
+        // Add page number buttons
+        for (let i = startPage; i <= endPage; i++) {
+          pageNumbersContainer.appendChild(createPageButton(i, i.toString(), i === currentPage));
+        }
+
+        // Add "Last" button if not showing last page
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            pageNumbersContainer.appendChild(createEllipsis());
+          }
+          pageNumbersContainer.appendChild(createPageButton(totalPages, totalPages.toString()));
+        }
+      }
+
+      // Create page button element
+      function createPageButton(pageNum, text, isActive = false) {
+        const button = document.createElement("button");
+        button.className = `px-3 py-1 text-sm border rounded ${
+          isActive 
+            ? "bg-blue-500 text-white border-blue-500" 
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+        }`;
+        button.textContent = text;
+        button.onclick = () => goToPage(pageNum);
+        if (isActive) {
+          button.disabled = true;
+          button.classList.add("cursor-default");
+        }
+        return button;
+      }
+
+      // Create ellipsis element
+      function createEllipsis() {
+        const span = document.createElement("span");
+        span.className = "px-2 py-1 text-sm text-gray-500";
+        span.textContent = "...";
+        return span;
+      }
+
+      // Navigate to specific page
+      function goToPage(page) {
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+          loadUsers(page, currentSearch, currentTypeFilter);
+        }
+      }
+
+      // Handle prev/next navigation
+      function changePage(direction) {
+        if (direction === 'prev' && currentPage > 1) {
+          loadUsers(currentPage - 1, currentSearch, currentTypeFilter);
+        } else if (direction === 'next' && currentPage < totalPages) {
+          loadUsers(currentPage + 1, currentSearch, currentTypeFilter);
+        }
+      }
+
+      // Search and Filter Functions
+      function performSearch() {
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        
+        const searchValue = searchInput.value.trim();
+        const filterValue = typeFilter.value;
+        
+        // Reset to first page when searching
+        loadUsers(1, searchValue, filterValue);
+      }
+
+      function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('typeFilter').value = '';
+        
+        // Reset to show all users
+        loadUsers(1, '', '');
       }
 
       // Modal functions
@@ -233,7 +820,27 @@
         document.getElementById("addUserModal").classList.remove("flex");
       }
 
-      // Add user form submission
+      function openRegistrationModal(empCode, firstName = '', lastName = '') {
+        currentEmpCode = empCode;
+        currentFirstName = firstName;
+        currentLastName = lastName;
+        document.getElementById("empCode").value = empCode;
+        document.getElementById("registrationModal").classList.remove("hidden");
+        document.getElementById("registrationModal").classList.add("flex");
+        document.getElementById("registrationForm").reset();
+        document.getElementById("empCode").value = empCode; // Reset after form reset
+        document.getElementById("dynamicContent").innerHTML = '';
+      }
+
+      function closeRegistrationModal() {
+        document.getElementById("registrationModal").classList.add("hidden");
+        document.getElementById("registrationModal").classList.remove("flex");
+        currentEmpCode = null;
+        currentFirstName = null;
+        currentLastName = null;
+      }
+
+      // Add user form submission (Step 1)
       document.getElementById("addUserForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
@@ -263,6 +870,13 @@
             showToast(data.message, "success");
             closeAddUserModal();
             loadUsers(); // Reload the users table
+            
+            // Open registration modal if emp_code is returned
+            if (data.emp_code) {
+              setTimeout(() => {
+                openRegistrationModal(data.emp_code, userData.first_name, userData.last_name);
+              }, 500);
+            }
           } else {
             showToast(data.message || "Failed to add user", "error");
           }
@@ -275,6 +889,952 @@
           saveBtn.innerHTML = '<i class="fas fa-save"></i> Add User';
         }
       });
+
+      // Dynamic content loading based on user type
+      function loadDynamicContent(userType) {
+        const dynamicContent = document.getElementById('dynamicContent');
+        
+        if (userType === 'Civilian') {
+          dynamicContent.innerHTML = getCivilianForm();
+        } else if (userType === 'Retired Officer') {
+          dynamicContent.innerHTML = getRetiredOfficerForm();
+        } else if (userType === 'Serving personnel') {
+          dynamicContent.innerHTML = getServingPersonnelForm();
+        }
+        
+        // Re-setup listeners for new elements
+        setupDynamicListeners();
+      }
+
+      // Setup listeners for dynamically added elements
+      function setupDynamicListeners() {
+        // Add child functionality
+        const addChildBtns = document.querySelectorAll('.add-child-btn');
+        addChildBtns.forEach(btn => {
+          btn.addEventListener('click', addChildField);
+        });
+
+        // Remove child functionality
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('remove-child-btn')) {
+            e.target.closest('.child-field').remove();
+          }
+        });
+      }
+
+      // Add child field for family details
+      function addChildField() {
+        const childrenContainer = document.getElementById('childrenContainer');
+        const childIndex = childrenContainer.children.length;
+        
+        const childField = document.createElement('div');
+        childField.className = 'child-field border border-gray-200 rounded-lg p-4 mb-4';
+        childField.innerHTML = `
+          <div class="flex justify-between items-center mb-3">
+            <h5 class="font-medium text-gray-700">Child ${childIndex + 1}</h5>
+            <button type="button" class="remove-child-btn text-red-500 hover:text-red-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Child Name</label>
+              <input type="text" name="children[${childIndex}][name]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter child name" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+              <input type="number" name="children[${childIndex}][age]" min="0" max="25" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter age" />
+            </div>
+          </div>
+        `;
+        
+        childrenContainer.appendChild(childField);
+      }
+
+      // Calculate net payable amount
+      function calculateNetPayable() {
+        const amountPayable = parseFloat(document.querySelector('input[name="amount_payable"]')?.value || 0);
+        const discount = parseFloat(document.querySelector('input[name="discount"]')?.value || 0);
+        const netPayable = Math.max(0, amountPayable - discount);
+        
+        const netPayableField = document.querySelector('input[name="net_payable"]');
+        if (netPayableField) {
+          netPayableField.value = netPayable;
+        }
+      }
+
+      // Toggle conditional fields
+      function toggleConditionalFields(fieldId, show) {
+        const fields = document.getElementById(fieldId);
+        if (fields) {
+          fields.style.display = show ? 'block' : 'none';
+          // Clear values if hiding
+          if (!show) {
+            const inputs = fields.querySelectorAll('input, textarea');
+            inputs.forEach(input => input.value = '');
+          }
+        }
+      }
+
+      // Registration form submission (Step 2)
+      document.getElementById("registrationForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById("submitRegistrationBtn");
+        const formData = new FormData(this);
+        
+        // Build registration data object
+        const registrationData = {
+          emp_code: currentEmpCode,
+          first_name: currentFirstName,
+          last_name: currentLastName,
+          type: formData.get("type"),
+          cnic_number: formData.get("cnic_number"),
+          pa_num: formData.get("pa_num"),
+          rank: formData.get("rank"),
+          retired_unit_hq: formData.get("retired_unit_hq"),
+          original_unit: formData.get("original_unit"),
+          current_unit: formData.get("current_unit"),
+          father_name: formData.get("father_name"),
+          sponsored_serving_military_officer: formData.get("sponsored_serving_military_officer"),
+          verified_by_rac: formData.get("verified_by_rac"),
+          ctr_signed_by_hq_malir: formData.get("ctr_signed_by_hq_malir"),
+          oic_gsc_recommended: formData.get("oic_gsc_recommended"),
+          co_maint_unit_recommended: formData.get("co_maint_unit_recommended"),
+          amount_payable: parseInt(formData.get("amount_payable")) || 0,
+          discount: parseInt(formData.get("discount")) || 0,
+          net_payable: parseInt(formData.get("net_payable")) || 0,
+          payment_terms: formData.get("payment_terms"),
+          billing_mode: formData.get("billing_mode"),
+          garrisson_id_for_sponsored: formData.get("garrisson_id_for_sponsored"),
+          garrisson_name: formData.get("garrisson_name")
+        };
+
+        // Handle profession data
+        if (formData.get("occupation")) {
+          registrationData.profession = {
+            occupation: formData.get("occupation"),
+            detail: formData.get("occupation_detail"),
+            address: formData.get("occupation_address"),
+            tel: formData.get("occupation_tel")
+          };
+        }
+
+        // Handle father's profession data
+        if (formData.get("father_occupation")) {
+          registrationData.father_profession = {
+            occupation: formData.get("father_occupation"),
+            detail: formData.get("father_occupation_detail"),
+            address: formData.get("father_occupation_address"),
+            tel: formData.get("father_occupation_tel")
+          };
+        }
+
+        // Handle family details
+        const spouseName = formData.get("spouse_name");
+        const children = [];
+        
+        // Collect children data
+        const childrenContainer = document.getElementById('childrenContainer');
+        if (childrenContainer) {
+          const childFields = childrenContainer.querySelectorAll('.child-field');
+          childFields.forEach((field, index) => {
+            const name = field.querySelector(`input[name="children[${index}][name]"]`)?.value;
+            const age = field.querySelector(`input[name="children[${index}][age]"]`)?.value;
+            if (name && age) {
+              children.push({ name, age: parseInt(age) });
+            }
+          });
+        }
+
+        if (spouseName || children.length > 0) {
+          registrationData.family_details = {
+            spouse_name: spouseName || "",
+            children: children
+          };
+        }
+
+        // Handle home address
+        if (formData.get("permanent_address")) {
+          registrationData.home_address = {
+            permanent_address: formData.get("permanent_address"),
+            present_address: formData.get("present_address"),
+            tel: formData.get("home_tel")
+          };
+        }
+
+        // Handle conditional details
+        if (formData.get("sponsored_serving_military_officer") === "yes") {
+          registrationData.sponsored_serving_military_officer_details = {
+            pa_number: formData.get("sponsor_pa_number"),
+            rank: formData.get("sponsor_rank"),
+            name: formData.get("sponsor_name"),
+            unit: formData.get("sponsor_unit"),
+            tel: formData.get("sponsor_tel")
+          };
+        }
+
+        if (formData.get("verified_by_rac") === "yes") {
+          registrationData.verified_by_rac_details = {
+            rank: formData.get("rac_rank"),
+            name: formData.get("rac_name"),
+            tel: formData.get("rac_tel")
+          };
+        }
+
+        if (formData.get("ctr_signed_by_hq_malir") === "yes") {
+          registrationData.ctr_signed_by_hq_malir_details = {
+            name: formData.get("hq_name"),
+            pa_no: formData.get("hq_pa_no"),
+            rank: formData.get("hq_rank"),
+            tel: formData.get("hq_tel")
+          };
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Registering...';
+
+        try {
+          const response = await fetch("/api/register-app-user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(registrationData)
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showToast(data.message, "success");
+            closeRegistrationModal();
+            loadUsers(); // Reload the users table
+          } else {
+            showToast(data.message || "Failed to register user", "error");
+          }
+        } catch (error) {
+          console.error("Error registering user:", error);
+          showToast("Network error occurred", "error");
+        } finally {
+          // Reset button state
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-check"></i> Complete Registration';
+        }
+      });
+
+      // Helper function to get user type badge classes
+      function getUserTypeBadgeClass(type) {
+        switch(type) {
+          case 'Civilian':
+            return 'bg-blue-100 text-blue-800';
+          case 'Retired Officer':
+            return 'bg-purple-100 text-purple-800';
+          case 'Serving personnel':
+            return 'bg-green-100 text-green-800';
+          default:
+            return 'bg-gray-100 text-gray-800';
+        }
+      }
+
+      // View user details
+      async function viewUserDetails(empCode) {
+        try {
+          const response = await fetch(`/api/user-details/${empCode}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            showUserDetailsModal(data.user);
+          } else {
+            showToast(data.message || "Failed to fetch user details", "error");
+          }
+        } catch (error) {
+          console.error("Error fetching user details:", error);
+          showToast("Failed to fetch user details", "error");
+        }
+      }
+
+      // Edit user
+      async function editUser(empCode) {
+        try {
+          console.log('Fetching user details for emp_code:', empCode);
+          // Fetch user details
+          const response = await fetch(`/api/user-details/${empCode}`);
+          console.log('Response status:', response.status);
+          const data = await response.json();
+          console.log('Response data:', data);
+          
+          if (data.success) {
+            openEditUserModal(data.user);
+          } else {
+            showToast(data.message || "Failed to fetch user details", "error");
+          }
+        } catch (error) {
+          console.error("Error fetching user details for edit:", error);
+          showToast("Failed to fetch user details", "error");
+        }
+      }
+
+      // Open edit user modal
+      function openEditUserModal(user) {
+        // Set the emp_code (stored in the id field)
+        document.getElementById("editEmpCode").value = user.id;
+        
+        console.log('Setting emp_code to:', user.id);
+        console.log('User object:', user);
+        
+        // Set basic information
+        document.getElementById("editUserType").value = user.type;
+        document.getElementById("editUserTypeHidden").value = user.type; // Set hidden field
+        document.getElementById("editCnicNumber").value = user.cnic_number;
+        
+        // Generate dynamic form based on user type
+        generateEditFormFields(user.type, user);
+        
+        // Show modal
+        document.getElementById("editUserModal").classList.remove("hidden");
+        document.getElementById("editUserModal").classList.add("flex");
+      }
+
+      // Close edit user modal
+      function closeEditUserModal() {
+        document.getElementById("editUserModal").classList.add("hidden");
+        document.getElementById("editUserModal").classList.remove("flex");
+        
+        // Clear form
+        document.getElementById("editUserForm").reset();
+        document.getElementById("editDynamicContent").innerHTML = "";
+      }
+
+      // Generate edit form fields based on user type
+      function generateEditFormFields(userType, userData) {
+        const dynamicContent = document.getElementById("editDynamicContent");
+        let html = "";
+
+        // Common fields for all types
+        html += `
+          <div class="mb-6">
+            <h3 class="text-lg font-medium text-gray-800 mb-4">Personal Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                <input type="text" name="first_name" value="${userData.first_name || ''}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                       placeholder="Enter first name" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                <input type="text" name="last_name" value="${userData.last_name || ''}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                       placeholder="Enter last name" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Father Name</label>
+                <input type="text" name="father_name" value="${userData.father_name || ''}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+        `;
+
+        // Type-specific fields
+        if (userType === "Retired Officer") {
+          html += `
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PA Number</label>
+                <input type="text" name="pa_num" value="${userData.pa_num || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rank</label>
+                <input type="text" name="rank" value="${userData.rank || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Retired Unit/HQ</label>
+                <input type="text" name="retired_unit_hq" value="${userData.retired_unit_hq || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+          `;
+        } else if (userType === "Serving personnel") {
+          html += `
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PA Number</label>
+                <input type="text" name="pa_num" value="${userData.pa_num || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rank</label>
+                <input type="text" name="rank" value="${userData.rank || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Original Unit</label>
+                <input type="text" name="original_unit" value="${userData.original_unit || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Current Unit</label>
+                <input type="text" name="current_unit" value="${userData.current_unit || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+          `;
+        }
+
+        html += `
+            </div>
+          </div>
+          
+          <!-- Financial Information -->
+          <div class="mb-6">
+            <h3 class="text-lg font-medium text-gray-800 mb-4">Financial Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Amount Payable</label>
+                <input type="number" name="amount_payable" value="${userData.amount_payable || 0}" step="0.01"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Discount</label>
+                <input type="number" name="discount" value="${userData.discount || 0}" step="0.01"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Net Payable</label>
+                <input type="number" name="net_payable" value="${userData.net_payable || 0}" step="0.01"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
+                <select name="payment_terms" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <option value="monthly" ${userData.payment_terms === 'monthly' ? 'selected' : ''}>Monthly</option>
+                  <option value="quarterly" ${userData.payment_terms === 'quarterly' ? 'selected' : ''}>Quarterly</option>
+                  <option value="annually" ${userData.payment_terms === 'annually' ? 'selected' : ''}>Annually</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Billing Mode</label>
+                <select name="billing_mode" ${userType === 'Serving personnel' ? 'disabled' : ''}
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <option value="self" ${userData.billing_mode === 'self' ? 'selected' : ''}>Self</option>
+                  <option value="sponsored" ${userData.billing_mode === 'sponsored' ? 'selected' : ''}>Sponsored</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `;
+
+        dynamicContent.innerHTML = html;
+      }
+
+      // Complete registration for existing ZKBioTime user
+      function completeRegistration(empCode, firstName = '', lastName = '') {
+        openRegistrationModal(empCode, firstName, lastName);
+      }
+
+      // Show user details modal
+      function showUserDetailsModal(user) {
+        // Create and show a details modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+          <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-blue-200">
+              <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div class="p-2 bg-blue-500 rounded-lg text-white">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  User Details - ${user.type}
+                </h2>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" onclick="this.closest('.fixed').remove()">
+                  <i class="fas fa-times text-xl"></i>
+                </button>
+              </div>
+            </div>
+            <div class="overflow-y-auto max-h-[75vh] p-6">
+              ${generateUserDetailsHTML(user)}
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close on outside click
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            modal.remove();
+          }
+        });
+      }
+
+      // Generate user details HTML
+      function generateUserDetailsHTML(user) {
+        let html = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-3">Basic Information</h3>
+              <div class="space-y-2">
+                <p><strong>Type:</strong> ${user.type}</p>
+                <p><strong>CNIC:</strong> ${user.cnic_number}</p>`;
+        
+        if (user.pa_num) html += `<p><strong>PA Number:</strong> ${user.pa_num}</p>`;
+        if (user.rank) html += `<p><strong>Rank:</strong> ${user.rank}</p>`;
+        if (user.father_name) html += `<p><strong>Father's Name:</strong> ${user.father_name}</p>`;
+        
+        html += `
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold mb-3">Military Information</h3>
+              <div class="space-y-2">`;
+        
+        if (user.current_unit) html += `<p><strong>Current Unit:</strong> ${user.current_unit}</p>`;
+        if (user.original_unit) html += `<p><strong>Original Unit:</strong> ${user.original_unit}</p>`;
+        if (user.retired_unit_hq) html += `<p><strong>Retired From:</strong> ${user.retired_unit_hq}</p>`;
+        
+        html += `
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (user.family_details) {
+          html += `
+            <div class="mt-6">
+              <h3 class="text-lg font-semibold mb-3">Family Details</h3>`;
+          
+          if (user.family_details.spouse_name) {
+            html += `<p><strong>Spouse:</strong> ${user.family_details.spouse_name}</p>`;
+          }
+          
+          if (user.family_details.children && user.family_details.children.length > 0) {
+            html += `
+              <div class="mt-2">
+                <strong>Children:</strong>
+                <ul class="list-disc list-inside ml-4">`;
+            
+            user.family_details.children.forEach(child => {
+              html += `<li>${child.name} (Age: ${child.age})</li>`;
+            });
+            
+            html += `
+                </ul>
+              </div>`;
+          }
+          
+          html += `</div>`;
+        }
+
+        if (user.home_address) {
+          html += `
+            <div class="mt-6">
+              <h3 class="text-lg font-semibold mb-3">Address Information</h3>`;
+          
+          if (user.home_address.permanent_address) {
+            html += `<p><strong>Permanent Address:</strong> ${user.home_address.permanent_address}</p>`;
+          }
+          if (user.home_address.present_address) {
+            html += `<p><strong>Present Address:</strong> ${user.home_address.present_address}</p>`;
+          }
+          if (user.home_address.tel) {
+            html += `<p><strong>Tel:</strong> ${user.home_address.tel}</p>`;
+          }
+          
+          html += `</div>`;
+        }
+
+        html += `
+          <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-3">Payment Information</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <p><strong>Amount Payable:</strong> ${user.amount_payable}</p>
+              <p><strong>Discount:</strong> ${user.discount}</p>
+              <p><strong>Net Payable:</strong> ${user.net_payable}</p>
+              <p><strong>Payment Terms:</strong> ${user.payment_terms}</p>
+            </div>
+          </div>
+        `;
+
+        return html;
+      }
+
+      // Form template functions
+      function getCivilianForm() {
+        return `
+          <!-- CNIC Number -->
+          <div class="mb-6">
+            <label for="cnic_number" class="block text-sm font-medium text-gray-700 mb-2">
+              CNIC Number (13 digits without dashes) *
+            </label>
+            <input
+              type="text"
+              name="cnic_number"
+              maxlength="13"
+              pattern="[0-9]{13}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="1234567890123"
+              required
+            />
+          </div>
+
+          <!-- Profession Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Profession (Pay Grade / Designation in case of Civil Servant)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                <input type="text" name="occupation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                <input type="tel" name="occupation_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Detail of Occupation / Business</label>
+                <textarea name="occupation_detail" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Address of Organization</label>
+                <textarea name="occupation_address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Father's Name -->
+          <div class="mb-6">
+            <label for="father_name" class="block text-sm font-medium text-gray-700 mb-2">Father's Name</label>
+            <input type="text" name="father_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Father's Profession Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Father's Profession (Pay Grade / Designation in case of Civil Servant)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                <input type="text" name="father_occupation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                <input type="tel" name="father_occupation_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Detail of Occupation / Business</label>
+                <textarea name="father_occupation_detail" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Address of Organization</label>
+                <textarea name="father_occupation_address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Family Details Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Family Details</h4>
+            <div class="mb-4">
+              <label for="spouse_name" class="block text-sm font-medium text-gray-700 mb-2">Spouse Name</label>
+              <input type="text" name="spouse_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-3">
+                <h5 class="font-medium text-gray-700">Children (Male under 18 years & Female under 20 years)</h5>
+                <button type="button" class="add-child-btn bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded">
+                  <i class="fas fa-plus mr-1"></i> Add Child
+                </button>
+              </div>
+              <div id="childrenContainer"></div>
+            </div>
+          </div>
+
+          <!-- Home Address Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Home Address</h4>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Permanent Home Address</label>
+                <textarea name="permanent_address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Present Home Address</label>
+                <textarea name="present_address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                <input type="tel" name="home_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          ${getCommonSections()}
+        `;
+      }
+
+      function getRetiredOfficerForm() {
+        return `
+          <!-- PA Number -->
+          <div class="mb-6">
+            <label for="pa_num" class="block text-sm font-medium text-gray-700 mb-2">PA Number</label>
+            <input type="text" name="pa_num" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- CNIC Number -->
+          <div class="mb-6">
+            <label for="cnic_number" class="block text-sm font-medium text-gray-700 mb-2">
+              CNIC Number (13 digits without dashes) *
+            </label>
+            <input
+              type="text"
+              name="cnic_number"
+              maxlength="13"
+              pattern="[0-9]{13}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="1234567890123"
+              required
+            />
+          </div>
+
+          <!-- Rank -->
+          <div class="mb-6">
+            <label for="rank" class="block text-sm font-medium text-gray-700 mb-2">Rank</label>
+            <input type="text" name="rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Last Unit/HQ -->
+          <div class="mb-6">
+            <label for="retired_unit_hq" class="block text-sm font-medium text-gray-700 mb-2">Last Unit/HQ from where retired</label>
+            <input type="text" name="retired_unit_hq" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Original Unit -->
+          <div class="mb-6">
+            <label for="original_unit" class="block text-sm font-medium text-gray-700 mb-2">Original Unit</label>
+            <input type="text" name="original_unit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Family Details Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Family Details</h4>
+            <div class="mb-4">
+              <label for="spouse_name" class="block text-sm font-medium text-gray-700 mb-2">Spouse Name</label>
+              <input type="text" name="spouse_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-3">
+                <h5 class="font-medium text-gray-700">Children (Male under 18 years & Female under 20 years)</h5>
+                <button type="button" class="add-child-btn bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded">
+                  <i class="fas fa-plus mr-1"></i> Add Child
+                </button>
+              </div>
+              <div id="childrenContainer"></div>
+            </div>
+          </div>
+
+          <!-- Home Address Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Home Address</h4>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Permanent Home Address</label>
+                <textarea name="permanent_address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Present Home Address</label>
+                <textarea name="present_address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                <input type="tel" name="home_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          ${getCommonSections()}
+        `;
+      }
+
+      // Serving Personnel Form Template
+      function getServingPersonnelForm() {
+        return `
+          <!-- CNIC Number -->
+          <div class="mb-6">
+            <label for="cnic_number" class="block text-sm font-medium text-gray-700 mb-2">
+              CNIC Number (13 digits without dashes) *
+            </label>
+            <input
+              type="text"
+              name="cnic_number"
+              maxlength="13"
+              pattern="[0-9]{13}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="1234567890123"
+              required
+            />
+          </div>
+
+          <!-- PA Number -->
+          <div class="mb-6">
+            <label for="pa_num" class="block text-sm font-medium text-gray-700 mb-2">PA Number</label>
+            <input type="text" name="pa_num" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Rank -->
+          <div class="mb-6">
+            <label for="rank" class="block text-sm font-medium text-gray-700 mb-2">Rank</label>
+            <input type="text" name="rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Current Unit -->
+          <div class="mb-6">
+            <label for="current_unit" class="block text-sm font-medium text-gray-700 mb-2">Current Unit</label>
+            <input type="text" name="current_unit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Original Unit -->
+          <div class="mb-6">
+            <label for="original_unit" class="block text-sm font-medium text-gray-700 mb-2">Original Unit</label>
+            <input type="text" name="original_unit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Hidden field for billing mode (automatically set to sponsored) -->
+          <input type="hidden" name="billing_mode" value="sponsored" />
+
+          <!-- Payment Details Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Payable</label>
+                <input type="number" name="amount_payable" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                <input type="number" name="discount" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
+                <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="monthly" class="mr-2" />
+                    Monthly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="quarterly" class="mr-2" />
+                    Quarterly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="half_yearly" class="mr-2" />
+                    Half Yearly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="yearly" class="mr-2" />
+                    Yearly
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Garrison Details -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Garrison Details for Billing</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Garrison ID for Billing</label>
+                <input type="text" name="garrisson_id_for_sponsored" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Garrison Name for Billing</label>
+                <input type="text" name="garrisson_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Common sections shared between forms
+      function getCommonSections() {
+        return `
+          <!-- Ctrsigned by Staff HQ Malir Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Ctrsigned by Staff HQ Malir</h4>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ctrsigned by Staff HQ Malir?</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="radio" name="ctr_signed_by_hq_malir" value="yes" class="mr-2" />
+                  Yes
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="ctr_signed_by_hq_malir" value="no" class="mr-2" checked />
+                  No
+                </label>
+              </div>
+            </div>
+            
+            <div id="hqMalirFields" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" name="hq_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">PA No</label>
+                <input type="text" name="hq_pa_no" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Rank</label>
+                <input type="text" name="hq_rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                <input type="tel" name="hq_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendations Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Recommendations</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recommended by OIC GSC?</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="oic_gsc_recommended" value="yes" class="mr-2" />
+                    Yes
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="oic_gsc_recommended" value="no" class="mr-2" checked />
+                    No
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recommended by CO Maint Unit?</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="co_maint_unit_recommended" value="yes" class="mr-2" />
+                    Yes
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="co_maint_unit_recommended" value="no" class="mr-2" checked />
+                    No
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       // Toast notification function
       function showToast(message, type = "info") {
@@ -322,6 +1882,212 @@
           closeAddUserModal();
         }
       });
+
+      document.getElementById("registrationModal").addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeRegistrationModal();
+        }
+      });
+
+      document.getElementById("editUserModal").addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeEditUserModal();
+        }
+      });
+
+      // Get common sections for all user types
+      function getCommonSections() {
+        return `
+          <!-- Sponsor by Serving Military Officer Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Sponsor by Serving Military Officer (Not below the rank of Major)</h4>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sponsored by serving military officer?</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="radio" name="sponsored_serving_military_officer" value="yes" class="mr-2" />
+                  Yes
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="sponsored_serving_military_officer" value="no" class="mr-2" checked />
+                  No
+                </label>
+              </div>
+            </div>
+            
+            <div id="sponsoredFields" style="display: none;" class="border border-gray-200 rounded-lg p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">PA Number</label>
+                  <input type="text" name="sponsor_pa_number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Rank</label>
+                  <input type="text" name="sponsor_rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input type="text" name="sponsor_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <input type="text" name="sponsor_unit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                  <input type="tel" name="sponsor_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verified by RAC Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Verified by Respective Residential Administration Committee (RAC)</h4>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Is verified by RAC?</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="radio" name="verified_by_rac" value="yes" class="mr-2" />
+                  Yes
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="verified_by_rac" value="no" class="mr-2" checked />
+                  No
+                </label>
+              </div>
+            </div>
+            
+            <div id="racFields" style="display: none;" class="border border-gray-200 rounded-lg p-4">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Rank</label>
+                  <input type="text" name="rac_rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input type="text" name="rac_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                  <input type="tel" name="rac_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Countersigned by Staff HQ Malir Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Countersigned by Staff HQ Malir</h4>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Countersigned by Staff HQ Malir?</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="radio" name="ctr_signed_by_hq_malir" value="yes" class="mr-2" />
+                  Yes
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="ctr_signed_by_hq_malir" value="no" class="mr-2" checked />
+                  No
+                </label>
+              </div>
+            </div>
+            
+            <div id="hqMalirFields" style="display: none;" class="border border-gray-200 rounded-lg p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input type="text" name="hq_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">PA No</label>
+                  <input type="text" name="hq_pa_no" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Rank</label>
+                  <input type="text" name="hq_rank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tel</label>
+                  <input type="tel" name="hq_tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendations Section -->
+          <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recommended by OIC GSC?</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="oic_gsc_recommended" value="yes" class="mr-2" />
+                    Yes
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="oic_gsc_recommended" value="no" class="mr-2" checked />
+                    No
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recommended by CO Maint Unit?</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="co_maint_unit_recommended" value="yes" class="mr-2" />
+                    Yes
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="co_maint_unit_recommended" value="no" class="mr-2" checked />
+                    No
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Details Section (for Civilian and Retired Officer) -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Payable</label>
+                <input type="number" name="amount_payable" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                <input type="number" name="discount" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
+                <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="monthly" class="mr-2" />
+                    Monthly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="quarterly" class="mr-2" />
+                    Quarterly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="half_yearly" class="mr-2" />
+                    Half Yearly
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="payment_terms" value="yearly" class="mr-2" />
+                    Yearly
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     </script>
 
     <%- include('partials/toast') %>

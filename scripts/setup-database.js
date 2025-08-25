@@ -152,6 +152,47 @@ const SCHEMA = {
       INDEX idx_name (name)
     ) ENGINE=InnoDB;
   `,
+
+  app_users: `
+    CREATE TABLE IF NOT EXISTS app_users (
+      id VARCHAR(50) PRIMARY KEY COMMENT 'References personnel_employee.emp_code',
+      type ENUM('Civilian', 'Retired Officer', 'Serving personnel') NOT NULL,
+      cnic_number VARCHAR(13) NOT NULL UNIQUE,
+      pa_num TEXT UNIQUE,
+      rank TEXT,
+      retired_unit_hq TEXT,
+      original_unit TEXT,
+      current_unit TEXT,
+      profession JSON,
+      father_name TEXT,
+      father_profession JSON,
+      family_details JSON,
+      home_address JSON,
+      sponsored_serving_military_officer ENUM('yes', 'no') DEFAULT 'no',
+      sponsored_serving_military_officer_details JSON,
+      verified_by_rac ENUM('yes', 'no') DEFAULT 'no',
+      verified_by_rac_details JSON,
+      ctr_signed_by_hq_malir ENUM('yes', 'no') DEFAULT 'no',
+      ctr_signed_by_hq_malir_details JSON,
+      oic_gsc_recommended ENUM('yes', 'no') DEFAULT 'no',
+      co_maint_unit_recommended ENUM('yes', 'no') DEFAULT 'no',
+      date DATE,
+      billing_mode ENUM('self', 'sponsored') DEFAULT 'self',
+      amount_payable INT DEFAULT 0,
+      discount INT DEFAULT 0,
+      net_payable INT DEFAULT 0,
+      payment_terms ENUM('monthly', 'quarterly', 'half_yearly', 'yearly') DEFAULT 'monthly',
+      garrisson_id_for_sponsored VARCHAR(50),
+      garrisson_name TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_cnic_number (cnic_number),
+      INDEX idx_type (type),
+      INDEX idx_billing_mode (billing_mode),
+      INDEX idx_payment_terms (payment_terms),
+      INDEX idx_created_at (created_at)
+    ) ENGINE=InnoDB;
+  `,
 };
 
 // Default data
@@ -197,6 +238,7 @@ async function setupDatabase() {
       "entries",
       "fee_deposits",
       "user_sessions",
+      "app_users",
     ];
 
     for (const table of tableOrder) {
