@@ -480,11 +480,13 @@
     <!-- Add/Edit Facility Modal -->
     <div
       id="addFacilityModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal"
+      style="display: none;"
     >
-      <div
-        class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-0 overflow-hidden modal-content"
-      >
+      <div class="flex items-center justify-center min-h-screen px-4 py-8">
+        <div
+          class="bg-white rounded-xl shadow-2xl max-w-md w-full p-0 overflow-hidden modal-content"
+        >
         <div
           class="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-blue-200"
         >
@@ -761,16 +763,18 @@
         window.showModal = function (modalId) {
           const modal = document.getElementById(modalId);
           if (modal) {
+            modal.style.display = 'flex';
             modal.classList.remove("hidden");
-            modal.classList.add("flex");
+            modal.classList.add("flex", "items-center", "justify-center");
           }
         };
 
         window.closeModal = function (modalId) {
           const modal = document.getElementById(modalId);
           if (modal) {
+            modal.style.display = 'none';
             modal.classList.add("hidden");
-            modal.classList.remove("flex");
+            modal.classList.remove("flex", "items-center", "justify-center");
           }
         };
       }

@@ -89,7 +89,7 @@ function openAddFacilityModal() {
   document.getElementById("facilityActive").checked = true;
   document.getElementById("saveFacilityBtn").innerHTML =
     '<i class="fas fa-save"></i> Save Facility';
-  showModal("facilityModal");
+  showModal("addFacilityModal");
 }
 
 function editFacility(facilityId) {
@@ -103,7 +103,7 @@ function editFacility(facilityId) {
           '<div class="p-2 bg-blue-500 rounded-lg text-white"><i class="fas fa-building"></i></div>Edit Facility';
         document.getElementById("saveFacilityBtn").innerHTML =
           '<i class="fas fa-save"></i> Update Facility';
-        showModal("facilityModal");
+        showModal("addFacilityModal");
       } else {
         Toast.error(data.message || "Failed to load facility details");
       }
@@ -294,19 +294,27 @@ document
       },
       body: JSON.stringify(payload),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
+        console.log('Response data:', data);
         if (data.success) {
           Toast.success(data.message);
-          closeModal("facilityModal");
+          closeModal("addFacilityModal");
           setTimeout(() => location.reload(), 1000);
         } else {
           Toast.error(data.message || "Operation failed");
         }
       })
       .catch((error) => {
-        console.error("Error:", error);
-        Toast.error("Network error occurred");
+        console.error("Error details:", error);
+        Toast.error(`Network error: ${error.message}`);
       });
   });
 
