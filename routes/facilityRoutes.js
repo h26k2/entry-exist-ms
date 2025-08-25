@@ -39,12 +39,6 @@ router.delete(
   authController.requireRole("admin"),
   facilityController.deleteFacility
 );
-router.get(
-  "/api/facility-details/:id",
-  authController.requireLogin,
-  authController.requireRole("admin"),
-  facilityController.getFacilityDetails
-);
 
 // Facility management
 router.post(

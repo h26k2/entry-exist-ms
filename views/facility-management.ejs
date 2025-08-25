@@ -210,19 +210,6 @@
               <h3 class="text-lg font-bold text-gray-900 mb-2">Add Facility</h3>
               <p class="text-sm text-gray-600">Create new facility</p>
             </button>
-
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-green-200 p-6 transition-all duration-300 text-center"
-              onclick="openBulkUpdateModal()"
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-edit text-white text-xl"></i>
-              </div>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Bulk Update</h3>
-              <p class="text-sm text-gray-600">Update multiple prices</p>
-            </button>
           </div>
 
           <% if (typeof error !== 'undefined' && error) { %>
@@ -417,14 +404,6 @@
                   </button>
                   <button
                     type="button"
-                    class="details-facility-btn bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-                    data-facility-id="<%= facility.id %>"
-                  >
-                    <i class="fas fa-eye text-xs"></i>
-                    Details
-                  </button>
-                  <button
-                    type="button"
                     class="toggle-facility-btn <%= facility.is_active ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600' %> text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
                     data-facility-id="<%= facility.id %>"
                   >
@@ -593,38 +572,6 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
-
-    <!-- Facility Details Modal -->
-    <div
-      id="facilityDetailsModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal"
-    >
-      <div
-        class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-0 overflow-hidden modal-content"
-      >
-        <div
-          class="bg-gradient-to-r from-cyan-50 to-cyan-100 px-6 py-4 border-b border-cyan-200"
-        >
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3">
-              <div class="p-2 bg-cyan-500 rounded-lg text-white">
-                <i class="fas fa-eye"></i>
-              </div>
-              Facility Details
-            </h2>
-            <button
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-              onclick="closeModal('facilityDetailsModal')"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-        <div id="facilityDetailsContent" class="p-6">
-          <!-- Details will be loaded here -->
-        </div>
       </div>
     </div>
 
@@ -863,11 +810,6 @@
         showModal("addFacilityModal");
       }
 
-      function openBulkUpdateModal() {
-        showModal("bulkUpdateModal");
-        showNotification("Bulk update feature ready", "info");
-      }
-
       function generateReport() {
         showNotification("Generating facility analytics...", "info");
 
@@ -1044,19 +986,12 @@
         const container = document.getElementById("facilitiesContainer");
         container.addEventListener("click", async function (e) {
           const editBtn = e.target.closest(".edit-facility-btn");
-          const detailsBtn = e.target.closest(".details-facility-btn");
           const toggleBtn = e.target.closest(".toggle-facility-btn");
           const deleteBtn = e.target.closest(".delete-facility-btn");
           if (editBtn) {
             e.preventDefault();
             const id = editBtn.getAttribute("data-facility-id");
             editFacility(id);
-            return;
-          }
-          if (detailsBtn) {
-            e.preventDefault();
-            const id = detailsBtn.getAttribute("data-facility-id");
-            viewFacilityDetails(id);
             return;
           }
           if (toggleBtn) {
@@ -1074,47 +1009,6 @@
           }
         });
       });
-
-      async function viewFacilityDetails(facilityId) {
-        try {
-          const response = await fetch(`/api/facility-details/${facilityId}`);
-          const data = await response.json();
-          if (data.success) {
-            // Populate details modal
-            const container = document.getElementById("facilityDetailsContent");
-            container.innerHTML = `
-              <h3 class="text-lg font-bold mb-2">${data.facility.name}</h3>
-              <p class="mb-2">Price: Rs ${data.facility.price}</p>
-              <p class="mb-2">Status: ${
-                data.facility.is_active ? "Active" : "Inactive"
-              }</p>
-              <p class="mb-2">Description: ${
-                data.facility.description || "No description"
-              }</p>
-              <p class="mb-2">Created: ${new Date(
-                data.facility.created_at
-              ).toLocaleDateString()}</p>
-              <hr class="my-2" />
-              <h4 class="font-semibold mb-1">Usage Stats</h4>
-              <p>Total Usage: ${data.stats.total_usage || 0}</p>
-              <p>Total Revenue: Rs ${(data.stats.total_revenue || 0).toFixed(
-                2
-              )}</p>
-              <p>Last Used: ${
-                data.stats.last_used
-                  ? new Date(data.stats.last_used).toLocaleDateString()
-                  : "Never"
-              }</p>
-            `;
-            showModal("facilityDetailsModal");
-          } else {
-            showNotification(data.message || "Failed to load details", "error");
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          showNotification("Network error occurred", "error");
-        }
-      }
 
       // Auto-refresh data every 5 minutes
       setInterval(() => {

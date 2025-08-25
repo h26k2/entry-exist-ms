@@ -149,39 +149,6 @@ exports.deleteFacility = async (req, res) => {
   }
 };
 
-// Get facility details
-exports.getFacilityDetails = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const facility = await DatabaseHelper.query(
-      "SELECT * FROM facilities WHERE id = ?",
-      [id]
-    );
-
-    if (facility.length === 0) {
-      return res.json({ success: false, message: "Facility not found" });
-    }
-
-    // Remove usage stats as entry_facilities table is removed
-    const usageStats = {
-      total_usage: 0,
-      total_quantity: 0,
-      total_revenue: 0,
-      last_used: null
-    };
-
-    res.json({
-      success: true,
-      facility: facility[0],
-      stats: usageStats,
-    });
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false, message: "Failed to get facility details" });
-  }
-};
-
 // Toggle facility status
 exports.toggleFacilityStatus = async (req, res) => {
   const { id } = req.params;
