@@ -225,7 +225,7 @@ exports.renderEntryPage = async (req, res) => {
       "SELECT * FROM categories WHERE id > 0 ORDER BY name"
     );
     const facilities = await DatabaseHelper.query(
-      "SELECT * FROM facilities WHERE is_active = 1 ORDER BY name"
+      "SELECT * FROM facilities WHERE is_active = 1 AND is_deleted = FALSE ORDER BY name"
     );
   
     // Fetch entries from ZKBioTime

@@ -1,27 +1,27 @@
 // Facility stats API for dashboard
 exports.getFacilityStats = async (req, res) => {
   try {
-    // Total facilities
+    // Total facilities (excluding deleted)
     const totalFacilitiesResult = await DatabaseHelper.query(
-      "SELECT COUNT(*) as total FROM facilities"
+      "SELECT COUNT(*) as total FROM facilities WHERE is_deleted = FALSE"
     );
     const totalFacilities = totalFacilitiesResult[0].total || 0;
 
-    // Active facilities
+    // Active facilities (excluding deleted)
     const activeFacilitiesResult = await DatabaseHelper.query(
-      "SELECT COUNT(*) as active FROM facilities WHERE is_active = 1"
+      "SELECT COUNT(*) as active FROM facilities WHERE is_active = 1 AND is_deleted = FALSE"
     );
     const activeFacilities = activeFacilitiesResult[0].active || 0;
 
-    // Inactive facilities
+    // Inactive facilities (excluding deleted)
     const inactiveFacilitiesResult = await DatabaseHelper.query(
-      "SELECT COUNT(*) as inactive FROM facilities WHERE is_active = 0"
+      "SELECT COUNT(*) as inactive FROM facilities WHERE is_active = 0 AND is_deleted = FALSE"
     );
     const inactiveFacilities = inactiveFacilitiesResult[0].inactive || 0;
 
-    // Average price
+    // Average price (excluding deleted)
     const avgPriceResult = await DatabaseHelper.query(
-      "SELECT AVG(price) as avg FROM facilities"
+      "SELECT AVG(price) as avg FROM facilities WHERE is_deleted = FALSE"
     );
     const avgPrice = avgPriceResult[0].avg
       ? parseFloat(avgPriceResult[0].avg).toFixed(2)
@@ -51,7 +51,7 @@ const DatabaseHelper = require("../config/dbHelper");
 exports.renderFacilityPage = async (req, res) => {
   try {
     const facilities = await DatabaseHelper.query(
-      "SELECT * FROM facilities ORDER BY name"
+      "SELECT * FROM facilities WHERE is_deleted = FALSE ORDER BY name"
     );
 
     res.render("facility-management", {
@@ -108,11 +108,21 @@ exports.updateFacility = async (req, res) => {
   const { name, price, description, is_active } = req.body;
 
   try {
+    // Check if facility exists and is not deleted
+    const existingFacility = await DatabaseHelper.query(
+      "SELECT id FROM facilities WHERE id = ? AND is_deleted = FALSE",
+      [id]
+    );
+
+    if (existingFacility.length === 0) {
+      return res.json({ success: false, message: "Facility not found" });
+    }
+
     await DatabaseHelper.execute(
       `
       UPDATE facilities 
       SET name = ?, price = ?, description = ?, is_active = ?
-      WHERE id = ?
+      WHERE id = ? AND is_deleted = FALSE
     `,
       [
         name,
@@ -134,13 +144,26 @@ exports.updateFacility = async (req, res) => {
   }
 };
 
-// Delete facility
+// Delete facility (soft delete)
 exports.deleteFacility = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Remove usage check as entry_facilities table is removed
-    await DatabaseHelper.execute("DELETE FROM facilities WHERE id = ?", [id]);
+    // Check if facility exists and is not already deleted
+    const existingFacility = await DatabaseHelper.query(
+      "SELECT id FROM facilities WHERE id = ? AND is_deleted = FALSE",
+      [id]
+    );
+
+    if (existingFacility.length === 0) {
+      return res.json({ success: false, message: "Facility not found or already deleted" });
+    }
+
+    // Soft delete: mark as deleted instead of actually removing
+    await DatabaseHelper.execute(
+      "UPDATE facilities SET is_deleted = TRUE WHERE id = ?", 
+      [id]
+    );
 
     res.json({ success: true, message: "Facility deleted successfully" });
   } catch (err) {
@@ -155,7 +178,7 @@ exports.toggleFacilityStatus = async (req, res) => {
 
   try {
     const facility = await DatabaseHelper.query(
-      "SELECT is_active FROM facilities WHERE id = ?",
+      "SELECT is_active FROM facilities WHERE id = ? AND is_deleted = FALSE",
       [id]
     );
 
@@ -199,7 +222,7 @@ exports.getFacilityUsageReport = async (req, res) => {
         0 as total_revenue,
         f.price as avg_price
       FROM facilities f
-      WHERE f.is_active = 1
+      WHERE f.is_active = 1 AND f.is_deleted = FALSE
     `;
 
     const params = [];

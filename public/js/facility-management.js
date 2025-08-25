@@ -124,20 +124,23 @@ function populateFacilityForm(facility) {
 }
 
 async function deleteFacility(facilityId) {
-  const confirmed = await Confirm.show(
-    "Are you sure you want to delete this facility? This action cannot be undone.",
-    "Delete Facility",
-    "Yes, Delete",
-    "Cancel",
-    { type: "danger" }
+  console.log('deleteFacility called with ID:', facilityId);
+  
+  const confirmed = confirm(
+    "Are you sure you want to delete this facility? This action cannot be undone."
   );
 
   if (confirmed) {
+    console.log('User confirmed deletion');
     fetch(`/api/delete-facility/${facilityId}`, {
       method: "DELETE",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        console.log('Response status:', response.status);
+        return response.json();
+      })
       .then((data) => {
+        console.log('Response data:', data);
         if (data.success) {
           Toast.success(data.message);
           setTimeout(() => location.reload(), 1000);
@@ -149,6 +152,8 @@ async function deleteFacility(facilityId) {
         console.error("Error:", error);
         Toast.error("Network error occurred");
       });
+  } else {
+    console.log('User cancelled deletion');
   }
 }
 

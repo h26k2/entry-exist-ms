@@ -15,6 +15,7 @@ CREATE TABLE facilities (
     price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
