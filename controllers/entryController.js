@@ -15,26 +15,69 @@ async function getZKEntries(options = {}) {
     if (options.endTime) params.append('end_time', options.endTime);
     if (options.page) params.append('page', options.page);
     if (options.pageSize) params.append('page_size', options.pageSize);
+    
+    // Add ordering parameter to get most recent entries first from the API
+    // Try different ordering parameter formats that ZKBioTime might support
+    params.append('ordering', '-punch_time'); // Django REST framework style
+    // Alternatively, try: params.append('order_by', 'punch_time');
+    // Or: params.append('sort', 'punch_time');
+    // Or: params.append('order', 'desc');
+    
     // Fetch from local ZKBioTime server
     const response = await client.get(`/iclock/api/transactions/?${params.toString()}`);
     if (response.data.code !== 0) {
       throw new Error(response.data.msg || 'Failed to fetch entries');
     }
-    // Only map required fields and format date
-    const entries = response.data.data.map(entry => ({
-      id: entry.id,
-      first_name: entry.first_name,
-      last_name: entry.last_name,
-      punch_state_display: entry.punch_state_display,
-      punch_time: entry.punch_time ? new Date(entry.punch_time.replace(/-/g, '/')).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }) : ''
-    }));
+
+    // Get all emp_codes from the ZK response to fetch user data from local database
+    const empCodes = response.data.data.map(entry => entry.emp_code).filter(Boolean);
+    
+    // Fetch user data from local app_users table
+    let localUsers = [];
+    if (empCodes.length > 0) {
+      const placeholders = empCodes.map(() => '?').join(',');
+      localUsers = await DatabaseHelper.query(
+        `SELECT id, first_name, last_name, cnic_number, type FROM app_users WHERE id IN (${placeholders})`,
+        empCodes
+      );
+    }
+
+    // Create a map for quick lookup of local user data
+    const userMap = localUsers.reduce((map, user) => {
+      map[user.id] = user;
+      return map;
+    }, {});
+
+    // Map ZK entries with local user data
+    const entries = response.data.data.map(entry => {
+      const localUser = userMap[entry.emp_code];
+      const firstName = localUser ? localUser.first_name : entry.first_name || 'Unknown';
+      const lastName = localUser ? localUser.last_name : entry.last_name || 'User';
+      
+      return {
+        id: entry.id,
+        emp_code: entry.emp_code,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`.trim(), // Concatenated full name
+        cnic_number: localUser ? localUser.cnic_number : 'N/A', // CNIC from local database
+        type: localUser ? localUser.type : 'N/A', // Type from local database
+        punch_state_display: entry.punch_state_display,
+        punch_time: entry.punch_time ? new Date(entry.punch_time.replace(/-/g, '/')).toLocaleString('en-GB', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }) : '',
+        punch_time_raw: entry.punch_time // Keep raw timestamp for sorting
+      };
+    });
+
+    // No need to sort here since API is already returning sorted data
+    // entries.sort() removed as API handles the sorting
+
     return {
       entries,
       total: response.data.count,
@@ -473,10 +516,13 @@ exports.renderEntryManagementPage = async (req, res) => {
             pageSize: 50
         });
 
+        // Reverse the entries array to show most recent first
+        // Note: entries are now sorted by punch_time in descending order in getZKEntries function
+
         res.render("entry-management", {
             title: "Entry Management",
             activePage: "entry",
-            entries: entries.entries,
+            entries: entries.entries,  // Use sorted entries directly
             user: req.session.user
         });
     } catch (error) {
@@ -500,9 +546,14 @@ exports.getRecentEntries = async (req, res) => {
             pageSize
         });
 
+        // Reverse the entries array to show most recent first
+        // Note: entries are now sorted by punch_time in descending order in getZKEntries function
+
         res.json({
             success: true,
-            ...entries
+            entries: entries.entries,  // Use sorted entries directly
+            total: entries.total,
+            hasMore: entries.hasMore
         });
     } catch (error) {
         console.error('Error fetching recent entries:', error);

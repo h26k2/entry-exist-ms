@@ -115,39 +115,55 @@
           <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
             <div class="px-6 py-4 border-b border-gray-100">
               <h3 class="text-lg font-semibold text-gray-900">Recent Entries</h3>
-              <p class="text-sm text-gray-600">Real-time entry/exit records from devices</p>
+              <p class="text-sm text-gray-600">View recent entry/exit records from devices</p>
             </div>
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S#</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CNIC</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Punch Time</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                   <% if (entries && entries.length > 0) { %>
-                    <% entries.forEach(entry => { %>
+                    <% entries.forEach((entry, index) => { %>
                       <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center">
-                            <div>
-                              <div class="text-sm font-medium text-gray-900"><%= entry.first_name %></div>
-                            </div>
-                          </div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= index + 1 %>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <div class="flex items-center">
                             <div>
-                              <div class="text-sm font-medium text-gray-900"><%= entry.last_name %></div>
+                              <div class="text-sm font-medium text-gray-900"><%= entry.full_name %></div>
                             </div>
                           </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <%= entry.id %>
+                          <%= entry.cnic_number %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <% if (entry.type && entry.type !== 'N/A') { %>
+                            <% 
+                              // Convert to lowercase and trim for comparison
+                              const typeValue = entry.type.toLowerCase().trim();
+                            %>
+                            <% if (typeValue === 'serving personnel') { %>
+                              <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">Serving Personnel</span>
+                            <% } else if (typeValue === 'retired officer') { %>
+                              <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">Retired Officer</span>
+                            <% } else if (typeValue === 'civilian') { %>
+                              <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Civilian</span>
+                            <% } else { %>
+                              <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold"><%= entry.type %> (Debug: <%= typeValue %>)</span>
+                            <% } %>
+                          <% } else { %>
+                            <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold">N/A</span>
+                          <% } %>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <% if (entry.punch_state_display === 'Check In') { %>
@@ -163,7 +179,7 @@
                     <% }) %>
                   <% } else { %>
                     <tr>
-                      <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                         No entries found for today
                       </td>
                     </tr>
