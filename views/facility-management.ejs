@@ -169,17 +169,17 @@
             <div
               class="stat-card"
               style="
-                background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+                background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
               "
             >
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-white mb-1 opacity-90">
-                    Avg. Price
+                    Inactive Facilities
                   </p>
                   <p
                     class="text-2xl lg:text-3xl font-bold text-white"
-                    id="avgPrice"
+                    id="inactiveFacilities"
                   >
                     -
                   </p>
@@ -187,36 +187,11 @@
                 <div
                   class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center"
                 >
-                  <i class="fas fa-dollar-sign text-white text-xl"></i>
+                  <i class="fas fa-times-circle text-white text-xl"></i>
                 </div>
               </div>
             </div>
-
-            <div
-              class="stat-card"
-              style="
-                background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-              "
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-white mb-1 opacity-90">
-                    Revenue Today
-                  </p>
-                  <p
-                    class="text-2xl lg:text-3xl font-bold text-white"
-                    id="todayRevenue"
-                  >
-                    -
-                  </p>
-                </div>
-                <div
-                  class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center"
-                >
-                  <i class="fas fa-coins text-white text-xl"></i>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           <!-- Quick Actions -->
@@ -408,11 +383,6 @@
                       <p class="text-2xl font-bold text-green-700">
                         Rs <%= parseFloat(facility.price || 0).toFixed(2) %>
                       </p>
-                    </div>
-                    <div
-                      class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"
-                    >
-                      <i class="fas fa-dollar-sign text-green-600"></i>
                     </div>
                   </div>
                 </div>
@@ -754,6 +724,7 @@
           if (data.success) {
             animateCounter("totalFacilities", data.totalFacilities || 0);
             animateCounter("activeFacilities", data.activeFacilities || 0);
+            animateCounter("inactiveFacilities", data.inactiveFacilities || 0);
             document.getElementById("avgPrice").textContent =
               "RS " + (data.avgPrice || 0);
             document.getElementById("todayRevenue").textContent =
@@ -809,11 +780,16 @@
         const activeFacilities = document.querySelectorAll(
           '.facility-card[data-status="active"]'
         );
+        const inactiveFacilities = document.querySelectorAll(
+          '.facility-card[data-status="inactive"]'
+        );
 
         document.getElementById("totalFacilities").textContent =
           facilities.length;
         document.getElementById("activeFacilities").textContent =
           activeFacilities.length;
+        document.getElementById("inactiveFacilities").textContent =
+          inactiveFacilities.length;
 
         // Calculate average price
         let totalPrice = 0;

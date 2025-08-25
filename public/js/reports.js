@@ -304,7 +304,6 @@ function displayPersonHistory(data) {
             <th>Exit Time</th>
             <th>Duration</th>
             <th>Amount</th>
-            <th>Facilities</th>
             <th>Operator</th>
           </tr>
         </thead>
@@ -312,9 +311,6 @@ function displayPersonHistory(data) {
     `;
 
     data.history.forEach((entry) => {
-      const facilities = entry.facilities
-        ? entry.facilities.map((f) => f.facility_name).join(", ")
-        : "None";
       const duration = entry.duration_minutes
         ? `${Math.floor(entry.duration_minutes / 60)}h ${
             entry.duration_minutes % 60
@@ -331,7 +327,6 @@ function displayPersonHistory(data) {
           }</td>
           <td>${duration}</td>
           <td>RS${(entry.total_amount || 0).toFixed(2)}</td>
-          <td>${facilities}</td>
           <td>${entry.operator_name}</td>
         </tr>
       `;

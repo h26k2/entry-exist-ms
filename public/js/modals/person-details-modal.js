@@ -314,9 +314,6 @@ class PersonDetailsModal {
                     ? entry.entry_type
                     : "UNKNOWN"
                 }</span>
-                      <div class="text-sm text-gray-600">${
-                        entry.facility_name || "Unknown Facility"
-                      }</div>
                     </div>
                   </div>
                   <div class="text-right">

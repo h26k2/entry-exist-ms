@@ -44,21 +44,6 @@ class EntryModalManager {
       });
     }
 
-    // Facility checkboxes
-    document.querySelectorAll(".facility-checkbox").forEach((checkbox) => {
-      checkbox.addEventListener("change", (e) => {
-        this.toggleFacilityQuantity(e.target);
-        this.updateTotalAmount();
-      });
-    });
-
-    // Facility quantities
-    document.querySelectorAll(".facility-quantity").forEach((input) => {
-      input.addEventListener("input", () => {
-        this.updateTotalAmount();
-      });
-    });
-
     // Form validation
     document.getElementById("entryForm").addEventListener("input", () => {
       this.updateSubmitButton();
@@ -237,69 +222,8 @@ class EntryModalManager {
     this.updateSubmitButton();
   }
 
-  toggleFacilityQuantity(checkbox) {
-    const quantityInput = checkbox
-      .closest(".facility-item")
-      .querySelector(".facility-quantity");
-    if (quantityInput) {
-      quantityInput.disabled = !checkbox.checked;
-      if (!checkbox.checked) {
-        quantityInput.value = 1;
-      }
-    }
-  }
-
-  updateTotalAmount() {
-    const facilityCheckboxes = document.querySelectorAll(
-      ".facility-checkbox:checked"
-    );
-    let total = 0;
-    const breakdown = [];
-
-    facilityCheckboxes.forEach((checkbox) => {
-      const price = parseFloat(checkbox.dataset.price) || 0;
-      const name = checkbox.dataset.name;
-      const quantityInput = checkbox
-        .closest(".facility-item")
-        .querySelector(".facility-quantity");
-      const quantity = parseInt(quantityInput.value) || 1;
-      const subtotal = price * quantity;
-
-      total += subtotal;
-      breakdown.push({ name, quantity, price, subtotal });
-    });
-
-    this.totalAmount = total;
-
-    // Update display
-    const totalElement = document.getElementById("totalAmount");
-    if (totalElement) {
-      totalElement.textContent = total.toFixed(2);
-    }
-
-    // Update breakdown
-    const breakdownElement = document.getElementById("facilityBreakdown");
-    if (breakdownElement) {
-      if (breakdown.length === 0) {
-        breakdownElement.innerHTML =
-          '<div class="text-gray-500 text-sm">No facilities selected</div>';
-      } else {
-        breakdownElement.innerHTML = breakdown
-          .map(
-            (item) => `
-          <div class="flex justify-between text-sm">
-            <span>${item.name} × ${item.quantity}</span>
-            <span>Rs. ${item.subtotal.toFixed(2)}</span>
-          </div>
-        `
-          )
-          .join("");
-      }
-    }
-
-    this.updatePaymentNote();
-  }
-
+  // Removed facility-related methods as entry_facilities table is removed
+  
   updatePaymentNote() {
     const isGuest = document.getElementById("isGuest")?.checked;
     const category = this.selectedPerson?.category;
@@ -413,22 +337,8 @@ class EntryModalManager {
       is_guest: formData.get("is_guest") === "1",
       host_person_id: this.selectedHost?.id || null,
       entry_remarks: formData.get("entry_remarks") || null,
-      facilities: [],
-      total_amount: this.totalAmount,
+      total_amount: 0, // Remove facility-based amount calculation
     };
-
-    // Collect selected facilities
-    document
-      .querySelectorAll(".facility-checkbox:checked")
-      .forEach((checkbox) => {
-        const quantityInput = checkbox
-          .closest(".facility-item")
-          .querySelector(".facility-quantity");
-        data.facilities.push({
-          facility_id: parseInt(checkbox.value),
-          quantity: parseInt(quantityInput.value) || 1,
-        });
-      });
 
     return data;
   }
@@ -456,13 +366,7 @@ class EntryModalManager {
     this.clearSearchResults("entry");
     this.clearSearchResults("host");
 
-    // Reset facility quantities
-    document.querySelectorAll(".facility-quantity").forEach((input) => {
-      input.disabled = true;
-      input.value = 1;
-    });
-
-    this.updateTotalAmount();
+    // Remove facility-related reset code as entry_facilities table is removed
     this.updateSubmitButton();
   }
 

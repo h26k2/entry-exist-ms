@@ -76,19 +76,6 @@ CREATE TABLE entry_logs (
     FOREIGN KEY (host_person_id) REFERENCES people(id)
 );
 
--- Entry facility usage tracking
-CREATE TABLE entry_facilities (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    entry_log_id INT NOT NULL,
-    facility_id INT NOT NULL,
-    quantity INT DEFAULT 1,
-    unit_price DECIMAL(10,2),
-    total_price DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (entry_log_id) REFERENCES entry_logs(id) ON DELETE CASCADE,
-    FOREIGN KEY (facility_id) REFERENCES facilities(id)
-);
-
 -- Fee deposits table
 CREATE TABLE fee_deposits (
     id INT PRIMARY KEY AUTO_INCREMENT,

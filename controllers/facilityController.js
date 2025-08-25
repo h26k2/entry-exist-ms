@@ -13,6 +13,12 @@ exports.getFacilityStats = async (req, res) => {
     );
     const activeFacilities = activeFacilitiesResult[0].active || 0;
 
+    // Inactive facilities
+    const inactiveFacilitiesResult = await DatabaseHelper.query(
+      "SELECT COUNT(*) as inactive FROM facilities WHERE is_active = 0"
+    );
+    const inactiveFacilities = inactiveFacilitiesResult[0].inactive || 0;
+
     // Average price
     const avgPriceResult = await DatabaseHelper.query(
       "SELECT AVG(price) as avg FROM facilities"
@@ -21,23 +27,14 @@ exports.getFacilityStats = async (req, res) => {
       ? parseFloat(avgPriceResult[0].avg).toFixed(2)
       : 0;
 
-    // Revenue today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const todayRevenueResult = await DatabaseHelper.query(
-      `SELECT SUM(ef.total_price) as revenue FROM entry_facilities ef JOIN entry_logs el ON ef.entry_log_id = el.id WHERE el.created_at >= ? AND el.created_at < ?`,
-      [today, tomorrow]
-    );
-    const todayRevenue = todayRevenueResult[0].revenue
-      ? parseFloat(todayRevenueResult[0].revenue).toFixed(2)
-      : 0;
+    // Revenue today - removing as entry_facilities table is removed
+    const todayRevenue = 0;
 
     res.json({
       success: true,
       totalFacilities,
       activeFacilities,
+      inactiveFacilities,
       avgPrice,
       todayRevenue,
     });
@@ -142,20 +139,7 @@ exports.deleteFacility = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Check if facility is being used in any entries
-    const usageCount = await DatabaseHelper.query(
-      "SELECT COUNT(*) as count FROM entry_facilities WHERE facility_id = ?",
-      [id]
-    );
-
-    if (usageCount[0].count > 0) {
-      return res.json({
-        success: false,
-        message:
-          "Cannot delete facility that has been used in entries. You can deactivate it instead.",
-      });
-    }
-
+    // Remove usage check as entry_facilities table is removed
     await DatabaseHelper.execute("DELETE FROM facilities WHERE id = ?", [id]);
 
     res.json({ success: true, message: "Facility deleted successfully" });
@@ -179,25 +163,18 @@ exports.getFacilityDetails = async (req, res) => {
       return res.json({ success: false, message: "Facility not found" });
     }
 
-    // Get usage statistics
-    const usageStats = await DatabaseHelper.query(
-      `
-      SELECT 
-        COUNT(*) as total_usage,
-        SUM(quantity) as total_quantity,
-        SUM(total_price) as total_revenue,
-        MAX(ef.created_at) as last_used
-      FROM entry_facilities ef
-      JOIN entry_logs el ON ef.entry_log_id = el.id
-      WHERE ef.facility_id = ?
-    `,
-      [id]
-    );
+    // Remove usage stats as entry_facilities table is removed
+    const usageStats = {
+      total_usage: 0,
+      total_quantity: 0,
+      total_revenue: 0,
+      last_used: null
+    };
 
     res.json({
       success: true,
       facility: facility[0],
-      stats: usageStats[0],
+      stats: usageStats,
     });
   } catch (err) {
     console.error(err);
@@ -244,34 +221,25 @@ exports.getFacilityUsageReport = async (req, res) => {
   const { start_date, end_date } = req.query;
 
   try {
+    // Remove facility usage statistics as entry_facilities table is removed
     let query = `
       SELECT 
         f.id,
         f.name,
         f.price,
-        COUNT(ef.id) as usage_count,
-        SUM(ef.quantity) as total_quantity,
-        SUM(ef.total_price) as total_revenue,
-        AVG(ef.unit_price) as avg_price
+        0 as usage_count,
+        0 as total_quantity,
+        0 as total_revenue,
+        f.price as avg_price
       FROM facilities f
-      LEFT JOIN entry_facilities ef ON f.id = ef.facility_id
-      LEFT JOIN entry_logs el ON ef.entry_log_id = el.id
       WHERE f.is_active = 1
     `;
 
     const params = [];
 
-    if (start_date) {
-      query += " AND DATE(el.entry_time) >= ?";
-      params.push(start_date);
-    }
+    // Remove date filtering as entry_facilities table is removed
 
-    if (end_date) {
-      query += " AND DATE(el.entry_time) <= ?";
-      params.push(end_date);
-    }
-
-    query += " GROUP BY f.id, f.name, f.price ORDER BY total_revenue DESC";
+    query += " ORDER BY f.name ASC";
 
     const report = await DatabaseHelper.query(query, params);
 

@@ -419,21 +419,6 @@ exports.processEntry = async (req, res) => {
     let totalAmount = 0;
     let paymentStatus = "PAID";
 
-    // Calculate facility costs
-    const facilities = selected_facilities
-      ? JSON.parse(selected_facilities)
-      : [];
-
-    for (const facility of facilities) {
-      const facilityInfo = await DatabaseHelper.query(
-        "SELECT price FROM facilities WHERE id = ?",
-        [facility.id]
-      );
-      if (facilityInfo.length > 0) {
-        totalAmount += facilityInfo[0].price * (facility.quantity || 1);
-      }
-    }
-
     // Determine payment status based on category
     if (
       !person.requires_payment ||
@@ -450,32 +435,9 @@ exports.processEntry = async (req, res) => {
 
   // Entry creation now handled by ZKBioTime device, not local DB
 
-    // Add facility usage records
-    for (const facility of facilities) {
-      const facilityInfo = await DatabaseHelper.query(
-        "SELECT price FROM facilities WHERE id = ?",
-        [facility.id]
-      );
-
-      if (facilityInfo.length > 0) {
-        const quantity = facility.quantity || 1;
-        const unitPrice = facilityInfo[0].price;
-        const totalPrice = unitPrice * quantity;
-
-        await DatabaseHelper.query(
-          `
-          INSERT INTO entry_facilities (entry_log_id, facility_id, quantity, unit_price, total_price)
-          VALUES (?, ?, ?, ?, ?)
-        `,
-          [entryResult.insertId, facility.id, quantity, unitPrice, totalPrice]
-        );
-      }
-    }
-
     res.json({
       success: true,
       message: "Entry recorded successfully",
-      entry_id: entryResult.insertId,
       total_amount: totalAmount,
     });
   } catch (err) {
