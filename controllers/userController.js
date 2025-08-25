@@ -232,7 +232,6 @@ exports.updateAppUser = async (req, res) => {
       amount_payable,
       discount,
       net_payable,
-      payment_terms,
       billing_mode,
       garrisson_id_for_sponsored,
       garrisson_name
@@ -299,7 +298,7 @@ exports.updateAppUser = async (req, res) => {
       amount_payable || 0,
       discount || 0,
       net_payable || 0,
-      payment_terms || 'monthly',
+      'monthly',
       garrisson_id_for_sponsored || null,
       garrisson_name || null,
       emp_code
@@ -445,7 +444,6 @@ exports.registerAppUser = async (req, res) => {
       amount_payable,
       discount,
       net_payable,
-      payment_terms,
       billing_mode,
       garrisson_id_for_sponsored,
       garrisson_name
@@ -517,7 +515,7 @@ exports.registerAppUser = async (req, res) => {
       amount_payable || 0,
       discount || 0,
       net_payable || 0,
-      payment_terms || 'monthly',
+      'monthly',
       garrisson_id_for_sponsored || null,
       garrisson_name || null
     ];

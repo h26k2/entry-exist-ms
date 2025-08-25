@@ -1004,7 +1004,6 @@
           amount_payable: parseInt(formData.get("amount_payable")) || 0,
           discount: parseInt(formData.get("discount")) || 0,
           net_payable: parseInt(formData.get("net_payable")) || 0,
-          payment_terms: formData.get("payment_terms"),
           billing_mode: formData.get("billing_mode"),
           garrisson_id_for_sponsored: formData.get("garrisson_id_for_sponsored"),
           garrisson_name: formData.get("garrisson_name")
@@ -1303,16 +1302,7 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
               </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
-                <select name="payment_terms" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                  <option value="monthly" ${userData.payment_terms === 'monthly' ? 'selected' : ''}>Monthly</option>
-                  <option value="quarterly" ${userData.payment_terms === 'quarterly' ? 'selected' : ''}>Quarterly</option>
-                  <option value="annually" ${userData.payment_terms === 'annually' ? 'selected' : ''}>Annually</option>
-                </select>
-              </div>
+            <div class="grid grid-cols-1 gap-4 mt-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Billing Mode</label>
                 <select name="billing_mode" ${userType === 'Serving personnel' ? 'disabled' : ''}
@@ -1720,27 +1710,6 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
                 <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
-                <div class="space-y-2">
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="monthly" class="mr-2" />
-                    Monthly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="quarterly" class="mr-2" />
-                    Quarterly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="half_yearly" class="mr-2" />
-                    Half Yearly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="yearly" class="mr-2" />
-                    Yearly
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -2063,29 +2032,10 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
                 <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
-                <div class="space-y-2">
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="monthly" class="mr-2" />
-                    Monthly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="quarterly" class="mr-2" />
-                    Quarterly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="half_yearly" class="mr-2" />
-                    Half Yearly
-                  </label>
-                  <label class="flex items-center">
-                    <input type="radio" name="payment_terms" value="yearly" class="mr-2" />
-                    Yearly
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
+
+          <!-- Garrison Details -->
         `;
       }
     </script>
