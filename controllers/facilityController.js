@@ -102,6 +102,39 @@ exports.addFacility = async (req, res) => {
   }
 };
 
+// Get facility details by ID
+exports.getFacilityDetails = async (req, res) => {
+  const { id } = req.params;
+  console.log('getFacilityDetails called with ID:', id);
+
+  try {
+    const query = "SELECT * FROM facilities WHERE id = ? AND is_deleted = FALSE";
+    console.log('Executing query:', query, 'with params:', [id]);
+    const rows = await DatabaseHelper.query(query, [id]);
+    console.log('Query result:', rows);
+
+    if (rows.length === 0) {
+      console.log('No facility found with ID:', id);
+      return res.json({
+        success: false,
+        message: "Facility not found"
+      });
+    }
+
+    console.log('Facility found:', rows[0]);
+    res.json({
+      success: true,
+      facility: rows[0]
+    });
+  } catch (err) {
+    console.error("Error fetching facility details:", err);
+    res.json({
+      success: false,
+      message: "Failed to fetch facility details"
+    });
+  }
+};
+
 // Update facility
 exports.updateFacility = async (req, res) => {
   const { id } = req.params;

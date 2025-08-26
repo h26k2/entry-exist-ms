@@ -21,6 +21,12 @@ router.get(
 );
 
 // Facility CRUD operations (Admin only)
+router.get(
+  "/api/facility-details/:id",
+  authController.requireLogin,
+  authController.requireRole("admin"),
+  facilityController.getFacilityDetails
+);
 router.post(
   "/api/add-facility",
   authController.requireLogin,

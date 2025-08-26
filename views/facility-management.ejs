@@ -462,7 +462,7 @@
       class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal"
       style="display: none;"
     >
-      <div class="flex items-center justify-center min-h-screen px-4 py-8">
+      <div class="flex items-center justify-center min-h-screen px-4 py-8" style="width:600px">
         <div
           class="bg-white rounded-xl shadow-2xl max-w-md w-full p-0 overflow-hidden modal-content"
         >
@@ -674,10 +674,17 @@
             animateCounter("totalFacilities", data.totalFacilities || 0);
             animateCounter("activeFacilities", data.activeFacilities || 0);
             animateCounter("inactiveFacilities", data.inactiveFacilities || 0);
-            document.getElementById("avgPrice").textContent =
-              "RS " + (data.avgPrice || 0);
-            document.getElementById("todayRevenue").textContent =
-              "RS " + (data.todayRevenue || 0);
+            
+            // Update average price with null check
+            const avgPriceElement = document.getElementById("avgPrice");
+            if (avgPriceElement) {
+              avgPriceElement.textContent = "RS " + (data.avgPrice || 0);
+            }
+            
+            const todayRevenueElement = document.getElementById("todayRevenue");
+            if (todayRevenueElement) {
+              todayRevenueElement.textContent = "RS " + (data.todayRevenue || 0);
+            }
           }
         } catch (error) {
           console.error("Error loading facility stats:", error);
@@ -735,32 +742,45 @@
           '.facility-card[data-status="inactive"]'
         );
 
-        document.getElementById("totalFacilities").textContent =
-          facilities.length;
-        document.getElementById("activeFacilities").textContent =
-          activeFacilities.length;
-        document.getElementById("inactiveFacilities").textContent =
-          inactiveFacilities.length;
+        // Update total facilities count with null check
+        const totalFacilitiesElement = document.getElementById("totalFacilities");
+        if (totalFacilitiesElement) {
+          totalFacilitiesElement.textContent = facilities.length;
+        }
 
-        // Calculate average price
-        let totalPrice = 0;
-        let priceCount = 0;
-        facilities.forEach((card) => {
-          const priceText =
-            card.querySelector(".text-green-600") ||
-            card.querySelector(".text-2xl");
-          if (priceText) {
-            const price = parseFloat(priceText.textContent.replace("RS ", ""));
-            if (!isNaN(price)) {
-              totalPrice += price;
-              priceCount++;
+        // Update active facilities count with null check
+        const activeFacilitiesElement = document.getElementById("activeFacilities");
+        if (activeFacilitiesElement) {
+          activeFacilitiesElement.textContent = activeFacilities.length;
+        }
+
+        // Update inactive facilities count with null check
+        const inactiveFacilitiesElement = document.getElementById("inactiveFacilities");
+        if (inactiveFacilitiesElement) {
+          inactiveFacilitiesElement.textContent = inactiveFacilities.length;
+        }
+
+        // Calculate and update average price with null check
+        const avgPriceElement = document.getElementById("avgPrice");
+        if (avgPriceElement) {
+          let totalPrice = 0;
+          let priceCount = 0;
+          facilities.forEach((card) => {
+            const priceText =
+              card.querySelector(".text-green-600") ||
+              card.querySelector(".text-2xl");
+            if (priceText) {
+              const price = parseFloat(priceText.textContent.replace("RS ", ""));
+              if (!isNaN(price)) {
+                totalPrice += price;
+                priceCount++;
+              }
             }
-          }
-        });
+          });
 
-        const avgPrice = priceCount > 0 ? totalPrice / priceCount : 0;
-        document.getElementById("avgPrice").textContent =
-          "RS " + avgPrice.toFixed(2);
+          const avgPrice = priceCount > 0 ? totalPrice / priceCount : 0;
+          avgPriceElement.textContent = "RS " + avgPrice.toFixed(2);
+        }
       }
 
       function updateLastUpdateTime() {
