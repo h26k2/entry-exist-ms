@@ -93,6 +93,17 @@ CREATE TABLE fee_deposits (
     FOREIGN KEY (deposited_by) REFERENCES users(id)
 );
 
+-- Facilities User Relations table
+CREATE TABLE facilities_user_relations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    facility_id INT NOT NULL,
+    chosen_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES app_users(id),
+    FOREIGN KEY (facility_id) REFERENCES facilities(id)
+) ENGINE=InnoDB;
+
 -- Current occupancy view removed
 
 -- User Categories Table
@@ -108,3 +119,5 @@ CREATE INDEX idx_entry_logs_entry_type ON entry_logs(entry_type);
 CREATE INDEX idx_people_cnic ON people(cnic);
 CREATE INDEX idx_people_category ON people(category_id);
 CREATE INDEX idx_current_entries ON entry_logs(entry_type, exit_time);
+CREATE INDEX idx_facilities_user_relations_user ON facilities_user_relations(user_id);
+CREATE INDEX idx_facilities_user_relations_facility ON facilities_user_relations(facility_id);
