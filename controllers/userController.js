@@ -1,5 +1,6 @@
 const { createAuthenticatedClient } = require('../utils/zkbiotime');
 const db = require('../config/db');
+const DatabaseHelper = require('../config/dbHelper');
 
 // Render users management page
 exports.renderUsersPage = async (req, res) => {
@@ -544,6 +545,127 @@ exports.registerAppUser = async (req, res) => {
     res.json({
       success: false,
       message: errorMessage
+    });
+  }
+};
+
+// Get facilities for user assignment
+exports.getFacilitiesForAssignment = async (req, res) => {
+  try {
+    const query = "SELECT id, name, price, description FROM facilities WHERE is_active = TRUE AND is_deleted = FALSE ORDER BY name";
+    const facilities = await DatabaseHelper.query(query);
+
+    res.json({
+      success: true,
+      facilities: facilities
+    });
+  } catch (err) {
+    console.error('Error fetching facilities:', err);
+    res.json({
+      success: false,
+      message: "Failed to fetch facilities"
+    });
+  }
+};
+
+// Check if user has assigned facilities
+exports.checkUserFacilities = async (req, res) => {
+  const { emp_code } = req.params;
+
+  try {
+    const query = "SELECT COUNT(*) as count FROM facilities_user_relations WHERE user_id = ?";
+    const result = await DatabaseHelper.query(query, [emp_code]);
+    const hasFacilities = result[0].count > 0;
+
+    res.json({
+      success: true,
+      hasFacilities: hasFacilities,
+      facilityCount: result[0].count
+    });
+  } catch (err) {
+    console.error('Error checking user facilities:', err);
+    res.json({
+      success: false,
+      message: "Failed to check user facilities"
+    });
+  }
+};
+
+// Get user's assigned facilities
+exports.getUserFacilities = async (req, res) => {
+  const { emp_code } = req.params;
+
+  try {
+    const query = `
+      SELECT 
+        f.id, 
+        f.name, 
+        f.price, 
+        f.description,
+        f.is_active
+      FROM facilities f
+      INNER JOIN facilities_user_relations fur ON f.id = fur.facility_id
+      WHERE fur.user_id = ? AND f.is_deleted = FALSE
+      ORDER BY f.name
+    `;
+    const facilities = await DatabaseHelper.query(query, [emp_code]);
+
+    res.json({
+      success: true,
+      facilities: facilities
+    });
+  } catch (err) {
+    console.error('Error fetching user facilities:', err);
+    res.json({
+      success: false,
+      message: "Failed to fetch user facilities"
+    });
+  }
+};
+
+// Save user facilities assignment
+exports.saveFacilitiesAssignment = async (req, res) => {
+  const { emp_code } = req.params;
+  const { facility_ids } = req.body;
+
+  console.log('Saving facilities assignment for user:', emp_code);
+  console.log('Facility IDs to assign:', facility_ids);
+
+  try {
+    // Start transaction by deleting existing assignments
+    console.log('Deleting existing assignments for user:', emp_code);
+    const deleteResult = await DatabaseHelper.query('DELETE FROM facilities_user_relations WHERE user_id = ?', [emp_code]);
+    console.log('Delete result:', deleteResult);
+
+    // Insert new assignments if any facilities are selected
+    if (facility_ids && facility_ids.length > 0) {
+      // Prepare values for bulk insert
+      const values = facility_ids.map(facility_id => [emp_code, facility_id]);
+      
+      // Create query with multiple value sets
+      const placeholders = facility_ids.map(() => '(?, ?)').join(', ');
+      const insertQuery = `INSERT INTO facilities_user_relations (user_id, facility_id) VALUES ${placeholders}`;
+      
+      // Flatten values array for the query
+      const flatValues = values.flat();
+      
+      console.log('Executing insert query:', insertQuery);
+      console.log('Insert values:', flatValues);
+      
+      const insertResult = await DatabaseHelper.query(insertQuery, flatValues);
+      console.log('Insert result:', insertResult);
+    }
+
+    res.json({
+      success: true,
+      message: "Facilities assignment saved successfully",
+      assignedCount: facility_ids ? facility_ids.length : 0
+    });
+  } catch (err) {
+    console.error('Error saving facilities assignment:', err);
+    res.json({
+      success: false,
+      message: "Failed to save facilities assignment"
     });
   }
 };

@@ -52,4 +52,36 @@ router.put(
   userController.updateAppUser
 );
 
+// Get facilities for assignment
+router.get(
+  "/api/facilities-for-assignment",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.getFacilitiesForAssignment
+);
+
+// Check if user has assigned facilities
+router.get(
+  "/api/user-facilities-check/:emp_code",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.checkUserFacilities
+);
+
+// Get user's assigned facilities
+router.get(
+  "/api/user-facilities/:emp_code",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.getUserFacilities
+);
+
+// Save user facilities assignment
+router.post(
+  "/api/save-user-facilities/:emp_code",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.saveFacilitiesAssignment
+);
+
 module.exports = router;

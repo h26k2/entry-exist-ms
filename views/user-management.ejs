@@ -444,6 +444,96 @@
       </div>
     </div>
 
+    <!-- Facilities Assignment Modal -->
+    <div
+      id="facilitiesModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 flex justify-between items-center flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+              <i class="fas fa-building text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold" id="facilitiesModalTitle">Facilities Availed</h2>
+              <p class="text-purple-100 text-sm" id="facilitiesModalSubtitle">Assign facilities to user</p>
+            </div>
+          </div>
+          <button
+            onclick="closeFacilitiesModal()"
+            class="text-white hover:text-purple-200 transition-colors"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 overflow-y-auto flex-1">
+          <!-- User Info -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-semibold text-gray-900 mb-2">User Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-600">Employee Code:</span>
+                <span class="font-medium ml-2" id="userEmpCode">-</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Name:</span>
+                <span class="font-medium ml-2" id="userName">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Facilities List -->
+          <div class="mb-6">
+            <h3 class="font-semibold text-gray-900 mb-4">Available Facilities</h3>
+            <div id="facilitiesContainer" class="space-y-3">
+              <!-- Facilities will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div id="facilitiesLoading" class="hidden text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+            <p class="text-gray-600">Loading facilities...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div id="facilitiesEmpty" class="hidden text-center py-8">
+            <i class="fas fa-building text-2xl text-gray-400 mb-2"></i>
+            <p class="text-gray-600">No facilities available</p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-4 flex justify-between items-center flex-shrink-0 border-t border-gray-200">
+          <!-- Selection Counter -->
+          <div class="text-sm text-gray-600">
+            <span id="facilitySelectionCounter">0 of 0 selected</span>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              onclick="closeFacilitiesModal()"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              id="saveFacilitiesBtn"
+              onclick="saveFacilitiesAssignment()"
+              class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+            >
+              <i class="fas fa-save mr-2"></i>Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       // Global variables
       let currentEmpCode = null;
@@ -641,12 +731,15 @@
                 : '<span class="text-gray-400 text-sm">Not Available</span>';
               
               const actionButtons = user.registrationData.isRegistered ? `
-                <div class="flex space-x-2">
-                  <button onclick="viewUserDetails('${user.emp_code}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded transition-colors">
-                    <i class="fas fa-eye mr-1"></i>View Details
+                <div class="flex space-x-1 flex-wrap gap-1">
+                  <button onclick="viewUserDetails('${user.emp_code}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded transition-colors">
+                    <i class="fas fa-eye mr-1"></i>View
                   </button>
-                  <button onclick="editUser('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded transition-colors">
+                  <button onclick="editUser('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded transition-colors">
                     <i class="fas fa-edit mr-1"></i>Edit
+                  </button>
+                  <button onclick="openFacilitiesModal('${user.emp_code}', '${user.fullName || ''}')" class="bg-purple-500 hover:bg-purple-600 text-white text-xs px-2 py-1 rounded transition-colors" id="facilities-btn-${user.emp_code}">
+                    <i class="fas fa-building mr-1"></i><span id="facilities-text-${user.emp_code}">Loading...</span>
                   </button>
                 </div>
               ` : `
@@ -679,6 +772,9 @@
             // Update pagination UI
             updatePaginationUI(data.pagination);
             paginationContainer.classList.remove("hidden");
+
+            // Update facilities button texts
+            updateFacilitiesButtonTexts(data.users);
           } else {
             tableBody.innerHTML = "";
             emptyState.style.display = "block";
@@ -2037,6 +2133,434 @@
 
           <!-- Garrison Details -->
         `;
+      }
+
+      // Facilities management functions
+      let currentUserEmpCode = null;
+      let currentUserName = null;
+      let availableFacilities = [];
+      let userFacilities = [];
+
+      // Update facilities button texts for all users
+      async function updateFacilitiesButtonTexts(users) {
+        for (const user of users) {
+          if (user.registrationData.isRegistered) {
+            try {
+              const response = await fetch(`/api/user-facilities-check/${user.emp_code}`);
+              const data = await response.json();
+              
+              const textElement = document.getElementById(`facilities-text-${user.emp_code}`);
+              if (textElement) {
+                if (data.success && data.hasFacilities) {
+                  textElement.textContent = 'Edit Facilities';
+                } else {
+                  textElement.textContent = 'Assign Facilities';
+                }
+              }
+            } catch (error) {
+              console.error('Error checking user facilities:', error);
+              const textElement = document.getElementById(`facilities-text-${user.emp_code}`);
+              if (textElement) {
+                textElement.textContent = 'Assign Facilities';
+              }
+            }
+          }
+        }
+      }
+
+      // Open facilities modal
+      async function openFacilitiesModal(empCode, userName) {
+        currentUserEmpCode = empCode;
+        currentUserName = userName;
+
+        // Update modal info
+        document.getElementById('userEmpCode').textContent = empCode;
+        document.getElementById('userName').textContent = userName || '-';
+
+        // Show modal
+        document.getElementById("facilitiesModal").classList.remove("hidden");
+        document.getElementById("facilitiesModal").classList.add("flex");
+
+        // Load facilities
+        await loadFacilitiesData();
+      }
+
+      // Close facilities modal
+      function closeFacilitiesModal() {
+        document.getElementById("facilitiesModal").classList.add("hidden");
+        document.getElementById("facilitiesModal").classList.remove("flex");
+        currentUserEmpCode = null;
+        currentUserName = null;
+      }
+
+      // Update facility selection counter
+      function updateFacilitySelectionCounter() {
+        const allCheckboxes = document.querySelectorAll('.facility-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.facility-checkbox:checked');
+        
+        const totalCount = allCheckboxes.length;
+        const selectedCount = checkedCheckboxes.length;
+        
+        const counterElement = document.getElementById('facilitySelectionCounter');
+        if (counterElement) {
+          counterElement.textContent = `${selectedCount} of ${totalCount} selected`;
+        }
+      }
+
+      // Load facilities data
+      async function loadFacilitiesData() {
+        const container = document.getElementById('facilitiesContainer');
+        const loading = document.getElementById('facilitiesLoading');
+        const empty = document.getElementById('facilitiesEmpty');
+
+        // Show loading
+        container.innerHTML = '';
+        loading.classList.remove('hidden');
+        empty.classList.add('hidden');
+
+        try {
+          // Check if user has facilities
+          const checkResponse = await fetch(`/api/user-facilities-check/${currentUserEmpCode}`);
+          const checkData = await checkResponse.json();
+          
+          if (checkData.success && checkData.hasFacilities) {
+            // Edit mode - load user's facilities
+            document.getElementById('facilitiesModalTitle').textContent = 'Edit Facilities';
+            document.getElementById('facilitiesModalSubtitle').textContent = 'Modify user facility assignments';
+            
+            const userResponse = await fetch(`/api/user-facilities/${currentUserEmpCode}`);
+            const userData = await userResponse.json();
+            
+            if (userData.success) {
+              userFacilities = userData.facilities;
+              await loadAllFacilitiesForEdit();
+            }
+          } else {
+            // Assign mode - load all available facilities
+            document.getElementById('facilitiesModalTitle').textContent = 'Assign Facilities';
+            document.getElementById('facilitiesModalSubtitle').textContent = 'Select facilities for user';
+            
+            userFacilities = [];
+            await loadAllFacilitiesForAssignment();
+          }
+        } catch (error) {
+          console.error('Error loading facilities data:', error);
+          showNotification('Failed to load facilities data', 'error');
+        } finally {
+          loading.classList.add('hidden');
+        }
+      }
+
+      // Load all facilities for assignment
+      async function loadAllFacilitiesForAssignment() {
+        try {
+          const response = await fetch('/api/facilities-for-assignment');
+          const data = await response.json();
+          
+          if (data.success && data.facilities.length > 0) {
+            availableFacilities = data.facilities;
+            renderFacilitiesForAssignment();
+          } else {
+            document.getElementById('facilitiesEmpty').classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('Error loading facilities:', error);
+          showNotification('Failed to load facilities', 'error');
+        }
+      }
+
+      // Load all facilities for editing
+      async function loadAllFacilitiesForEdit() {
+        try {
+          const response = await fetch('/api/facilities-for-assignment');
+          const data = await response.json();
+          
+          if (data.success) {
+            availableFacilities = data.facilities;
+            renderFacilitiesForEdit();
+          } else {
+            document.getElementById('facilitiesEmpty').classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('Error loading facilities:', error);
+          showNotification('Failed to load facilities', 'error');
+        }
+      }
+
+      // Render facilities for assignment
+      function renderFacilitiesForAssignment() {
+        const container = document.getElementById('facilitiesContainer');
+        
+        container.innerHTML = availableFacilities.map(facility => `
+          <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer facility-option" onclick="toggleFacility(${facility.id})">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="facility-${facility.id}" class="facility-checkbox h-5 w-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500" value="${facility.id}" onclick="event.stopPropagation()">
+                <div>
+                  <h4 class="font-medium text-gray-900">${facility.name}</h4>
+                  <p class="text-sm text-gray-600">${facility.description || 'No description'}</p>
+                  <p class="text-sm font-medium text-green-600">RS ${facility.price}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Add event listeners to checkboxes for counter updates
+        setTimeout(() => {
+          const checkboxes = document.querySelectorAll('.facility-checkbox');
+          checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateFacilitySelectionCounter);
+          });
+          // Update counter initially
+          updateFacilitySelectionCounter();
+        }, 100);
+      }
+
+      // Render facilities for editing
+      function renderFacilitiesForEdit() {
+        const container = document.getElementById('facilitiesContainer');
+        const userFacilityIds = userFacilities.map(f => f.id);
+        
+        // Start with active facilities from availableFacilities
+        const facilitiesToShow = [...availableFacilities];
+        
+        // Add ONLY the inactive facilities that are actually assigned to this user
+        userFacilities.forEach(userFacility => {
+          if (!userFacility.is_active && !facilitiesToShow.find(f => f.id === userFacility.id)) {
+            facilitiesToShow.push(userFacility);
+          }
+        });
+        
+        container.innerHTML = facilitiesToShow.map(facility => {
+          const isAssigned = userFacilityIds.includes(facility.id);
+          
+          // Get the correct is_active status:
+          // If facility is in availableFacilities, it's active (since availableFacilities only contains active ones)
+          // If facility is only in userFacilities and not in availableFacilities, use userFacility.is_active
+          const activeFacility = availableFacilities.find(f => f.id === facility.id);
+          const isActive = activeFacility ? true : facility.is_active;
+          
+          return `
+            <div class="border ${!isActive && isAssigned ? 'border-red-200 bg-red-50' : 'border-gray-200'} rounded-lg p-4 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer facility-option ${isAssigned ? 'bg-purple-50 border-purple-300' : ''}" onclick="toggleFacilityWithWarning(${facility.id}, ${isActive}, ${isAssigned})">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <input type="checkbox" id="facility-${facility.id}" class="facility-checkbox h-5 w-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500" value="${facility.id}" ${isAssigned ? 'checked' : ''} onclick="event.stopPropagation()">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="font-medium ${!isActive && isAssigned ? 'text-red-700' : 'text-gray-900'}">${facility.name}</h4>
+                      ${!isActive && isAssigned ? '<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">Inactive</span>' : ''}
+                    </div>
+                    <p class="text-sm ${!isActive && isAssigned ? 'text-red-600' : 'text-gray-600'}">${facility.description || 'No description'}</p>
+                    <p class="text-sm font-medium text-green-600">RS ${facility.price}</p>
+                    ${isAssigned ? '<p class="text-xs text-blue-600 font-medium">Currently assigned</p>' : ''}
+                    ${!isActive && isAssigned ? '<p class="text-xs text-red-600 font-medium">⚠️ Facility is inactive - cannot reassign if removed</p>' : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // Add event listeners to checkboxes for counter updates
+        setTimeout(() => {
+          const checkboxes = document.querySelectorAll('.facility-checkbox');
+          checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateFacilitySelectionCounter);
+          });
+          // Update counter initially
+          updateFacilitySelectionCounter();
+        }, 100);
+      }
+
+      // Toggle facility with warning for inactive facilities
+      function toggleFacilityWithWarning(facilityId, isActive, isCurrentlyAssigned) {
+        const checkbox = document.getElementById(`facility-${facilityId}`);
+        const facilityDiv = checkbox.closest('.facility-option');
+        
+        // If it's currently checked, we're trying to uncheck it
+        if (checkbox.checked && !isActive && isCurrentlyAssigned) {
+          // Show warning for inactive facilities
+          showInactiveFacilityWarning(facilityId, facilityDiv, checkbox);
+        } else {
+          // Normal toggle for active facilities or checking inactive facilities
+          toggleFacility(facilityId);
+        }
+      }
+
+      // Show warning modal for inactive facility removal
+      function showInactiveFacilityWarning(facilityId, facilityDiv, checkbox) {
+        const facility = userFacilities.find(f => f.id === facilityId) || availableFacilities.find(f => f.id === facilityId);
+        
+        // Create a better styled warning modal
+        const warningModal = document.createElement('div');
+        warningModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        warningModal.innerHTML = `
+          <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-0 overflow-hidden">
+            <div class="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 flex items-center gap-3">
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="fas fa-exclamation-triangle text-xl"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold">Inactive Facility Warning</h2>
+                <p class="text-red-100 text-sm">This action cannot be undone</p>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="mb-4">
+                <h3 class="font-semibold text-gray-900 mb-2">"${facility.name}" is currently inactive</h3>
+                <p class="text-gray-600 mb-4">
+                  If you unselect this facility, you will <strong>NOT be allowed to assign it again</strong> 
+                  until an administrator makes it active.
+                </p>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-info-circle text-yellow-600"></i>
+                    <span class="text-sm text-yellow-800">
+                      Only active facilities can be assigned to users.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+              <button onclick="closeWarningModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+              <button onclick="confirmRemoveInactiveFacility(${facilityId})" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                <i class="fas fa-trash mr-2"></i>Remove Anyway
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(warningModal);
+        
+        // Store references for the confirm function
+        window.currentWarningModal = warningModal;
+        window.currentFacilityDiv = facilityDiv;
+        window.currentCheckbox = checkbox;
+      }
+
+      // Close warning modal
+      function closeWarningModal() {
+        if (window.currentWarningModal) {
+          document.body.removeChild(window.currentWarningModal);
+          window.currentWarningModal = null;
+          window.currentFacilityDiv = null;
+          window.currentCheckbox = null;
+        }
+      }
+
+      // Confirm removal of inactive facility
+      async function confirmRemoveInactiveFacility(facilityId) {
+        if (window.currentCheckbox && window.currentFacilityDiv) {
+          // Proceed with removal
+          window.currentCheckbox.checked = false;
+          window.currentFacilityDiv.classList.remove('bg-purple-50', 'border-purple-300');
+          window.currentFacilityDiv.classList.add('bg-red-50', 'border-red-200');
+          
+          // Update counter
+          updateFacilitySelectionCounter();
+          
+          // Close the warning modal first
+          closeWarningModal();
+          
+          // Auto-save the changes to database
+          await saveFacilitiesAssignment();
+        } else {
+          closeWarningModal();
+        }
+      }
+
+      // Toggle facility selection
+      function toggleFacility(facilityId) {
+        const checkbox = document.getElementById(`facility-${facilityId}`);
+        const facilityDiv = checkbox.closest('.facility-option');
+        
+        checkbox.checked = !checkbox.checked;
+        
+        // Update visual state
+        if (checkbox.checked) {
+          facilityDiv.classList.add('bg-purple-50', 'border-purple-300');
+        } else {
+          facilityDiv.classList.remove('bg-purple-50', 'border-purple-300');
+        }
+        
+        // Update counter
+        updateFacilitySelectionCounter();
+      }
+
+      // Save facilities assignment
+      async function saveFacilitiesAssignment() {
+        const saveBtn = document.getElementById('saveFacilitiesBtn');
+        const originalText = saveBtn.innerHTML;
+        
+        // Show loading state
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        saveBtn.disabled = true;
+        
+        try {
+          const selectedCheckboxes = document.querySelectorAll('.facility-checkbox:checked');
+          const selectedFacilityIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+          
+          console.log('Saving facilities for user:', currentUserEmpCode);
+          console.log('Selected facility IDs:', selectedFacilityIds);
+          
+          const response = await fetch(`/api/save-user-facilities/${currentUserEmpCode}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              facility_ids: selectedFacilityIds
+            })
+          });
+          
+          const data = await response.json();
+          console.log('Server response:', data);
+          
+          if (data.success) {
+            showNotification(`Facilities assignment saved successfully! ${data.assignedCount} facilities assigned.`, 'success');
+            closeFacilitiesModal();
+            
+            // Refresh the table to update button text
+            loadUsers(currentPage, currentSearch, currentTypeFilter);
+          } else {
+            showNotification(data.message || 'Failed to save facilities assignment', 'error');
+          }
+        } catch (error) {
+          console.error('Error saving facilities assignment:', error);
+          showNotification('Failed to save facilities assignment', 'error');
+        } finally {
+          // Restore button state
+          saveBtn.innerHTML = originalText;
+          saveBtn.disabled = false;
+        }
+      }
+
+      // Notification function
+      function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${
+          type === 'success' ? 'bg-green-500' : 
+          type === 'error' ? 'bg-red-500' : 
+          type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+        }`;
+        notification.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+          </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
       }
     </script>
 

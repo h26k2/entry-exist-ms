@@ -98,7 +98,6 @@ CREATE TABLE facilities_user_relations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
     facility_id INT NOT NULL,
-    chosen_on DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES app_users(id),
     FOREIGN KEY (facility_id) REFERENCES facilities(id)
