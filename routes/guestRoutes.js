@@ -382,4 +382,45 @@ router.get('/api/guests', authController.requireLogin, async (req, res) => {
     }
 });
 
+// Get today's guest statistics (check-ins and check-outs)
+router.get('/api/guest-stats', authController.requireLogin, async (req, res) => {
+    try {
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Count today's guest check-ins
+        const checkinQuery = `
+            SELECT COUNT(*) as count 
+            FROM guest_transactions 
+            WHERE checked_in = TRUE 
+            AND DATE(check_in_time) = ?
+        `;
+        
+        // Count today's guest check-outs
+        const checkoutQuery = `
+            SELECT COUNT(*) as count 
+            FROM guest_transactions 
+            WHERE checked_out = TRUE 
+            AND DATE(check_out_time) = ?
+        `;
+        
+        const [checkinResult] = await db.execute(checkinQuery, [today]);
+        const [checkoutResult] = await db.execute(checkoutQuery, [today]);
+        
+        res.json({
+            success: true,
+            checkins: checkinResult[0].count,
+            checkouts: checkoutResult[0].count,
+            date: today
+        });
+    } catch (error) {
+        console.error('Error fetching guest statistics:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch guest statistics',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
