@@ -1,14 +1,32 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Setup Database",
-      "type": "shell",
-      "command": "node",
-      "args": ["setup-database.js"],
-      "group": "build",
-      "isBackground": false,
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Setup Database",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"setup-database.js"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Tailwind CSS (Production)",
+			"type": "shell",
+			"command": "npm run build:css:prod",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build Tailwind CSS (Watch Mode)",
+			"type": "shell",
+			"command": "npm run build:css",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
 }

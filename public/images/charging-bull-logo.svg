@@ -1,0 +1,30 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1e40af" stroke="#3b82f6" stroke-width="10"/>
+  
+  <!-- Bull head silhouette -->
+  <g fill="white">
+    <!-- Main head -->
+    <ellipse cx="100" cy="110" rx="45" ry="35"/>
+    
+    <!-- Horns -->
+    <path d="M65 85 Q60 75 55 70 Q58 68 65 75 Q70 80 75 85 Z"/>
+    <path d="M135 85 Q140 75 145 70 Q142 68 135 75 Q130 80 125 85 Z"/>
+    
+    <!-- Eyes -->
+    <circle cx="85" cy="105" r="4" fill="#1e40af"/>
+    <circle cx="115" cy="105" r="4" fill="#1e40af"/>
+    
+    <!-- Nostrils -->
+    <ellipse cx="95" cy="120" rx="2" ry="3" fill="#1e40af"/>
+    <ellipse cx="105" cy="120" rx="2" ry="3" fill="#1e40af"/>
+    
+    <!-- Charging motion lines -->
+    <path d="M30 60 L45 65 M25 80 L40 85 M20 100 L35 105" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <path d="M170 60 L155 65 M175 80 L160 85 M180 100 L165 105" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="165" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">CHARGING</text>
+  <text x="100" y="185" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">BULL</text>
+</svg>
