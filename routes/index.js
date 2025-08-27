@@ -19,6 +19,7 @@ const adminRoutes = require("./adminRoutes");
 const userCategoryRoutes = require("./userCategoryRoutes");
 const deviceRoutes = require("./deviceRoutes");
 const userRoutes = require("./userRoutes");
+const guestRoutes = require("./guestRoutes");
 
 /**
  * Initialize all routes with the Express app
@@ -39,6 +40,9 @@ function initializeRoutes(app) {
   // Register user category routes
   app.use("/user-category", require("./userCategoryRoutes"));
   app.use("/api/user-categories", userCategoryRoutes);
+
+  // Guest management routes
+  app.use("/", guestRoutes);
 }
 
 /**
@@ -107,4 +111,5 @@ module.exports = {
   userCategoryRoutes,
   userRoutes,
   deviceRoutes,
+  guestRoutes,
 };

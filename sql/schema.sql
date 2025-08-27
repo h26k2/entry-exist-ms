@@ -6,6 +6,18 @@ CREATE TABLE IF NOT EXISTS categories (
     requires_payment BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- App Users Table
+CREATE TABLE IF NOT EXISTS app_users (
+    id VARCHAR(50) PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    cnic_number VARCHAR(13) NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Entry Exit Management System Database Schema
 
 -- Facilities table
@@ -27,6 +39,14 @@ INSERT INTO facilities (name, price, description) VALUES
 ('Cricket Ground', 100.00, 'Cricket ground booking'),
 ('Parking', 20.00, 'Vehicle parking'),
 ('Guest House', 200.00, 'Guest house accommodation');
+
+-- Insert sample app users
+INSERT INTO app_users (id, first_name, last_name, cnic_number, is_active) VALUES
+('USER001', 'John', 'Doe', '1234567890123', TRUE),
+('USER002', 'Jane', 'Smith', '2345678901234', TRUE),
+('USER003', 'Ahmed', 'Khan', '3456789012345', TRUE),
+('USER004', 'Sarah', 'Wilson', '4567890123456', TRUE),
+('USER005', 'Mohammad', 'Ali', '5678901234567', TRUE);
 
 -- People table for storing person information
 CREATE TABLE people (
@@ -120,3 +140,27 @@ CREATE INDEX idx_people_category ON people(category_id);
 CREATE INDEX idx_current_entries ON entry_logs(entry_type, exit_time);
 CREATE INDEX idx_facilities_user_relations_user ON facilities_user_relations(user_id);
 CREATE INDEX idx_facilities_user_relations_facility ON facilities_user_relations(facility_id);
+-- App Guests Table
+CREATE TABLE app_guests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    cnic_number VARCHAR(13) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Guest Transactions Table
+CREATE TABLE guest_transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    guest_id INT NOT NULL,
+    guest_of VARCHAR(50) NOT NULL,
+    checked_in BOOLEAN DEFAULT FALSE,
+    checked_out BOOLEAN DEFAULT FALSE,
+    check_in_time TIMESTAMP NULL,
+    check_out_time TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (guest_id) REFERENCES app_guests(id),
+    FOREIGN KEY (guest_of) REFERENCES app_users(id)
+) ENGINE=InnoDB;

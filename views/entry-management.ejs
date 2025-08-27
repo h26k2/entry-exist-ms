@@ -72,6 +72,33 @@
               </div>
             </div>
           </div>
+            <!-- Guest Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                <div class="bg-blue-500 text-white rounded-full p-4 mb-3">
+                  <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h2 class="text-xl font-semibold mb-2">Register Guest</h2>
+                <p class="text-gray-500 text-center mb-4">Add a new guest to the system.</p>
+                <button onclick="openGuestRegistrationModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">Register</button>
+              </div>
+              <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                <div class="bg-green-500 text-white rounded-full p-4 mb-3">
+                  <i class="fas fa-user-check fa-2x"></i>
+                </div>
+                <h2 class="text-xl font-semibold mb-2">Guest Check In</h2>
+                <p class="text-gray-500 text-center mb-4">Verify guest details or status.</p>
+                <button onclick="openGuestCheckInModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Check In</button>
+              </div>
+              <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                <div class="bg-red-500 text-white rounded-full p-4 mb-3">
+                  <i class="fas fa-user-minus fa-2x"></i>
+                </div>
+                <h2 class="text-xl font-semibold mb-2">Guest Check Out</h2>
+                <p class="text-gray-500 text-center mb-4">Process guest departure from premises.</p>
+                <button onclick="openGuestCheckoutModal()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Checkout</button>
+              </div>
+            </div>
 
           <!-- Current Occupancy Card 
           <div
@@ -351,11 +378,207 @@
     <!-- Search Modal -->
     <%- include('modals/search-modal') %>
 
+    <!-- Guest Registration Modal -->
+    <div id="guestRegistrationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Register Guest</h3>
+            <button onclick="closeGuestRegistrationModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Guest Information Form -->
+          <div id="guestInfoForm">
+            <h4 class="text-lg font-semibold mb-4 text-gray-800">Guest Information</h4>
+            <form id="guestRegistrationForm">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    id="guestFirstName"
+                    name="first_name"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    id="guestLastName"
+                    name="last_name"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">CNIC Number</label>
+                  <input
+                    type="text"
+                    id="guestCnic"
+                    name="cnic_number"
+                    required
+                    maxlength="13"
+                    pattern="[0-9]{13}"
+                    placeholder="1234567890123"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div class="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onclick="closeGuestRegistrationModal()"
+                  class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Register Guest
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guest Check In Modal -->
+    <div id="guestCheckInModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Guest Check In</h3>
+            <button onclick="closeGuestCheckInModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Step 1: Select Guest -->
+          <div id="guestSelectionStep" class="step-content">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-lg font-semibold text-gray-800">Select Guest</h4>
+              <button
+                onclick="openGuestRegistrationFromCheckIn()"
+                class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+              >
+                <i class="fas fa-plus mr-1"></i>Register Guest
+              </button>
+            </div>
+            
+            <div class="relative mb-4">
+              <input
+                type="text"
+                id="guestSearchInput"
+                placeholder="Search guest by name or CNIC..."
+                class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                oninput="searchGuests(this.value)"
+              />
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <div id="guestList" class="space-y-3 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">Loading guests...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Select Host -->
+          <div id="hostSelectionStep" class="step-content hidden">
+            <div class="mb-4 p-3 bg-green-50 rounded-lg">
+              <p class="text-sm text-gray-600">Selected Guest:</p>
+              <p id="selectedGuestName" class="font-semibold text-gray-800"></p>
+              <p id="selectedGuestCnic" class="text-sm text-gray-600"></p>
+            </div>
+            
+            <h4 class="text-lg font-semibold mb-4 text-gray-800">Select Host</h4>
+            
+            <div class="relative mb-4">
+              <input
+                type="text"
+                id="hostSearchInput"
+                placeholder="Search host by name or CNIC..."
+                class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                oninput="searchHosts(this.value)"
+              />
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <div id="hostList" class="space-y-3 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">Loading hosts...</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button
+                type="button"
+                onclick="goBackToGuestSelection()"
+                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guest Checkout Modal -->
+    <div id="guestCheckoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Guest Checkout</h3>
+            <button onclick="closeGuestCheckoutModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Checked-in Guests List -->
+          <div id="checkedInGuestsList">
+            <h4 class="text-lg font-semibold mb-4 text-gray-800">Select Guest to Checkout</h4>
+            
+            <div class="relative mb-4">
+              <input
+                type="text"
+                id="checkoutSearchInput"
+                placeholder="Search guest by name or host..."
+                class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                oninput="searchCheckedInGuests(this.value)"
+              />
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <div id="checkedInList" class="space-y-3 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">Loading checked-in guests...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="/js/entry-management.js"></script>
     <script src="/js/modals/entry-modal.js"></script>
     <script src="/js/modals/exit-modal.js"></script>
     <script src="/js/modals/unified-person-modal.js"></script>
     <script src="/js/modals/search-modal.js"></script>
+    <script src="/js/modals/guest-registration-modal.js"></script>
+    <script src="/js/modals/guest-checkin-modal.js"></script>
+    <script src="/js/modals/guest-checkout-modal.js"></script>
 
     <%- include('partials/toast') %> <%- include('partials/enhanced-modal') %>
   </body>
