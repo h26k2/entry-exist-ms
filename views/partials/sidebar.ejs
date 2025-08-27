@@ -70,6 +70,17 @@
       <% if (user.role === 'admin') { %>
       <li>
         <a
+          href="/dashboard/billing"
+          class="flex items-center px-3 lg:px-4 py-2 lg:py-3 text-sm font-medium rounded-lg transition-all duration-200 <%= activePage === 'billing' ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' %>"
+        >
+          <i
+            class="fas fa-file-invoice-dollar w-4 h-4 lg:w-5 lg:h-5 mr-3 <%= activePage === 'billing' ? 'text-blue-600' : 'text-gray-400' %>"
+          ></i>
+          <span class="hidden sm:inline">Billing</span>
+        </a>
+      </li>
+      <li>
+        <a
           href="/dashboard/facilities"
           class="flex items-center px-3 lg:px-4 py-2 lg:py-3 text-sm font-medium rounded-lg transition-all duration-200 <%= activePage === 'facilities' ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' %>"
         >

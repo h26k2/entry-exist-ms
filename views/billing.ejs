@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Entry/Exit Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1e40af",
+                        secondary: "#3b82f6",
+                        accent: "#06b6d4",
+                        dark: "#1f2937",
+                        light: "#f8fafc",
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar') %>
+
+        <main class="flex-1 overflow-y-auto lg:ml-0">
+            <%- include('partials/header', { title: 'Billing Management' }) %>
+
+            <!-- Main Content -->
+            <div class="p-4 lg:p-6 animate-fade-in">
+                <!-- Page Header -->
+                <div class="mb-8 lg:mb-10">
+                    <div class="relative">
+                        <!-- Background decoration -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl opacity-50"></div>
+                        
+                        <!-- Content -->
+                        <div class="relative px-6 lg:px-8 py-8 lg:py-12">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <h1 class="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
+                                        Billing Management
+                                    </h1>
+                                    <p class="text-sm lg:text-lg text-gray-600 max-w-2xl">
+                                        Manage invoices, payments, and billing records
+                                    </p>
+                                </div>
+                                <!--<div class="mt-4 lg:mt-0">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                            <div class="text-xs text-gray-500">Total Revenue</div>
+                                            <div class="text-lg font-bold text-green-600">Rs. 0</div>
+                                        </div>
+                                        <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                            <div class="text-xs text-gray-500">Pending</div>
+                                            <div class="text-lg font-bold text-orange-600">Rs. 0</div>
+                                        </div>
+                                    </div>
+                                </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+                    <!-- Generate Invoice -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer" onclick="openInvoiceGenerationModal()">
+                        <div class="bg-blue-500 text-white rounded-full p-4 mb-3">
+                            <i class="fas fa-file-invoice fa-2x"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-2">Generate Invoice</h2>
+                        <p class="text-gray-500 text-center mb-4">Create new billing invoice.</p>
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">Generate</button>
+                    </div>
+
+                    <!-- View Payments -->
+                    <!--<div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                        <div class="bg-green-500 text-white rounded-full p-4 mb-3">
+                            <i class="fas fa-credit-card fa-2x"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-2">View Payments</h2>
+                        <p class="text-gray-500 text-center mb-4">Track payment records.</p>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">View</button>
+                    </div>-->
+
+                    <!-- Billing Reports -->
+                    <!--<div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                        <div class="bg-purple-500 text-white rounded-full p-4 mb-3">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-2">Billing Reports</h2>
+                        <p class="text-gray-500 text-center mb-4">Generate billing reports.</p>
+                        <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg">Reports</button>
+                    </div> -->
+
+                    <!-- Settings -->
+                    <!--<div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition cursor-pointer">
+                        <div class="bg-orange-500 text-white rounded-full p-4 mb-3">
+                            <i class="fas fa-cog fa-2x"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-2">Billing Settings</h2>
+                        <p class="text-gray-500 text-center mb-4">Configure billing options.</p>
+                        <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Settings</button>
+                    </div> -->
+                </div>
+
+                <!-- Recent Invoices Table -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+                                <p class="text-sm text-gray-600">Latest billing invoices and their status</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <!-- Search Input -->
+                                <div class="relative">
+                                    <input type="text" id="invoiceSearch" placeholder="Search by invoice # or client name..." 
+                                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Filter -->
+                                <select id="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                
+                                <!-- Clear Filters Button -->
+                                <button onclick="clearFilters()" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm">
+                                    <i class="fas fa-times mr-1"></i>Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Billing Month</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentInvoicesTableBody" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                        <i class="fas fa-spinner fa-spin text-4xl mb-4 text-gray-300"></i>
+                                        <p>Loading recent invoices...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!-- Load More Button -->
+                        <div id="loadMoreContainer" class="hidden px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
+                            <button id="loadMoreBtn" onclick="loadMoreInvoices()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium">
+                                <i class="fas fa-chevron-down mr-2"></i>
+                                Load More Invoices
+                            </button>
+                            <div class="mt-2 text-sm text-gray-500">
+                                Showing <span id="invoiceCount">0</span> of <span id="totalInvoices">0</span> invoices
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Monthly Revenue -->
+                    <!--<div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">Monthly Revenue</h4>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">Rs. 0</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>0% from last month
+                                </p>
+                            </div>
+                            <div class="bg-green-100 rounded-full p-3">
+                                <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- Outstanding Amount -->
+                    <!--<div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">Outstanding</h4>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">Rs. 0</p>
+                                <p class="text-sm text-orange-600 mt-1">
+                                    <i class="fas fa-clock mr-1"></i>0 pending payments
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 rounded-full p-3">
+                                <i class="fas fa-hourglass-half text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- Total Invoices -->
+                    <!--<div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">Total Invoices</h4>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">0</p>
+                                <p class="text-sm text-blue-600 mt-1">
+                                    <i class="fas fa-file-invoice mr-1"></i>All time
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 rounded-full p-3">
+                                <i class="fas fa-file-invoice-dollar text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mark as Paid Modal -->
+    <div id="markPaidModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">Mark Invoice as Paid</h2>
+                        <p class="text-green-100" id="markPaidInvoiceNumber">Invoice #</p>
+                    </div>
+                    <button onclick="closeMarkPaidModal()" class="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <form id="markPaidForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                        <select id="paymentMethod" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select Payment Method</option>
+                            <option value="cash">Cash</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="online">Online Payment</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Reference (Optional)</label>
+                        <input type="text" id="paymentReference" placeholder="Transaction ID, Cheque Number, etc." 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                        <textarea id="paymentNotes" rows="3" placeholder="Additional payment notes..."
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 justify-end">
+                        <button type="button" onclick="closeMarkPaidModal()" 
+                                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-check mr-2"></i>Mark as Paid
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Viewing Modal -->
+    <div id="invoiceViewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold">Invoice Details</h2>
+                        <p class="text-blue-100" id="invoiceViewSubtitle">View complete invoice information</p>
+                    </div>
+                    <button onclick="closeInvoiceViewModal()" class="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <!-- Loading State -->
+                <div id="invoiceLoadingState" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-gray-600">Loading invoice details...</p>
+                </div>
+
+                <!-- Invoice Content -->
+                <div id="invoiceContent" class="hidden">
+                    <!-- Invoice Header -->
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Invoice Information</h3>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Invoice Number:</span>
+                                        <span class="font-medium" id="viewInvoiceNumber">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Generated On:</span>
+                                        <span class="font-medium" id="viewGeneratedOn">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Due Date:</span>
+                                        <span class="font-medium" id="viewDueDate">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="font-medium" id="viewStatus">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Client Information</h3>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Name:</span>
+                                        <span class="font-medium" id="viewClientName">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">CNIC:</span>
+                                        <span class="font-medium" id="viewClientCnic">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">User ID:</span>
+                                        <span class="font-medium" id="viewClientId">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Billing Month:</span>
+                                        <span class="font-medium" id="viewBillingMonth">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Items -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Billing Items</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceItemsTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Items will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Summary -->
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Summary</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal:</span>
+                                <span class="font-medium">Rs. <span id="viewSubtotal">0.00</span></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Discount:</span>
+                                <span class="font-medium text-green-600">- Rs. <span id="viewDiscount">0.00</span></span>
+                            </div>
+                            <div class="border-t border-gray-300 pt-3">
+                                <div class="flex justify-between text-lg font-bold text-gray-900">
+                                    <span>Total Amount:</span>
+                                    <span class="text-blue-600">Rs. <span id="viewTotalAmount">0.00</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div id="paymentInfoSection" class="hidden mt-6 bg-green-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Payment Method:</span>
+                                <span class="font-medium" id="viewPaymentMethod">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Payment Reference:</span>
+                                <span class="font-medium" id="viewPaymentReference">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Received On:</span>
+                                <span class="font-medium" id="viewReceivedOn">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                        <button id="markPaidButton" onclick="markAsPaid(window.currentInvoiceId)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-check mr-2"></i>Mark as Paid
+                        </button>
+                        <button onclick="downloadInvoice(window.currentInvoiceId)" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-download mr-2"></i>Download PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Generation Modal -->
+    <div id="invoiceGenerationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold">Generate Invoice</h2>
+                            <p class="text-blue-100 mt-1">Select users and generate billing invoices</p>
+                        </div>
+                        <button onclick="closeInvoiceGenerationModal()" class="text-white hover:text-gray-200 transition">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+                    <!-- Month/Year Selection -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">Invoice Period</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                                <select id="invoiceMonth" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August" selected>August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                                <select id="invoiceYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="generateAllInvoices()" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center">
+                                <i class="fas fa-file-invoice-dollar mr-2"></i>
+                                Generate All Invoices
+                            </button>
+                            <button onclick="loadUsersForInvoice()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center">
+                                <i class="fas fa-users mr-2"></i>
+                                Load Users
+                            </button>
+                            <button onclick="checkExistingInvoices()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition flex items-center">
+                                <i class="fas fa-search mr-2"></i>
+                                Check Existing
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users List -->
+                    <div id="usersListContainer" class="hidden">
+                        <div class="bg-white border border-gray-200 rounded-lg">
+                            <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold">Users with Facilities</h3>
+                                <p class="text-sm text-gray-600 mt-1">Select users to generate individual invoices</p>
+                            </div>
+                            
+                            <!-- Loading State -->
+                            <div id="usersLoading" class="p-8 text-center hidden">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p class="text-gray-600">Loading users...</p>
+                            </div>
+
+                            <!-- Users Table -->
+                            <div id="usersTableContainer" class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input type="checkbox" id="selectAllUsers" onchange="toggleAllUsers()" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CNIC</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facilities</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Users will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Generate Selected Button -->
+                            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                                <button onclick="generateSelectedInvoices()" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition flex items-center">
+                                    <i class="fas fa-file-invoice mr-2"></i>
+                                    Generate Selected Invoices
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/toast') %>
+
+    <script>
+        let usersData = [];
+
+        function openInvoiceGenerationModal() {
+            document.getElementById('invoiceGenerationModal').classList.remove('hidden');
+        }
+
+        function closeInvoiceGenerationModal() {
+            document.getElementById('invoiceGenerationModal').classList.add('hidden');
+            document.getElementById('usersListContainer').classList.add('hidden');
+            usersData = [];
+        }
+
+        async function loadUsersForInvoice() {
+            const loadingElement = document.getElementById('usersLoading');
+            const containerElement = document.getElementById('usersListContainer');
+            const tableBodyElement = document.getElementById('usersTableBody');
+
+            try {
+                containerElement.classList.remove('hidden');
+                loadingElement.classList.remove('hidden');
+                tableBodyElement.innerHTML = '';
+
+                const response = await fetch('/api/invoice/users');
+                const data = await response.json();
+
+                if (data.success) {
+                    usersData = data.users;
+                    renderUsersTable();
+                } else {
+                    showToast('Error loading users', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('Error loading users', 'error');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        function renderUsersTable() {
+            const tableBody = document.getElementById('usersTableBody');
+            tableBody.innerHTML = '';
+
+            usersData.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const facilitiesText = user.facilities.map(f => f.name).join(', ');
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="user-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" value="${user.id}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${user.first_name} ${user.last_name}</div>
+                        <div class="text-sm text-gray-500">ID: ${user.id}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.cnic_number}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">${facilitiesText}</div>
+                        <div class="text-xs text-gray-500">${user.facility_count} facilities</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">Rs. ${parseFloat(user.total_amount).toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <button onclick="generateSingleInvoice('${user.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                            Generate
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function toggleAllUsers() {
+            const selectAll = document.getElementById('selectAllUsers');
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        async function generateSingleInvoice(userId) {
+            const month = document.getElementById('invoiceMonth').value;
+            const year = document.getElementById('invoiceYear').value;
+
+            try {
+                const response = await fetch('/api/invoice/generate-single', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        month: month,
+                        year: year
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(`Invoice generated successfully: ${data.invoice.invoice_number}`, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error generating invoice:', error);
+                showToast('Error generating invoice', 'error');
+            }
+        }
+
+        async function generateSelectedInvoices() {
+            const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+            const selectedUserIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            console.log('Selected user IDs:', selectedUserIds);
+
+            if (selectedUserIds.length === 0) {
+                showToast('Please select at least one user', 'warning');
+                return;
+            }
+
+            const month = document.getElementById('invoiceMonth').value;
+            const year = document.getElementById('invoiceYear').value;
+
+            console.log('Invoice generation data:', { month, year, selectedUserIds });
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const userId of selectedUserIds) {
+                try {
+                    console.log('Generating invoice for user:', userId);
+                    const response = await fetch('/api/invoice/generate-single', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            month: month,
+                            year: year
+                        })
+                    });
+
+                    const data = await response.json();
+                    console.log('Response for user', userId, ':', data);
+
+                    if (data.success) {
+                        successCount++;
+                        showToast(`Invoice generated for user ${userId}: ${data.invoice.invoice_number}`, 'success');
+                    } else {
+                        errorCount++;
+                        console.error('Error for user', userId, ':', data.message);
+                        // Show specific error for duplicate invoices
+                        if (data.message.includes('already exists')) {
+                            showToast(`User ${userId}: Invoice already exists for ${month} ${year}`, 'warning');
+                        } else {
+                            showToast(`User ${userId}: ${data.message}`, 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Exception for user', userId, ':', error);
+                    errorCount++;
+                }
+            }
+
+            // Show final summary
+            if (successCount > 0 && errorCount === 0) {
+                showToast(`All ${successCount} invoices generated successfully!`, 'success');
+                loadRecentInvoices(); // Refresh the invoices table
+            } else if (successCount > 0 && errorCount > 0) {
+                showToast(`${successCount} invoices generated, ${errorCount} failed`, 'warning');
+                loadRecentInvoices(); // Refresh the invoices table
+            } else {
+                showToast(`Failed to generate invoices: ${errorCount} errors`, 'error');
+            }
+        }
+
+        async function generateAllInvoices() {
+            const month = document.getElementById('invoiceMonth').value;
+            const year = document.getElementById('invoiceYear').value;
+
+            if (!confirm(`Generate invoices for all users for ${month} ${year}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/invoice/generate-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        month: month,
+                        year: year
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    loadRecentInvoices(); // Refresh the invoices table
+                    if (data.summary.errors && data.summary.errors.length > 0) {
+                        console.log('Errors:', data.summary.errors);
+                    }
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error generating all invoices:', error);
+                showToast('Error generating invoices', 'error');
+            }
+        }
+
+        // Invoice viewing functions
+        async function viewInvoice(invoiceId) {
+            try {
+                window.currentInvoiceId = invoiceId;
+                document.getElementById('invoiceViewModal').classList.remove('hidden');
+                document.getElementById('invoiceLoadingState').classList.remove('hidden');
+                document.getElementById('invoiceContent').classList.add('hidden');
+
+                const response = await fetch(`/api/invoice/${invoiceId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    populateInvoiceDetails(data.invoice);
+                    document.getElementById('invoiceLoadingState').classList.add('hidden');
+                    document.getElementById('invoiceContent').classList.remove('hidden');
+                } else {
+                    showToast('Error loading invoice details', 'error');
+                    closeInvoiceViewModal();
+                }
+            } catch (error) {
+                console.error('Error viewing invoice:', error);
+                showToast('Error loading invoice details', 'error');
+                closeInvoiceViewModal();
+            }
+        }
+
+        function populateInvoiceDetails(invoice) {
+            // Invoice Information
+            document.getElementById('viewInvoiceNumber').textContent = invoice.invoice_number;
+            document.getElementById('viewGeneratedOn').textContent = new Date(invoice.generated_on).toLocaleDateString();
+            document.getElementById('viewDueDate').textContent = invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A';
+            
+            // Status with badge
+            const statusElement = document.getElementById('viewStatus');
+            statusElement.innerHTML = `<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(invoice.status)}">${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}</span>`;
+
+            // Client Information
+            document.getElementById('viewClientName').textContent = invoice.client_name;
+            document.getElementById('viewClientCnic').textContent = invoice.cnic_number;
+            document.getElementById('viewClientId').textContent = invoice.user_id;
+            document.getElementById('viewBillingMonth').textContent = invoice.month;
+
+            // Invoice Items
+            const itemsTableBody = document.getElementById('invoiceItemsTableBody');
+            if (invoice.items && invoice.items.length > 0) {
+                itemsTableBody.innerHTML = invoice.items.map(item => `
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-900">${item.description}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${item.quantity}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">Rs. ${parseFloat(item.unit_price).toFixed(2)}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">Rs. ${parseFloat(item.total_price).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                itemsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-4 py-3 text-center text-gray-500">No items found</td>
+                    </tr>
+                `;
+            }
+
+            // Payment Summary
+            document.getElementById('viewSubtotal').textContent = parseFloat(invoice.total_amount).toFixed(2);
+            document.getElementById('viewDiscount').textContent = parseFloat(invoice.discount || 0).toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = parseFloat(invoice.payable_amount).toFixed(2);
+
+            // Payment Information (show only if paid)
+            if (invoice.received && invoice.status === 'paid') {
+                document.getElementById('paymentInfoSection').classList.remove('hidden');
+                document.getElementById('viewPaymentMethod').textContent = invoice.payment_method || 'N/A';
+                document.getElementById('viewPaymentReference').textContent = invoice.payment_reference || 'N/A';
+                document.getElementById('viewReceivedOn').textContent = invoice.received_on ? new Date(invoice.received_on).toLocaleDateString() : 'N/A';
+            } else {
+                document.getElementById('paymentInfoSection').classList.add('hidden');
+            }
+
+            // Update mark as paid button state
+            const markPaidButton = document.getElementById('markPaidButton');
+            if (invoice.status === 'paid') {
+                markPaidButton.disabled = true;
+                markPaidButton.className = 'bg-gray-400 cursor-not-allowed text-white px-4 py-2 rounded-lg';
+                markPaidButton.innerHTML = '<i class="fas fa-check mr-2"></i>Already Paid';
+            } else {
+                markPaidButton.disabled = false;
+                markPaidButton.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg';
+                markPaidButton.innerHTML = '<i class="fas fa-check mr-2"></i>Mark as Paid';
+            }
+        }
+
+        function closeInvoiceViewModal() {
+            document.getElementById('invoiceViewModal').classList.add('hidden');
+            window.currentInvoiceId = null;
+        }
+
+        async function downloadInvoice(invoiceId) {
+            try {
+                showToast('Generating PDF...', 'info');
+                
+                const response = await fetch(`/api/invoice/${invoiceId}/download`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Generate PDF using browser's print functionality
+                    const printWindow = window.open('', '_blank', 'width=800,height=600');
+                    printWindow.document.write(data.htmlContent);
+                    printWindow.document.close();
+                    
+                    // Wait for content to load then trigger print dialog for PDF save
+                    printWindow.onload = function() {
+                        printWindow.focus();
+                        setTimeout(() => {
+                            printWindow.print();
+                        }, 250);
+                    };
+                    
+                    showToast('PDF generated successfully!', 'success');
+                } else {
+                    showToast('Error generating PDF: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error downloading invoice:', error);
+                showToast('Error generating PDF', 'error');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('invoiceViewModal');
+            if (event.target === modal) {
+                closeInvoiceViewModal();
+            }
+        });
+
+        // Pagination variables
+        let currentOffset = 0;
+        let totalInvoices = 0;
+        let hasMoreInvoices = false;
+        let currentSearch = '';
+        let currentStatus = '';
+        const pageSize = 10000; // 10,000 invoices per page
+
+        async function loadRecentInvoices(append = false) {
+            try {
+                // Get current search and filter values
+                if (!append) {
+                    currentSearch = document.getElementById('invoiceSearch').value.trim();
+                    currentStatus = document.getElementById('statusFilter').value;
+                    currentOffset = 0; // Reset offset for new search/filter
+                }
+
+                const searchParams = new URLSearchParams({
+                    limit: pageSize,
+                    offset: currentOffset,
+                    search: currentSearch,
+                    status: currentStatus
+                });
+
+                const response = await fetch(`/api/invoice/recent?${searchParams}`);
+                const data = await response.json();
+
+                const tableBody = document.getElementById('recentInvoicesTableBody');
+                const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+                if (data.success && data.invoices.length > 0) {
+                    const invoiceRows = data.invoices.map(invoice => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                ${invoice.invoice_number}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${invoice.client_name}</div>
+                                <div class="text-sm text-gray-500">${invoice.cnic_number}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <div class="capitalize">${invoice.month}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                Rs. ${parseFloat(invoice.payable_amount).toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(invoice.status)}">
+                                    ${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div>${new Date(invoice.generated_on).toLocaleDateString()}</div>
+                                <div class="text-xs">Due: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button onclick="viewInvoice(${invoice.id})" class="text-blue-600 hover:text-blue-900 mr-3" title="View invoice">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="markAsPaid(${invoice.id})" class="${invoice.status === 'paid' ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-900'} mr-3" ${invoice.status === 'paid' ? 'disabled title="Invoice already paid"' : 'title="Mark as paid"'}>
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="downloadInvoice(${invoice.id})" class="text-purple-600 hover:text-purple-900" title="Download PDF">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    if (append) {
+                        tableBody.innerHTML += invoiceRows;
+                    } else {
+                        tableBody.innerHTML = invoiceRows;
+                    }
+
+                    // Update pagination info
+                    totalInvoices = data.pagination.total;
+                    hasMoreInvoices = data.pagination.hasMore;
+                    currentOffset = data.pagination.offset + data.invoices.length;
+
+                    // Update UI elements
+                    const currentCount = append ? 
+                        document.querySelectorAll('#recentInvoicesTableBody tr').length : 
+                        data.invoices.length;
+                    
+                    document.getElementById('invoiceCount').textContent = currentCount;
+                    document.getElementById('totalInvoices').textContent = totalInvoices;
+
+                    // Show/hide load more button
+                    if (hasMoreInvoices) {
+                        loadMoreContainer.classList.remove('hidden');
+                        document.getElementById('loadMoreBtn').innerHTML = `
+                            <i class="fas fa-chevron-down mr-2"></i>
+                            Load More Invoices (${pageSize} more)
+                        `;
+                    } else {
+                        loadMoreContainer.classList.add('hidden');
+                    }
+
+                } else if (!append) {
+                    const noResultsMessage = (currentSearch || currentStatus) ? 
+                        'No invoices found matching your search criteria' : 
+                        'No billing records found';
+                    
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                <i class="fas fa-search text-4xl mb-4 text-gray-300"></i>
+                                <p>${noResultsMessage}</p>
+                                <p class="text-sm mt-2">Try adjusting your search or filters</p>
+                            </td>
+                        </tr>
+                    `;
+                    loadMoreContainer.classList.add('hidden');
+                    document.getElementById('invoiceCount').textContent = '0';
+                    document.getElementById('totalInvoices').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading recent invoices:', error);
+                if (!append) {
+                    document.getElementById('recentInvoicesTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                <i class="fas fa-exclamation-triangle text-4xl mb-4 text-red-300"></i>
+                                <p>Error loading invoices</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        async function loadMoreInvoices() {
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const originalContent = loadMoreBtn.innerHTML;
+            
+            // Show loading state
+            loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+            loadMoreBtn.disabled = true;
+
+            await loadRecentInvoices(true); // append = true
+
+            // Restore button state
+            loadMoreBtn.disabled = false;
+        }
+
+        // Search and filter functions
+        function clearFilters() {
+            document.getElementById('invoiceSearch').value = '';
+            document.getElementById('statusFilter').value = '';
+            currentSearch = '';
+            currentStatus = '';
+            loadRecentInvoices(); // Reload with cleared filters
+        }
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Debounced search function
+        const debouncedSearch = debounce(() => {
+            loadRecentInvoices();
+        }, 500);
+
+        // Event listeners for search and filter
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search input event listener
+            document.getElementById('invoiceSearch').addEventListener('input', debouncedSearch);
+            
+            // Status filter event listener
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                loadRecentInvoices();
+            });
+            
+            // Load initial data
+            loadRecentInvoices();
+        });
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'paid': return 'bg-green-100 text-green-800';
+                case 'pending': return 'bg-yellow-100 text-yellow-800';
+                case 'overdue': return 'bg-red-100 text-red-800';
+                case 'cancelled': return 'bg-gray-100 text-gray-800';
+                default: return 'bg-blue-100 text-blue-800';
+            }
+        }
+
+        // Mark as paid functionality
+        let currentMarkPaidInvoiceId = null;
+
+        function markAsPaid(invoiceId) {
+            currentMarkPaidInvoiceId = invoiceId;
+            
+            // Get invoice number for display
+            fetch(`/api/invoice/${invoiceId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('markPaidInvoiceNumber').textContent = `Invoice ${data.invoice.invoice_number}`;
+                        document.getElementById('markPaidModal').classList.remove('hidden');
+                        
+                        // Reset form
+                        document.getElementById('markPaidForm').reset();
+                    } else {
+                        showToast('Error loading invoice details', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error loading invoice details', 'error');
+                });
+        }
+
+        function closeMarkPaidModal() {
+            document.getElementById('markPaidModal').classList.add('hidden');
+            currentMarkPaidInvoiceId = null;
+        }
+
+        // Handle mark as paid form submission
+        document.getElementById('markPaidForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentMarkPaidInvoiceId) return;
+
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const paymentReference = document.getElementById('paymentReference').value;
+            const notes = document.getElementById('paymentNotes').value;
+
+            try {
+                const response = await fetch(`/api/invoice/${currentMarkPaidInvoiceId}/mark-paid`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payment_method: paymentMethod,
+                        payment_reference: paymentReference,
+                        notes: notes
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Invoice marked as paid successfully!', 'success');
+                    closeMarkPaidModal();
+                    
+                    // Refresh the entire page to ensure all data is updated
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500); // Small delay to show the success message
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error marking invoice as paid:', error);
+                showToast('Error marking invoice as paid', 'error');
+            }
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('markPaidModal');
+            if (event.target === modal) {
+                closeMarkPaidModal();
+            }
+        });
+
+        async function checkExistingInvoices() {
+            const month = document.getElementById('invoiceMonth').value;
+            const year = document.getElementById('invoiceYear').value;
+
+            try {
+                const response = await fetch(`/api/invoice/check-existing?month=${month}&year=${year}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.invoices.length === 0) {
+                        showToast(`No existing invoices found for ${month} ${year}`, 'info');
+                    } else {
+                        let message = `Found ${data.invoices.length} existing invoices for ${month} ${year}:\n`;
+                        data.invoices.forEach(invoice => {
+                            message += `• ${invoice.user_name} (${invoice.invoice_number})\n`;
+                        });
+                        alert(message);
+                    }
+                } else {
+                    showToast('Error checking existing invoices', 'error');
+                }
+            } catch (error) {
+                console.error('Error checking existing invoices:', error);
+                showToast('Error checking existing invoices', 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            // Try to use existing toast system from other pages
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(message, type);
+            } else if (typeof window.toast === 'function') {
+                window.toast(message, type);
+            } else {
+                // Fallback: Create a simple toast notification
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${getToastColor(type)}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 3000);
+            }
+        }
+
+        function getToastColor(type) {
+            switch(type) {
+                case 'success': return 'bg-green-500';
+                case 'error': return 'bg-red-500';
+                case 'warning': return 'bg-yellow-500';
+                default: return 'bg-blue-500';
+            }
+        }
+    </script>
+</body>
+</html>

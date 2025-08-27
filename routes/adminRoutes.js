@@ -43,6 +43,22 @@ router.post(
   authController.deleteOperators
 );
 
+// Billing Management Page (Admin only)
+router.get(
+  "/dashboard/billing",
+  authController.requireLogin,
+  authController.requireRole(["admin"]),
+  (req, res) => {
+    res.render("billing", {
+      user: req.session.user,
+      activePage: "billing",
+      title: "Billing Management",
+      error: req.query.error || null,
+      success: req.query.success || null,
+    });
+  }
+);
+
 // User Category Management Page (Admin only)
 router.get(
   "/dashboard/user-categories",

@@ -557,13 +557,6 @@
           }
         });
 
-        // Net payable calculation
-        document.addEventListener('input', function(e) {
-          if (e.target.name === 'amount_payable' || e.target.name === 'discount') {
-            calculateNetPayable();
-          }
-        });
-
         // Conditional field toggles
         document.addEventListener('change', function(e) {
           if (e.target.name === 'sponsored_serving_military_officer') {
@@ -1047,18 +1040,6 @@
         childrenContainer.appendChild(childField);
       }
 
-      // Calculate net payable amount
-      function calculateNetPayable() {
-        const amountPayable = parseFloat(document.querySelector('input[name="amount_payable"]')?.value || 0);
-        const discount = parseFloat(document.querySelector('input[name="discount"]')?.value || 0);
-        const netPayable = Math.max(0, amountPayable - discount);
-        
-        const netPayableField = document.querySelector('input[name="net_payable"]');
-        if (netPayableField) {
-          netPayableField.value = netPayable;
-        }
-      }
-
       // Toggle conditional fields
       function toggleConditionalFields(fieldId, show) {
         const fields = document.getElementById(fieldId);
@@ -1097,9 +1078,6 @@
           ctr_signed_by_hq_malir: formData.get("ctr_signed_by_hq_malir"),
           oic_gsc_recommended: formData.get("oic_gsc_recommended"),
           co_maint_unit_recommended: formData.get("co_maint_unit_recommended"),
-          amount_payable: parseInt(formData.get("amount_payable")) || 0,
-          discount: parseInt(formData.get("discount")) || 0,
-          net_payable: parseInt(formData.get("net_payable")) || 0,
           billing_mode: formData.get("billing_mode"),
           garrisson_id_for_sponsored: formData.get("garrisson_id_for_sponsored"),
           garrisson_name: formData.get("garrisson_name")
@@ -1377,38 +1355,6 @@
         html += `
             </div>
           </div>
-          
-          <!-- Financial Information -->
-          <div class="mb-6">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">Financial Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Amount Payable</label>
-                <input type="number" name="amount_payable" value="${userData.amount_payable || 0}" step="0.01"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Discount</label>
-                <input type="number" name="discount" value="${userData.discount || 0}" step="0.01"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Net Payable</label>
-                <input type="number" name="net_payable" value="${userData.net_payable || 0}" step="0.01"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-              </div>
-            </div>
-            <div class="grid grid-cols-1 gap-4 mt-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Billing Mode</label>
-                <select name="billing_mode" ${userType === 'Serving personnel' ? 'disabled' : ''}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                  <option value="self" ${userData.billing_mode === 'self' ? 'selected' : ''}>Self</option>
-                  <option value="sponsored" ${userData.billing_mode === 'sponsored' ? 'selected' : ''}>Sponsored</option>
-                </select>
-              </div>
-            </div>
-          </div>
         `;
 
         dynamicContent.innerHTML = html;
@@ -1531,18 +1477,6 @@
           
           html += `</div>`;
         }
-
-        html += `
-          <div class="mt-6">
-            <h3 class="text-lg font-semibold mb-3">Payment Information</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <p><strong>Amount Payable:</strong> ${user.amount_payable}</p>
-              <p><strong>Discount:</strong> ${user.discount}</p>
-              <p><strong>Net Payable:</strong> ${user.net_payable}</p>
-              <p><strong>Payment Terms:</strong> ${user.payment_terms}</p>
-            </div>
-          </div>
-        `;
 
         return html;
       }
@@ -1789,25 +1723,6 @@
 
           <!-- Hidden field for billing mode (automatically set to sponsored) -->
           <input type="hidden" name="billing_mode" value="sponsored" />
-
-          <!-- Payment Details Section -->
-          <div class="mb-8">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Payable</label>
-                <input type="number" name="amount_payable" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
-                <input type="number" name="discount" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
-                <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
-              </div>
-            </div>
-          </div>
 
           <!-- Garrison Details -->
           <div class="mb-8">
@@ -2108,25 +2023,6 @@
                     No
                   </label>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Payment Details Section (for Civilian and Retired Officer) -->
-          <div class="mb-8">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Payable</label>
-                <input type="number" name="amount_payable" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
-                <input type="number" name="discount" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Net Payable</label>
-                <input type="number" name="net_payable" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
               </div>
             </div>
           </div>

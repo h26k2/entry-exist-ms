@@ -18,6 +18,7 @@ const reportRoutes = require("./reportRoutes");
 const adminRoutes = require("./adminRoutes");
 const userCategoryRoutes = require("./userCategoryRoutes");
 const deviceRoutes = require("./deviceRoutes");
+const invoiceRoutes = require("./invoiceRoutes");
 const userRoutes = require("./userRoutes");
 const guestRoutes = require("./guestRoutes");
 
@@ -37,6 +38,7 @@ function initializeRoutes(app) {
   app.use("/", adminRoutes);
   app.use("/", deviceRoutes);
   app.use("/", userRoutes);
+  app.use("/", invoiceRoutes);
   // Register user category routes
   app.use("/user-category", require("./userCategoryRoutes"));
   app.use("/api/user-categories", userCategoryRoutes);

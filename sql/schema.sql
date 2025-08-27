@@ -164,3 +164,49 @@ CREATE TABLE guest_transactions (
     FOREIGN KEY (guest_id) REFERENCES app_guests(id),
     FOREIGN KEY (guest_of) REFERENCES app_users(id)
 ) ENGINE=InnoDB;
+
+-- Invoices Table
+CREATE TABLE invoices (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    invoice_number VARCHAR(20) NOT NULL UNIQUE,
+    generated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    month VARCHAR(20) NOT NULL,
+    u_id VARCHAR(50) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    payable_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    received BOOLEAN DEFAULT FALSE,
+    received_on TIMESTAMP NULL,
+    due_date DATE NULL,
+    payment_method ENUM('cash', 'bank_transfer', 'cheque', 'online') NULL,
+    payment_reference VARCHAR(50) NULL,
+    notes TEXT NULL,
+    status ENUM('pending', 'paid', 'overdue', 'cancelled') DEFAULT 'pending',
+    created_by VARCHAR(50) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (u_id) REFERENCES app_users(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES app_users(id) ON DELETE SET NULL,
+    INDEX idx_invoice_month (month),
+    INDEX idx_invoice_user (u_id),
+    INDEX idx_invoice_status (status),
+    INDEX idx_invoice_received (received),
+    INDEX idx_invoice_number (invoice_number)
+) ENGINE=InnoDB;
+
+-- Invoice Items Table (for detailed billing breakdown)
+CREATE TABLE invoice_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    invoice_id INT NOT NULL,
+    facility_id INT NULL,
+    description VARCHAR(255) NOT NULL,
+    quantity INT DEFAULT 1,
+    unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    item_date DATE NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
+    FOREIGN KEY (facility_id) REFERENCES facilities(id) ON DELETE SET NULL,
+    INDEX idx_invoice_items_invoice (invoice_id),
+    INDEX idx_invoice_items_facility (facility_id)
+) ENGINE=InnoDB;
