@@ -228,16 +228,107 @@ exports.renderEntryPage = async (req, res) => {
       "SELECT * FROM facilities WHERE is_active = 1 AND is_deleted = FALSE ORDER BY name"
     );
   
-    // Fetch entries from ZKBioTime
     // Get page and pageSize from query params for pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10000;
+    const offset = (page - 1) * pageSize;
+    
+    // Fetch entries from ZKBioTime
     const zkResponse = await getZKEntries({
-      pageSize,
-      page
+      pageSize: pageSize * 2, // Get more ZK entries to have enough for mixing
+      page: 1 // Always get from page 1 to mix properly
     });
-    // Only show required fields
-    const entries = zkResponse.entries || [];
+    const zkEntries = zkResponse.entries || [];
+
+    // Fetch ALL guest check-in entries from guest_transactions (we'll paginate later)
+    const guestCheckInEntries = await DatabaseHelper.query(`
+      SELECT 
+        gt.guest_id,
+        ag.first_name,
+        ag.last_name,
+        ag.cnic_number,
+        gt.check_in_time,
+        'guest' as source_type,
+        'Check In' as punch_state_display
+      FROM guest_transactions gt
+      JOIN app_guests ag ON gt.guest_id = ag.id
+      WHERE gt.checked_in = true
+      ORDER BY gt.check_in_time DESC
+    `);
+
+    // Fetch ALL guest check-out entries from guest_transactions (we'll paginate later)
+    const guestCheckOutEntries = await DatabaseHelper.query(`
+      SELECT 
+        gt.guest_id,
+        ag.first_name,
+        ag.last_name,
+        ag.cnic_number,
+        gt.check_out_time,
+        'guest' as source_type,
+        'Check Out' as punch_state_display
+      FROM guest_transactions gt
+      JOIN app_guests ag ON gt.guest_id = ag.id
+      WHERE gt.checked_out = true
+      ORDER BY gt.check_out_time DESC
+    `);
+
+    // Format guest entries to match ZK entry structure
+    const formattedGuestCheckIns = guestCheckInEntries.map(entry => ({
+      id: `guest_in_${entry.guest_id}`,
+      emp_code: `GUEST_${entry.guest_id}`,
+      first_name: entry.first_name,
+      last_name: entry.last_name,
+      full_name: `${entry.first_name} ${entry.last_name}`.trim(),
+      cnic_number: entry.cnic_number,
+      type: 'Guest',
+      punch_state_display: 'Check In',
+      punch_time: entry.check_in_time ? new Date(entry.check_in_time).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) : '',
+      punch_time_raw: entry.check_in_time,
+      source_type: 'guest'
+    }));
+
+    const formattedGuestCheckOuts = guestCheckOutEntries.map(entry => ({
+      id: `guest_out_${entry.guest_id}`,
+      emp_code: `GUEST_${entry.guest_id}`,
+      first_name: entry.first_name,
+      last_name: entry.last_name,
+      full_name: `${entry.first_name} ${entry.last_name}`.trim(),
+      cnic_number: entry.cnic_number,
+      type: 'Guest',
+      punch_state_display: 'Check Out',
+      punch_time: entry.check_out_time ? new Date(entry.check_out_time).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) : '',
+      punch_time_raw: entry.check_out_time,
+      source_type: 'guest'
+    }));
+
+    // Combine all entries and sort by time (most recent first)
+    const allEntries = [...zkEntries, ...formattedGuestCheckIns, ...formattedGuestCheckOuts];
+    allEntries.sort((a, b) => {
+      const timeA = new Date(a.punch_time_raw);
+      const timeB = new Date(b.punch_time_raw);
+      return timeB - timeA; // Descending order (most recent first)
+    });
+
+    // Calculate total count for pagination
+    const totalEntries = allEntries.length;
+    const totalPages = Math.ceil(totalEntries / pageSize);
+
+    // Apply pagination to the combined and sorted entries
+    const entries = allEntries.slice(offset, offset + pageSize);
 
     res.render("entry-management", {
       user: req.session.user,
@@ -249,7 +340,8 @@ exports.renderEntryPage = async (req, res) => {
       currentCount: entries.length || 0,
       page,
       pageSize,
-      total: zkResponse.total || 0,
+      total: totalEntries,
+      totalPages,
       error: req.query.error || null,
       success: req.query.success || null,
     });
@@ -263,6 +355,10 @@ exports.renderEntryPage = async (req, res) => {
       facilities: [],
       entries: [], // Ensure entries is always defined
       currentCount: 0,
+      page: 1,
+      pageSize: 10000,
+      total: 0,
+      totalPages: 0,
       error: "Error loading entry page",
       success: null,
     });

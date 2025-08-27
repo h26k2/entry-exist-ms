@@ -142,8 +142,99 @@
           <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
             <div class="px-6 py-4 border-b border-gray-100">
               <h3 class="text-lg font-semibold text-gray-900">Recent Entries</h3>
-              <p class="text-sm text-gray-600">View recent entry/exit records from devices</p>
+              <p class="text-sm text-gray-600">View recent entry/exit records from devices and guest transactions</p>
             </div>
+            
+            <!-- Search and Filter Bar -->
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <!-- Search Bar -->
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                  <div class="relative">
+                    <input
+                      type="text"
+                      id="entrySearch"
+                      placeholder="Search by name or CNIC..."
+                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    id="statusFilter"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Check In">Check In</option>
+                    <option value="Check Out">Check Out</option>
+                  </select>
+                </div>
+
+                <!-- User Type Filter -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">User Type</label>
+                  <select
+                    id="userTypeFilter"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All Types</option>
+                    <option value="Serving Personnel">Serving Personnel</option>
+                    <option value="Retired Officer">Retired Officer</option>
+                    <option value="Civilian">Civilian</option>
+                    <option value="Guest">Guest</option>
+                  </select>
+                </div>
+
+                <!-- Date From -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    id="dateFrom"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                </div>
+
+                <!-- Date To -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    id="dateTo"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                </div>
+              </div>
+
+              <!-- Filter Actions -->
+              <div class="flex justify-between items-center mt-4">
+                <div class="flex space-x-2">
+                  <button
+                    onclick="applyFilters()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                  </button>
+                  <button
+                    onclick="clearFilters()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <i class="fas fa-times mr-2"></i>Clear
+                  </button>
+                </div>
+                <div id="filterStatus" class="text-sm text-gray-600">
+                  <!-- Filter status will be shown here -->
+                </div>
+              </div>
+            </div>
+
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
                 <thead>
@@ -185,8 +276,12 @@
                               <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">Retired Officer</span>
                             <% } else if (typeValue === 'civilian') { %>
                               <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Civilian</span>
+                            <% } else if (typeValue === 'guest') { %>
+                              <span class="px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold">
+                                <i class="fas fa-user-friends mr-1"></i>Guest
+                              </span>
                             <% } else { %>
-                              <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold"><%= entry.type %> (Debug: <%= typeValue %>)</span>
+                              <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold"><%= entry.type %></span>
                             <% } %>
                           <% } else { %>
                             <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold">N/A</span>
@@ -217,125 +312,6 @@
 
             <!-- Beautiful Pagination Component -->
             <%- include('components/pagination', { page, pageSize, total, entries }) %>
-          </div>
-
-          <!-- Quick Actions Grid -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-            <!-- New Entry -->
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-blue-200 p-4 lg:p-6 transition-all duration-300 text-center"
-              onclick="openEntryModal()"
-              style="
-                background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-              "
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-sign-in-alt text-white text-xl"></i>
-              </div>
-              <h3 class="text-sm lg:text-lg font-bold text-gray-900 mb-2">
-                New Entry
-              </h3>
-              <p class="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                Process new person entry
-              </p>
-              <div
-                class="mt-2 text-blue-600 text-xs lg:text-sm font-medium group-hover:text-blue-700"
-              >
-                <span>Enter</span>
-                <i
-                  class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"
-                ></i>
-              </div>
-            </button>
-
-            <!-- Process Exit -->
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-green-200 p-4 lg:p-6 transition-all duration-300 text-center"
-              onclick="openExitModal()"
-              style="
-                background: linear-gradient(135deg, #d1fae5 0%, #bbf7d0 100%);
-              "
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-sign-out-alt text-white text-xl"></i>
-              </div>
-              <h3 class="text-sm lg:text-lg font-bold text-gray-900 mb-2">
-                Process Exit
-              </h3>
-              <p class="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                Handle person exit
-              </p>
-              <div
-                class="mt-2 text-green-600 text-xs lg:text-sm font-medium group-hover:text-green-700"
-              >
-                <span>Exit</span>
-                <i
-                  class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"
-                ></i>
-              </div>
-            </button>
-
-            <!-- Register Person -->
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-purple-200 p-4 lg:p-6 transition-all duration-300 text-center"
-              onclick="openRegisterModal()"
-              style="
-                background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%);
-              "
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-user-plus text-white text-xl"></i>
-              </div>
-              <h3 class="text-sm lg:text-lg font-bold text-gray-900 mb-2">
-                Register Person
-              </h3>
-              <p class="text-xs lg:text-sm text-gray-600">
-                Add new person to system
-              </p>
-              <div
-                class="mt-2 text-purple-600 text-xs lg:text-sm font-medium group-hover:text-purple-700"
-              >
-                <span>Register</span>
-                <i
-                  class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"
-                ></i>
-              </div>
-            </button>
-
-            <!-- Search Person -->
-            <button
-              class="group glass-card hover:shadow-xl border-2 border-transparent hover:border-orange-200 p-4 lg:p-6 transition-all duration-300 text-center"
-              onclick="openSearchModal()"
-              style="
-                background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
-              "
-            >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform"
-              >
-                <i class="fas fa-search text-white text-xl"></i>
-              </div>
-              <h3 class="text-sm lg:text-lg font-bold text-gray-900 mb-2">
-                Search Person
-              </h3>
-              <p class="text-xs lg:text-sm text-gray-600">
-                Find person in system
-              </p>
-              <div
-                class="mt-2 text-orange-600 text-xs lg:text-sm font-medium group-hover:text-orange-700"
-              >
-                <span>Search</span>
-                <i
-                  class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"
-                ></i>
-              </div>
-            </button>
           </div>
 
           <!-- Search Results -->
@@ -570,6 +546,197 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Entry Filtering Functionality
+      let originalEntries = [];
+      let filteredEntries = [];
+
+      // Store original entries on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        storeOriginalEntries();
+        setupFilterListeners();
+      });
+
+      function storeOriginalEntries() {
+        const tableRows = document.querySelectorAll('tbody tr');
+        originalEntries = [];
+        
+        tableRows.forEach((row, index) => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length > 1) { // Skip "No entries found" row
+            const nameCell = cells[1].textContent.trim();
+            const cnicCell = cells[2].textContent.trim();
+            const typeCell = cells[3].textContent.trim();
+            const statusCell = cells[4].textContent.trim();
+            const timeCell = cells[5].textContent.trim();
+            
+            originalEntries.push({
+              index: index + 1,
+              name: nameCell,
+              cnic: cnicCell,
+              type: typeCell,
+              status: statusCell,
+              time: timeCell,
+              element: row.cloneNode(true)
+            });
+          }
+        });
+      }
+
+      function setupFilterListeners() {
+        // Real-time search
+        document.getElementById('entrySearch').addEventListener('input', function() {
+          if (this.value.length > 2 || this.value.length === 0) {
+            applyFilters();
+          }
+        });
+
+        // Filter change listeners
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('userTypeFilter').addEventListener('change', applyFilters);
+        document.getElementById('dateFrom').addEventListener('change', applyFilters);
+        document.getElementById('dateTo').addEventListener('change', applyFilters);
+      }
+
+      function applyFilters() {
+        const searchTerm = document.getElementById('entrySearch').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const typeFilter = document.getElementById('userTypeFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        filteredEntries = originalEntries.filter(entry => {
+          // Search filter (name or CNIC)
+          const matchesSearch = searchTerm === '' || 
+            entry.name.toLowerCase().includes(searchTerm) || 
+            entry.cnic.toLowerCase().includes(searchTerm);
+
+          // Status filter
+          const matchesStatus = statusFilter === '' || entry.status.includes(statusFilter);
+
+          // Type filter
+          const matchesType = typeFilter === '' || entry.type.includes(typeFilter);
+
+          // Date filter
+          let matchesDate = true;
+          if (dateFrom || dateTo) {
+            const entryDate = parseEntryDate(entry.time);
+            if (entryDate) {
+              const fromDate = dateFrom ? new Date(dateFrom) : null;
+              const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : null;
+              
+              if (fromDate && entryDate < fromDate) matchesDate = false;
+              if (toDate && entryDate > toDate) matchesDate = false;
+            }
+          }
+
+          return matchesSearch && matchesStatus && matchesType && matchesDate;
+        });
+
+        displayFilteredEntries();
+        updateFilterStatus();
+      }
+
+      function parseEntryDate(timeString) {
+        try {
+          // Parse the formatted time string back to Date
+          // Expected format: "DD/MM/YYYY, HH:MM:SS"
+          const parts = timeString.split(', ');
+          if (parts.length === 2) {
+            const datePart = parts[0].split('/');
+            const timePart = parts[1];
+            
+            if (datePart.length === 3) {
+              // Create date string in ISO format: YYYY-MM-DD
+              const isoDate = `${datePart[2]}-${datePart[1].padStart(2, '0')}-${datePart[0].padStart(2, '0')}T${timePart}`;
+              return new Date(isoDate);
+            }
+          }
+          return new Date(timeString);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function displayFilteredEntries() {
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = '';
+
+        if (filteredEntries.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                No entries found matching the current filters
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        filteredEntries.forEach((entry, index) => {
+          const row = entry.element.cloneNode(true);
+          // Update the index in the first cell
+          const firstCell = row.querySelector('td');
+          if (firstCell) {
+            firstCell.textContent = index + 1;
+          }
+          tbody.appendChild(row);
+        });
+      }
+
+      function updateFilterStatus() {
+        const statusDiv = document.getElementById('filterStatus');
+        const activeFilters = [];
+        
+        const searchTerm = document.getElementById('entrySearch').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const typeFilter = document.getElementById('userTypeFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        if (searchTerm) activeFilters.push(`Search: "${searchTerm}"`);
+        if (statusFilter) activeFilters.push(`Status: ${statusFilter}`);
+        if (typeFilter) activeFilters.push(`Type: ${typeFilter}`);
+        if (dateFrom || dateTo) {
+          const dateRange = `${dateFrom || 'Start'} to ${dateTo || 'End'}`;
+          activeFilters.push(`Date: ${dateRange}`);
+        }
+
+        if (activeFilters.length > 0) {
+          statusDiv.innerHTML = `
+            <span class="text-blue-600">
+              <i class="fas fa-filter mr-1"></i>
+              Filtered (${filteredEntries.length}/${originalEntries.length}) | ${activeFilters.join(' | ')}
+            </span>
+          `;
+        } else {
+          statusDiv.innerHTML = `
+            <span class="text-gray-500">
+              Showing ${originalEntries.length} entries
+            </span>
+          `;
+        }
+      }
+
+      function clearFilters() {
+        document.getElementById('entrySearch').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('userTypeFilter').value = '';
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        
+        filteredEntries = [...originalEntries];
+        displayFilteredEntries();
+        updateFilterStatus();
+      }
+
+      // Set default date to today for convenience
+      document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        // Don't set default dates, let user choose
+      });
+    </script>
 
     <script src="/js/entry-management.js"></script>
     <script src="/js/modals/entry-modal.js"></script>
