@@ -84,4 +84,12 @@ router.post(
   userController.saveFacilitiesAssignment
 );
 
+// Mark user as paid
+router.post(
+  "/api/mark-user-paid/:emp_code",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.markUserAsPaid
+);
+
 module.exports = router;

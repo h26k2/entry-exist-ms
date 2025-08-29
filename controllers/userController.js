@@ -32,8 +32,9 @@ exports.getUsers = async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
     const typeFilter = req.query.type || '';
+    const paymentFilter = req.query.payment || '';
 
-    console.log(`Fetching users: page=${page}, limit=${limit}, offset=${offset}, search="${search}", typeFilter="${typeFilter}"`);
+    console.log(`Fetching users: page=${page}, limit=${limit}, offset=${offset}, search="${search}", typeFilter="${typeFilter}", paymentFilter="${paymentFilter}"`);
 
     const client = await createAuthenticatedClient();
     const response = await client.get('/personnel/api/employees/?page_size=10000');
@@ -47,9 +48,9 @@ exports.getUsers = async (req, res) => {
         last_name: user.last_name
       }));
 
-      // Get app_users registration data including names
+      // Get app_users registration data including names and payment info
       const [appUsersRows] = await db.execute(
-        'SELECT id, type, cnic_number, first_name, last_name FROM app_users'
+        'SELECT id, type, cnic_number, first_name, last_name, is_paid, last_payment_date FROM app_users'
       );
       
       // Create a map for quick lookup
@@ -60,6 +61,8 @@ exports.getUsers = async (req, res) => {
           cnic_number: user.cnic_number,
           first_name: user.first_name,
           last_name: user.last_name,
+          is_paid: user.is_paid,
+          last_payment_date: user.last_payment_date,
           isRegistered: true
         };
       });
@@ -107,6 +110,24 @@ exports.getUsers = async (req, res) => {
             return user.registrationData.isRegistered && 
                    user.registrationData.type === typeFilter;
           }
+        });
+      }
+
+      // Apply payment filter
+      if (paymentFilter.trim()) {
+        allCombinedUsers = allCombinedUsers.filter(user => {
+          // Only registered users have payment status
+          if (!user.registrationData.isRegistered) {
+            return false; // Exclude unregistered users from payment filtering
+          }
+          
+          if (paymentFilter === 'paid') {
+            return user.registrationData.is_paid === true || user.registrationData.is_paid === 1;
+          } else if (paymentFilter === 'unpaid') {
+            return user.registrationData.is_paid === false || user.registrationData.is_paid === 0;
+          }
+          
+          return true; // If filter value is unexpected, include all
         });
       }
 
@@ -666,6 +687,42 @@ exports.saveFacilitiesAssignment = async (req, res) => {
     res.json({
       success: false,
       message: "Failed to save facilities assignment"
+    });
+  }
+};
+
+// Mark user as paid
+exports.markUserAsPaid = async (req, res) => {
+  console.log('Request received in Node.js server for marking user as paid');
+  try {
+    const { emp_code } = req.params;
+    
+    console.log('Marking user as paid:', emp_code);
+    
+    // Update the user's payment status and set the current timestamp as last_payment_date
+    const [result] = await db.execute(
+      "UPDATE app_users SET is_paid = TRUE, last_payment_date = NOW() WHERE id = ?",
+      [emp_code]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found in app_users table"
+      });
+    }
+    
+    console.log(`User ${emp_code} marked as paid successfully`);
+    
+    res.json({
+      success: true,
+      message: "User marked as paid successfully"
+    });
+  } catch (err) {
+    console.error('Error marking user as paid:', err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark user as paid"
     });
   }
 };
