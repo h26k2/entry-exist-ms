@@ -12,12 +12,16 @@ CREATE TABLE IF NOT EXISTS app_users (
     id VARCHAR(50) PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
+    type ENUM('Civilian', 'Civil Govt. Officer', 'Retired Officer', 'Serving personnel', 'Family Member') DEFAULT 'Civilian',
+    relation_with_head ENUM('Spouse', 'Children', 'Sibling', 'Other') DEFAULT NULL,
+    family_head_id VARCHAR(50) DEFAULT NULL,
     cnic_number VARCHAR(13) NOT NULL UNIQUE,
     is_active BOOLEAN DEFAULT TRUE,
     is_paid BOOLEAN DEFAULT FALSE,
     last_payment_date DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_family_head FOREIGN KEY (family_head_id) REFERENCES app_users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- Entry Exit Management System Database Schema

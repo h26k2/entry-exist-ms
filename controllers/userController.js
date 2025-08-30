@@ -48,13 +48,22 @@ exports.getUsers = async (req, res) => {
         last_name: user.last_name
       }));
 
-      // Get app_users registration data including names and payment info
-      const [appUsersRows] = await db.execute(
-        'SELECT id, type, cnic_number, first_name, last_name, is_paid, last_payment_date FROM app_users'
-      );
+      // Get app_users registration data including names, payment info, and family head details
+      const [appUsersRows] = await db.execute(`
+        SELECT 
+          u.id, u.type, u.cnic_number, u.first_name, u.last_name, 
+          u.is_paid, u.last_payment_date, u.relation_with_head, u.family_head_id,
+          fh.first_name as family_head_first_name,
+          fh.last_name as family_head_last_name,
+          fh.cnic_number as family_head_cnic
+        FROM app_users u
+        LEFT JOIN app_users fh ON u.family_head_id = fh.id
+      `);
       
       // Create a map for quick lookup
       const appUsersMap = {};
+      const familyOnlyUsers = []; // Users that exist only in app_users (like family members)
+      
       appUsersRows.forEach(user => {
         appUsersMap[user.id] = {
           type: user.type,
@@ -63,11 +72,32 @@ exports.getUsers = async (req, res) => {
           last_name: user.last_name,
           is_paid: user.is_paid,
           last_payment_date: user.last_payment_date,
+          relation_with_head: user.relation_with_head,
+          family_head_id: user.family_head_id,
+          family_head_first_name: user.family_head_first_name,
+          family_head_last_name: user.family_head_last_name,
+          family_head_cnic: user.family_head_cnic,
           isRegistered: true
         };
+        
+        // Check if this user exists in ZKBioTime
+        const existsInZK = allZkUsers.some(zkUser => zkUser.emp_code === user.id);
+        if (!existsInZK) {
+          // This is a family member or other app-only user
+          familyOnlyUsers.push({
+            emp_code: user.id,
+            id: null, // No ZKBioTime ID
+            first_name: user.first_name,
+            last_name: user.last_name,
+            displayFirstName: user.first_name,
+            displayLastName: user.last_name,
+            fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+            registrationData: appUsersMap[user.id]
+          });
+        }
       });
 
-      // Combine data
+      // Combine ZKBioTime users with app_users data
       let allCombinedUsers = allZkUsers.map(user => {
         const registrationData = appUsersMap[user.emp_code] || { isRegistered: false };
         
@@ -83,6 +113,9 @@ exports.getUsers = async (req, res) => {
           registrationData
         };
       });
+
+      // Add family members and other app-only users
+      allCombinedUsers = allCombinedUsers.concat(familyOnlyUsers);
 
       // Apply search filter
       if (search.trim()) {
@@ -723,6 +756,171 @@ exports.markUserAsPaid = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to mark user as paid"
+    });
+  }
+};
+
+// Get family heads (users who are not family members)
+exports.getFamilyHeads = async (req, res) => {
+  try {
+    const [familyHeads] = await db.execute(`
+      SELECT id, first_name, last_name, cnic_number, type 
+      FROM app_users 
+      WHERE type != 'Family Member' OR type IS NULL
+      ORDER BY first_name, last_name
+    `);
+
+    res.json({
+      success: true,
+      familyHeads: familyHeads
+    });
+  } catch (err) {
+    console.error('Error fetching family heads:', err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch family heads"
+    });
+  }
+};
+
+// Add family member
+exports.addFamilyMember = async (req, res) => {
+  try {
+    const {
+      first_name,
+      last_name,
+      cnic_number,
+      relation_with_head,
+      family_head_id
+    } = req.body;
+
+    // Validate required fields
+    if (!first_name || !last_name || !cnic_number || !relation_with_head || !family_head_id) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+    }
+
+    // Validate CNIC format
+    const cnicPattern = /^\d{5}-\d{7}-\d{1}$/;
+    if (!cnicPattern.test(cnic_number)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid CNIC format. Please use format: 12345-1234567-1"
+      });
+    }
+
+    // Check if CNIC already exists in app_users
+    const [existingUser] = await db.execute(
+      'SELECT id FROM app_users WHERE cnic_number = ?',
+      [cnic_number]
+    );
+
+    if (existingUser.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CNIC number already exists"
+      });
+    }
+
+    // Verify family head exists
+    const [familyHead] = await db.execute(
+      'SELECT id, first_name, last_name FROM app_users WHERE id = ?',
+      [family_head_id]
+    );
+
+    if (familyHead.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Selected family head not found"
+      });
+    }
+
+    // Step 1: Create user in ZKBioTime first
+    const today = new Date();
+    const dateStr = today.getFullYear().toString() + 
+                   (today.getMonth() + 1).toString().padStart(2, '0') + 
+                   today.getDate().toString().padStart(2, '0');
+    const randomKey = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const emp_code = `FAM_${dateStr}_${randomKey}`;
+
+    const zkBioTimeUserData = {
+      first_name,
+      last_name,
+      department: 1,
+      area: [2],
+      emp_code
+    };
+
+    console.log('Creating family member in ZKBioTime with data:', zkBioTimeUserData);
+
+    let zkBioTimeCreated = false;
+    try {
+      const client = await createAuthenticatedClient();
+      const zkResponse = await client.post('/personnel/api/employees/', zkBioTimeUserData);
+
+      if (zkResponse.data && (zkResponse.data.code === 0 || zkResponse.status === 200 || zkResponse.status === 201)) {
+        zkBioTimeCreated = true;
+        console.log('✓ Family member created successfully in ZKBioTime');
+      } else {
+        throw new Error(zkResponse.data?.msg || 'Failed to create user in ZKBioTime');
+      }
+    } catch (zkError) {
+      console.error('Error creating family member in ZKBioTime:', zkError);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to create family member in ZKBioTime: ${zkError.message}`
+      });
+    }
+
+    // Step 2: If ZKBioTime creation was successful, add to app_users
+    if (zkBioTimeCreated) {
+      try {
+        await db.execute(`
+          INSERT INTO app_users (
+            id, first_name, last_name, type, relation_with_head, 
+            family_head_id, cnic_number, is_paid
+          ) VALUES (?, ?, ?, 'Family Member', ?, ?, ?, 0)
+        `, [emp_code, first_name, last_name, relation_with_head, family_head_id, cnic_number]);
+
+        console.log('✓ Family member added successfully to app_users database');
+
+        res.json({
+          success: true,
+          message: `Family member ${first_name} ${last_name} added successfully to both ZKBioTime and app database`,
+          familyMember: {
+            id: emp_code,
+            first_name,
+            last_name,
+            cnic_number,
+            relation_with_head,
+            family_head_id,
+            family_head_name: `${familyHead[0].first_name} ${familyHead[0].last_name}`,
+            zkbiotime_created: true
+          }
+        });
+
+      } catch (dbError) {
+        console.error('Error adding family member to app_users:', dbError);
+        
+        // If app_users insertion fails, we should ideally clean up the ZKBioTime entry
+        // For now, we'll just log the issue and notify the user
+        console.warn(`Warning: Family member created in ZKBioTime (${emp_code}) but failed to add to app database`);
+        
+        res.status(500).json({
+          success: false,
+          message: "Family member created in ZKBioTime but failed to add to app database. Please contact administrator.",
+          emp_code: emp_code
+        });
+      }
+    }
+
+  } catch (err) {
+    console.error('Error adding family member:', err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add family member"
     });
   }
 };

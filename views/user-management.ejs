@@ -32,13 +32,22 @@
                   Manage ZKBioTime users and employee records
                 </p>
               </div>
-              <button
-                onclick="openAddUserModal()"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
-              >
-                <i class="fas fa-plus"></i>
-                Add User
-              </button>
+              <div class="flex gap-3">
+                <button
+                  onclick="openAddUserModal()"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <i class="fas fa-plus"></i>
+                  Add User
+                </button>
+                <button
+                  onclick="openAddFamilyMemberModal()"
+                  class="bg-green-500 hover:bg-green-900 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <i class="fas fa-users"></i>
+                  Add Family Member
+                </button>
+              </div>
             </div>
           </div>
 
@@ -75,8 +84,10 @@
                   <option value="">All Users</option>
                   <option value="unregistered">Unregistered</option>
                   <option value="Civilian">Civilian</option>
+                  <option value="Civil Govt. Officer">Civil Govt. Officer</option>
                   <option value="Retired Officer">Retired Officer</option>
                   <option value="Serving personnel">Serving personnel</option>
+                  <option value="Family Member">Family Member</option>
                 </select>
               </div>
 
@@ -310,12 +321,19 @@
             <!-- Step 1: User Type Selection -->
             <div class="mb-8">
               <h3 class="text-lg font-semibold text-gray-900 mb-4">Who is this person? *</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <label class="cursor-pointer">
                   <input type="radio" name="type" value="Civilian" class="sr-only user-type-radio" required />
                   <div class="p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-500 transition-colors user-type-card">
                     <i class="fas fa-user text-2xl text-gray-600 mb-2"></i>
                     <div class="font-medium">Civilian</div>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="type" value="Civil Govt. Officer" class="sr-only user-type-radio" required />
+                  <div class="p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-500 transition-colors user-type-card">
+                    <i class="fas fa-briefcase text-2xl text-gray-600 mb-2"></i>
+                    <div class="font-medium">Civil Govt. Officer</div>
                   </div>
                 </label>
                 <label class="cursor-pointer">
@@ -708,7 +726,7 @@
           // Build query parameters
           const params = new URLSearchParams({
             page: page,
-            limit: 100
+            limit: 500
           });
 
           if (search.trim()) {
@@ -751,9 +769,15 @@
                   <button onclick="viewUserDetails('${user.emp_code}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded transition-colors">
                     <i class="fas fa-eye mr-1"></i>View
                   </button>
-                  <button onclick="editUser('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded transition-colors">
-                    <i class="fas fa-edit mr-1"></i>Edit
-                  </button>
+                  ${user.registrationData.type !== 'Family Member' ? `
+                    <button onclick="editUser('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded transition-colors">
+                      <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                  ` : `
+                    <button onclick="editFamilyMember('${user.emp_code}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded transition-colors">
+                      <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                  `}
                   <button onclick="openFacilitiesModal('${user.emp_code}', '${user.fullName || ''}')" class="bg-purple-500 hover:bg-purple-600 text-white text-xs px-2 py-1 rounded transition-colors" id="facilities-btn-${user.emp_code}">
                     <i class="fas fa-building mr-1"></i><span id="facilities-text-${user.emp_code}">Loading...</span>
                   </button>
@@ -786,6 +810,11 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${user.fullName || '-'}
+                    ${user.registrationData.type === 'Family Member' && user.registrationData.relation_with_head ? 
+                      `<br><span class="text-xs text-blue-600">(${user.registrationData.relation_with_head})</span>
+                       ${user.registrationData.family_head_first_name && user.registrationData.family_head_last_name ?
+                         `<br><span class="text-xs text-gray-500">Head: ${user.registrationData.family_head_first_name} ${user.registrationData.family_head_last_name}</span>
+                          ${user.registrationData.family_head_cnic ? `<br><span class="text-xs text-gray-400">CNIC: ${user.registrationData.family_head_cnic}</span>` : ''}` : ''}` : ''}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${cnicNumber}
@@ -1018,6 +1047,13 @@
         }
       }
 
+      // Edit family member function (placeholder for now)
+      function editFamilyMember(empCode) {
+        showNotification('Family member editing feature coming soon!', 'info');
+        // TODO: Implement family member editing modal
+        // This would be similar to editUser but with family-specific fields
+      }
+
       // Add user form submission (Step 1)
       document.getElementById("addUserForm").addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -1072,7 +1108,7 @@
       function loadDynamicContent(userType) {
         const dynamicContent = document.getElementById('dynamicContent');
         
-        if (userType === 'Civilian') {
+        if (userType === 'Civilian' || userType === 'Civil Govt. Officer') {
           dynamicContent.innerHTML = getCivilianForm();
         } else if (userType === 'Retired Officer') {
           dynamicContent.innerHTML = getRetiredOfficerForm();
@@ -2546,6 +2582,339 @@
         setTimeout(() => {
           notification.remove();
         }, 3000);
+      }
+    </script>
+
+    <!-- Add Family Member Modal -->
+    <div id="addFamilyMemberModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-gray-900">Add Family Member</h2>
+              <button
+                type="button"
+                onclick="closeFamilyMemberModal()"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i class="fas fa-times text-xl"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <!-- Step 1: Select Family Head -->
+            <div id="familyHeadSelection" class="mb-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Choose the Main Family Member</h3>
+              
+              <!-- Search Bar -->
+              <div class="mb-4">
+                <div class="relative">
+                  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                  <input
+                    type="text"
+                    id="familyHeadSearch"
+                    placeholder="Search by name or CNIC number..."
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    oninput="searchFamilyHeads()"
+                  />
+                </div>
+              </div>
+
+              <!-- Family Head List -->
+              <div id="familyHeadList" class="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
+                <div class="p-4 text-center text-gray-500">
+                  <i class="fas fa-spinner fa-spin mb-2"></i>
+                  <div>Loading family heads...</div>
+                </div>
+              </div>
+
+              <div class="mt-4 text-center">
+                <button
+                  type="button"
+                  id="proceedToFamilyForm"
+                  onclick="showFamilyMemberForm()"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled
+                >
+                  Continue with Selected Member
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2: Family Member Details -->
+            <div id="familyMemberForm" class="hidden">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Family Member Details</h3>
+              
+              <!-- Selected Family Head Info -->
+              <div id="selectedFamilyHeadInfo" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="font-medium text-blue-900 mb-2">Selected Main Family Member:</h4>
+                <div id="familyHeadDetails" class="text-blue-800"></div>
+              </div>
+
+              <form id="addFamilyMemberForm" onsubmit="submitFamilyMember(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- First Name -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                    <input
+                      type="text"
+                      name="first_name"
+                      required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter first name"
+                    />
+                  </div>
+
+                  <!-- Last Name -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter last name"
+                    />
+                  </div>
+
+                  <!-- CNIC Number -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">CNIC Number *</label>
+                    <input
+                      type="text"
+                      name="cnic_number"
+                      required
+                      pattern="[0-9]{5}-[0-9]{7}-[0-9]{1}"
+                      placeholder="12345-1234567-1"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      oninput="formatCNIC(this)"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">Format: 12345-1234567-1</p>
+                  </div>
+
+                  <!-- Relation -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Relation with Main Member *</label>
+                    <select
+                      name="relation_with_head"
+                      required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select relation...</option>
+                      <option value="Spouse">Spouse</option>
+                      <option value="Children">Children</option>
+                      <option value="Sibling">Sibling</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <input type="hidden" name="family_head_id" id="selectedFamilyHeadId" />
+                <input type="hidden" name="type" value="Family Member" />
+
+                <div class="flex justify-end gap-3 mt-8">
+                  <button
+                    type="button"
+                    onclick="goBackToFamilyHeadSelection()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    class="bg-green-500 hover:bg-green-900 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                  >
+                    Add Family Member
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let selectedFamilyHead = null;
+      let allFamilyHeads = [];
+
+      // Open Family Member Modal
+      function openAddFamilyMemberModal() {
+        document.getElementById('addFamilyMemberModal').classList.remove('hidden');
+        loadFamilyHeads();
+      }
+
+      // Close Family Member Modal
+      function closeFamilyMemberModal() {
+        document.getElementById('addFamilyMemberModal').classList.add('hidden');
+        resetFamilyMemberModal();
+      }
+
+      // Reset modal to initial state
+      function resetFamilyMemberModal() {
+        document.getElementById('familyHeadSelection').classList.remove('hidden');
+        document.getElementById('familyMemberForm').classList.add('hidden');
+        document.getElementById('addFamilyMemberForm').reset();
+        document.getElementById('familyHeadSearch').value = '';
+        selectedFamilyHead = null;
+        document.getElementById('proceedToFamilyForm').disabled = true;
+      }
+
+      // Load family heads (non-family members)
+      async function loadFamilyHeads() {
+        try {
+          const response = await fetch('/api/users/family-heads');
+          const data = await response.json();
+          
+          if (data.success) {
+            allFamilyHeads = data.familyHeads;
+            displayFamilyHeads(allFamilyHeads);
+          } else {
+            throw new Error(data.message || 'Failed to load family heads');
+          }
+        } catch (error) {
+          console.error('Error loading family heads:', error);
+          document.getElementById('familyHeadList').innerHTML = `
+            <div class="p-4 text-center text-red-500">
+              <i class="fas fa-exclamation-triangle mb-2"></i>
+              <div>Error loading family heads</div>
+            </div>
+          `;
+        }
+      }
+
+      // Display family heads list
+      function displayFamilyHeads(familyHeads) {
+        const listContainer = document.getElementById('familyHeadList');
+        
+        if (familyHeads.length === 0) {
+          listContainer.innerHTML = `
+            <div class="p-4 text-center text-gray-500">
+              <i class="fas fa-users mb-2"></i>
+              <div>No family heads found</div>
+            </div>
+          `;
+          return;
+        }
+
+        listContainer.innerHTML = familyHeads.map(user => `
+          <div class="family-head-item border-b border-gray-100 last:border-b-0 p-4 hover:bg-gray-50 cursor-pointer transition-colors ${selectedFamilyHead && selectedFamilyHead.id === user.id ? 'bg-blue-50 border-blue-200' : ''}" 
+               onclick="selectFamilyHead('${user.id}', '${user.first_name}', '${user.last_name}', '${user.cnic_number}', '${user.type}')">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-medium text-gray-900">${user.first_name} ${user.last_name}</div>
+                <div class="text-sm text-gray-500">CNIC: ${user.cnic_number}</div>
+                <div class="text-xs text-blue-600">${user.type}</div>
+              </div>
+              <div class="text-right">
+                ${selectedFamilyHead && selectedFamilyHead.id === user.id ? 
+                  '<i class="fas fa-check-circle text-blue-500"></i>' : 
+                  '<i class="fas fa-circle text-gray-300"></i>'
+                }
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Search family heads
+      function searchFamilyHeads() {
+        const searchTerm = document.getElementById('familyHeadSearch').value.toLowerCase();
+        const filteredHeads = allFamilyHeads.filter(user => 
+          user.first_name.toLowerCase().includes(searchTerm) ||
+          user.last_name.toLowerCase().includes(searchTerm) ||
+          user.cnic_number.includes(searchTerm)
+        );
+        displayFamilyHeads(filteredHeads);
+      }
+
+      // Select family head
+      function selectFamilyHead(id, firstName, lastName, cnic, type) {
+        selectedFamilyHead = { id, firstName, lastName, cnic, type };
+        document.getElementById('proceedToFamilyForm').disabled = false;
+        
+        // Update visual selection
+        displayFamilyHeads(allFamilyHeads.filter(user => 
+          document.getElementById('familyHeadSearch').value === '' ||
+          user.first_name.toLowerCase().includes(document.getElementById('familyHeadSearch').value.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(document.getElementById('familyHeadSearch').value.toLowerCase()) ||
+          user.cnic_number.includes(document.getElementById('familyHeadSearch').value)
+        ));
+      }
+
+      // Show family member form
+      function showFamilyMemberForm() {
+        if (!selectedFamilyHead) return;
+        
+        document.getElementById('familyHeadSelection').classList.add('hidden');
+        document.getElementById('familyMemberForm').classList.remove('hidden');
+        
+        // Update selected family head info
+        document.getElementById('familyHeadDetails').innerHTML = `
+          <div><strong>Name:</strong> ${selectedFamilyHead.firstName} ${selectedFamilyHead.lastName}</div>
+          <div><strong>CNIC:</strong> ${selectedFamilyHead.cnic}</div>
+          <div><strong>Type:</strong> ${selectedFamilyHead.type}</div>
+        `;
+        
+        document.getElementById('selectedFamilyHeadId').value = selectedFamilyHead.id;
+      }
+
+      // Go back to family head selection
+      function goBackToFamilyHeadSelection() {
+        document.getElementById('familyMemberForm').classList.add('hidden');
+        document.getElementById('familyHeadSelection').classList.remove('hidden');
+      }
+
+      // Submit family member
+      async function submitFamilyMember(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const familyMemberData = {
+          first_name: formData.get('first_name'),
+          last_name: formData.get('last_name'),
+          cnic_number: formData.get('cnic_number'),
+          type: formData.get('type'),
+          relation_with_head: formData.get('relation_with_head'),
+          family_head_id: formData.get('family_head_id')
+        };
+
+        try {
+          const response = await fetch('/api/users/add-family-member', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(familyMemberData)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showNotification('Family member added successfully!', 'success');
+            closeFamilyMemberModal();
+            // Refresh the users list
+            performSearch();
+          } else {
+            showNotification(result.message || 'Failed to add family member', 'error');
+          }
+        } catch (error) {
+          console.error('Error adding family member:', error);
+          showNotification('Error adding family member', 'error');
+        }
+      }
+
+      // Format CNIC input
+      function formatCNIC(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length >= 5) {
+          value = value.substring(0, 5) + '-' + value.substring(5);
+        }
+        if (value.length >= 13) {
+          value = value.substring(0, 13) + '-' + value.substring(13, 14);
+        }
+        input.value = value;
       }
     </script>
 

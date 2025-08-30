@@ -92,4 +92,20 @@ router.post(
   userController.markUserAsPaid
 );
 
+// Get family heads (non-family members)
+router.get(
+  "/api/users/family-heads",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.getFamilyHeads
+);
+
+// Add family member
+router.post(
+  "/api/users/add-family-member",
+  authController.requireApiAuth,
+  authController.requireRole("admin"),
+  userController.addFamilyMember
+);
+
 module.exports = router;
