@@ -247,6 +247,7 @@ exports.renderEntryPage = async (req, res) => {
         ag.first_name,
         ag.last_name,
         ag.cnic_number,
+        ag.issued_card_no,
         gt.check_in_time,
         'guest' as source_type,
         'Check In' as punch_state_display
@@ -263,6 +264,7 @@ exports.renderEntryPage = async (req, res) => {
         ag.first_name,
         ag.last_name,
         ag.cnic_number,
+        ag.issued_card_no,
         gt.check_out_time,
         'guest' as source_type,
         'Check Out' as punch_state_display
@@ -273,47 +275,61 @@ exports.renderEntryPage = async (req, res) => {
     `);
 
     // Format guest entries to match ZK entry structure
-    const formattedGuestCheckIns = guestCheckInEntries.map(entry => ({
-      id: `guest_in_${entry.guest_id}`,
-      emp_code: `GUEST_${entry.guest_id}`,
-      first_name: entry.first_name,
-      last_name: entry.last_name,
-      full_name: `${entry.first_name} ${entry.last_name}`.trim(),
-      cnic_number: entry.cnic_number,
-      type: 'Guest',
-      punch_state_display: 'Check In',
-      punch_time: entry.check_in_time ? new Date(entry.check_in_time).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }) : '',
-      punch_time_raw: entry.check_in_time,
-      source_type: 'guest'
-    }));
+    const formattedGuestCheckIns = guestCheckInEntries.map(entry => {
+      const baseFullName = `${entry.first_name} ${entry.last_name}`.trim();
+      const fullNameWithCard = entry.issued_card_no 
+        ? `${baseFullName}<br><small class="text-gray-500">Card Issued: ${entry.issued_card_no}</small>`
+        : baseFullName;
+      
+      return {
+        id: `guest_in_${entry.guest_id}`,
+        emp_code: `GUEST_${entry.guest_id}`,
+        first_name: entry.first_name,
+        last_name: entry.last_name,
+        full_name: fullNameWithCard,
+        cnic_number: entry.cnic_number,
+        issued_card_no: entry.issued_card_no,
+        type: 'Guest',
+        punch_state_display: 'Check In',
+        punch_time: entry.check_in_time ? new Date(entry.check_in_time).toLocaleString('en-GB', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }) : '',
+        punch_time_raw: entry.check_in_time,
+        source_type: 'guest'
+      };
+    });
 
-    const formattedGuestCheckOuts = guestCheckOutEntries.map(entry => ({
-      id: `guest_out_${entry.guest_id}`,
-      emp_code: `GUEST_${entry.guest_id}`,
-      first_name: entry.first_name,
-      last_name: entry.last_name,
-      full_name: `${entry.first_name} ${entry.last_name}`.trim(),
-      cnic_number: entry.cnic_number,
-      type: 'Guest',
-      punch_state_display: 'Check Out',
-      punch_time: entry.check_out_time ? new Date(entry.check_out_time).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }) : '',
-      punch_time_raw: entry.check_out_time,
-      source_type: 'guest'
-    }));
+    const formattedGuestCheckOuts = guestCheckOutEntries.map(entry => {
+      const baseFullName = `${entry.first_name} ${entry.last_name}`.trim();
+      // For check-out records, don't show the card number
+      
+      return {
+        id: `guest_out_${entry.guest_id}`,
+        emp_code: `GUEST_${entry.guest_id}`,
+        first_name: entry.first_name,
+        last_name: entry.last_name,
+        full_name: baseFullName,
+        cnic_number: entry.cnic_number,
+        issued_card_no: entry.issued_card_no,
+        type: 'Guest',
+        punch_state_display: 'Check Out',
+        punch_time: entry.check_out_time ? new Date(entry.check_out_time).toLocaleString('en-GB', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }) : '',
+        punch_time_raw: entry.check_out_time,
+        source_type: 'guest'
+      };
+    });
 
     // Combine all entries and sort by time (most recent first)
     const allEntries = [...zkEntries, ...formattedGuestCheckIns, ...formattedGuestCheckOuts];

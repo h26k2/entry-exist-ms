@@ -244,7 +244,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                           <div class="flex items-center">
                             <div>
-                              <div class="text-sm font-medium text-gray-900"><%= entry.full_name %></div>
+                              <div class="text-sm font-medium text-gray-900"><%- entry.full_name %></div>
                             </div>
                           </div>
                         </td>
@@ -490,6 +490,51 @@
                 class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Back
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Issued Card Number -->
+          <div id="cardNumberStep" class="step-content hidden">
+            <div class="mb-4 p-3 bg-green-50 rounded-lg">
+              <p class="text-sm text-gray-600">Selected Guest:</p>
+              <p id="selectedGuestNameFinal" class="font-semibold text-gray-800"></p>
+              <p id="selectedGuestCnicFinal" class="text-sm text-gray-600"></p>
+              <p class="text-sm text-gray-600 mt-2">Host:</p>
+              <p id="selectedHostNameFinal" class="font-semibold text-gray-800"></p>
+            </div>
+            
+            <h4 class="text-lg font-semibold mb-4 text-gray-800">Issued Card Number</h4>
+            
+            <div class="mb-6">
+              <label for="issuedCardNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                Card Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="issuedCardNumber"
+                maxlength="4"
+                placeholder="Enter card number (max 4 chars)"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                required
+              />
+              <p class="text-xs text-gray-500 mt-1">Maximum 4 characters allowed</p>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button
+                type="button"
+                onclick="goBackToHostSelection()"
+                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onclick="performCheckIn()"
+                class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              >
+                <i class="fas fa-sign-in-alt mr-2"></i>Check In
               </button>
             </div>
           </div>

@@ -16,10 +16,12 @@ function resetCheckInModal() {
     // Reset to first step
     document.getElementById('guestSelectionStep').classList.remove('hidden');
     document.getElementById('hostSelectionStep').classList.add('hidden');
+    document.getElementById('cardNumberStep').classList.add('hidden');
     
     // Clear search inputs
     document.getElementById('guestSearchInput').value = '';
     document.getElementById('hostSearchInput').value = '';
+    document.getElementById('issuedCardNumber').value = '';
     
     // Reset selected values
     selectedGuest = null;
@@ -42,7 +44,14 @@ function openGuestRegistrationFromCheckIn() {
 function goBackToGuestSelection() {
     document.getElementById('guestSelectionStep').classList.remove('hidden');
     document.getElementById('hostSelectionStep').classList.add('hidden');
+    document.getElementById('cardNumberStep').classList.add('hidden');
     selectedHost = null;
+}
+
+function goBackToHostSelection() {
+    document.getElementById('guestSelectionStep').classList.add('hidden');
+    document.getElementById('hostSelectionStep').classList.remove('hidden');
+    document.getElementById('cardNumberStep').classList.add('hidden');
 }
 
 // Load all guests
@@ -239,13 +248,35 @@ function searchHosts(searchTerm) {
 async function selectHost(hostId, hostName, hostCnic) {
     selectedHost = { id: hostId, name: hostName, cnic: hostCnic };
     
-    // Perform check-in
-    await performCheckIn();
+    // Show card number step
+    document.getElementById('hostSelectionStep').classList.add('hidden');
+    document.getElementById('cardNumberStep').classList.remove('hidden');
+    
+    // Update the final summary
+    document.getElementById('selectedGuestNameFinal').textContent = selectedGuest.name;
+    document.getElementById('selectedGuestCnicFinal').textContent = selectedGuest.cnic;
+    document.getElementById('selectedHostNameFinal').textContent = selectedHost.name;
+    
+    // Focus on card number input
+    document.getElementById('issuedCardNumber').focus();
 }
 
 async function performCheckIn() {
     if (!selectedGuest || !selectedHost) {
         showError('Please select both guest and host');
+        return;
+    }
+    
+    const issuedCardNumber = document.getElementById('issuedCardNumber').value.trim();
+    if (!issuedCardNumber) {
+        showError('Please enter the issued card number');
+        document.getElementById('issuedCardNumber').focus();
+        return;
+    }
+    
+    if (issuedCardNumber.length > 4) {
+        showError('Card number cannot be more than 4 characters');
+        document.getElementById('issuedCardNumber').focus();
         return;
     }
     
@@ -257,14 +288,15 @@ async function performCheckIn() {
             },
             body: JSON.stringify({
                 guest_id: selectedGuest.id,
-                guest_of: selectedHost.id
+                guest_of: selectedHost.id,
+                issued_card_no: issuedCardNumber
             })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            showSuccess(`${selectedGuest.name} checked in successfully with host ${selectedHost.name}!`);
+            showSuccess(`${selectedGuest.name} checked in successfully with host ${selectedHost.name}! Card Number: ${issuedCardNumber}`);
             closeGuestCheckInModal();
         } else {
             showError(result.message || 'Failed to check in guest');

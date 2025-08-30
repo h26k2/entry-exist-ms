@@ -159,13 +159,21 @@ router.get('/api/app-users/hosts', authController.requireLogin, async (req, res)
 // Guest check-in
 router.post('/api/guests/checkin', authController.requireLogin, async (req, res) => {
     try {
-        const { guest_id, guest_of } = req.body;
+        const { guest_id, guest_of, issued_card_no } = req.body;
         
         // Validate required fields
-        if (!guest_id || !guest_of) {
+        if (!guest_id || !guest_of || !issued_card_no) {
             return res.status(400).json({
                 success: false,
-                message: 'Guest ID and Host ID are required'
+                message: 'Guest ID, Host ID, and Issued Card Number are required'
+            });
+        }
+        
+        // Validate card number length
+        if (issued_card_no.length > 4) {
+            return res.status(400).json({
+                success: false,
+                message: 'Issued card number cannot be more than 4 characters'
             });
         }
         
@@ -205,6 +213,14 @@ router.post('/api/guests/checkin', authController.requireLogin, async (req, res)
             });
         }
         
+        // Update guest with issued card number
+        const updateGuestQuery = `
+            UPDATE app_guests 
+            SET issued_card_no = ?, updated_at = NOW() 
+            WHERE id = ?
+        `;
+        await db.execute(updateGuestQuery, [issued_card_no, guest_id]);
+        
         // Insert guest transaction record
         const insertQuery = `
             INSERT INTO guest_transactions (guest_id, guest_of, checked_in, check_in_time) 
@@ -222,7 +238,8 @@ router.post('/api/guests/checkin', authController.requireLogin, async (req, res)
             data: {
                 transaction_id: insertResult.insertId,
                 guest_name: `${guest.first_name} ${guest.last_name}`,
-                host_name: `${host.first_name} ${host.last_name}`
+                host_name: `${host.first_name} ${host.last_name}`,
+                issued_card_no: issued_card_no
             }
         });
         
