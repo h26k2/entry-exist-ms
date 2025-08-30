@@ -33,8 +33,9 @@ exports.getUsers = async (req, res) => {
     const search = req.query.search || '';
     const typeFilter = req.query.type || '';
     const paymentFilter = req.query.payment || '';
+    const facilityFilter = req.query.facility || '';
 
-    console.log(`Fetching users: page=${page}, limit=${limit}, offset=${offset}, search="${search}", typeFilter="${typeFilter}", paymentFilter="${paymentFilter}"`);
+    console.log(`Fetching users: page=${page}, limit=${limit}, offset=${offset}, search="${search}", typeFilter="${typeFilter}", paymentFilter="${paymentFilter}", facilityFilter="${facilityFilter}"`);
 
     const client = await createAuthenticatedClient();
     const response = await client.get('/personnel/api/employees/?page_size=10000');
@@ -48,6 +49,45 @@ exports.getUsers = async (req, res) => {
         last_name: user.last_name
       }));
 
+      // Fetch transactions to count visits for each user
+      console.log('Fetching transactions for visit counting...');
+      let userVisitCounts = {};
+      try {
+        const transactionsResponse = await client.get('/iclock/api/transactions/?page_size=10000');
+        console.log('Transactions API response code:', transactionsResponse.data.code);
+        console.log('Transactions data length:', transactionsResponse.data.data?.length || 0);
+        
+        if (transactionsResponse.data.code === 0 && transactionsResponse.data.data) {
+          // Count check-in records for each employee
+          const checkInCount = transactionsResponse.data.data.filter(t => t.punch_state_display === 'Check In').length;
+          console.log(`Found ${checkInCount} check-in transactions out of ${transactionsResponse.data.data.length} total transactions`);
+          
+          // Log sample transaction for debugging
+          if (transactionsResponse.data.data.length > 0) {
+            console.log('Sample transaction:', {
+              emp_code: transactionsResponse.data.data[0].emp_code,
+              punch_state_display: transactionsResponse.data.data[0].punch_state_display,
+              punch_time: transactionsResponse.data.data[0].punch_time
+            });
+          }
+          
+          transactionsResponse.data.data.forEach(transaction => {
+            if (transaction.punch_state_display === 'Check In') {
+              const empCode = transaction.emp_code;
+              userVisitCounts[empCode] = (userVisitCounts[empCode] || 0) + 1;
+            }
+          });
+          console.log(`Visit counts for first 5 employees:`, Object.entries(userVisitCounts).slice(0, 5));
+          console.log(`Total unique employees with visits: ${Object.keys(userVisitCounts).length}`);
+        } else {
+          console.log('Failed to fetch transactions for visit counting, response code:', transactionsResponse.data.code);
+          console.log('Response message:', transactionsResponse.data.msg);
+        }
+      } catch (transactionError) {
+        console.error('Error fetching transactions for visit counting:', transactionError.message);
+        console.error('Error details:', transactionError.response?.data);
+      }
+
       // Get app_users registration data including names, payment info, and family head details
       const [appUsersRows] = await db.execute(`
         SELECT 
@@ -59,6 +99,28 @@ exports.getUsers = async (req, res) => {
         FROM app_users u
         LEFT JOIN app_users fh ON u.family_head_id = fh.id
       `);
+
+      // Fetch facility data for users
+      console.log('Fetching facility assignments for users...');
+      const [facilityAssignments] = await db.execute(`
+        SELECT 
+          fur.user_id,
+          f.name as facility_name
+        FROM facilities_user_relations fur
+        INNER JOIN facilities f ON fur.facility_id = f.id
+        WHERE f.is_deleted = false
+        ORDER BY fur.user_id, f.name
+      `);
+
+      // Create facility map for quick lookup
+      const userFacilitiesMap = {};
+      facilityAssignments.forEach(assignment => {
+        if (!userFacilitiesMap[assignment.user_id]) {
+          userFacilitiesMap[assignment.user_id] = [];
+        }
+        userFacilitiesMap[assignment.user_id].push(assignment.facility_name);
+      });
+      console.log(`Found facility assignments for ${Object.keys(userFacilitiesMap).length} users`);
       
       // Create a map for quick lookup
       const appUsersMap = {};
@@ -92,7 +154,9 @@ exports.getUsers = async (req, res) => {
             displayFirstName: user.first_name,
             displayLastName: user.last_name,
             fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-            registrationData: appUsersMap[user.id]
+            registrationData: appUsersMap[user.id],
+            totalVisits: userVisitCounts[user.id] || 0,
+            facilities: userFacilitiesMap[user.id] || []
           });
         }
       });
@@ -104,13 +168,17 @@ exports.getUsers = async (req, res) => {
         // Use names from app_users table if registered, otherwise use ZKBioTime names
         const displayFirstName = registrationData.isRegistered ? registrationData.first_name : user.first_name;
         const displayLastName = registrationData.isRegistered ? registrationData.last_name : user.last_name;
+        const visitCount = userVisitCounts[user.emp_code] || 0;
+        const userFacilities = userFacilitiesMap[user.emp_code] || [];
         
         return {
           ...user,
           displayFirstName,
           displayLastName,
           fullName: `${displayFirstName || ''} ${displayLastName || ''}`.trim(),
-          registrationData
+          registrationData,
+          totalVisits: visitCount,
+          facilities: userFacilities
         };
       });
 
@@ -164,10 +232,27 @@ exports.getUsers = async (req, res) => {
         });
       }
 
+      // Apply facility filter
+      if (facilityFilter.trim()) {
+        allCombinedUsers = allCombinedUsers.filter(user => {
+          // Check if user has access to the selected facility
+          return user.facilities && user.facilities.length > 0 && 
+                 user.facilities.some(facility => facility.toLowerCase().includes(facilityFilter.toLowerCase()));
+        });
+      }
+
       // Apply pagination
       const totalRecords = allCombinedUsers.length;
       const paginatedUsers = allCombinedUsers.slice(offset, offset + limit);
       const totalPages = Math.ceil(totalRecords / limit);
+      
+      // Debug log for visit counts
+      console.log('Sample users with visit counts and facilities:', paginatedUsers.slice(0, 3).map(u => ({
+        emp_code: u.emp_code,
+        name: u.fullName,
+        totalVisits: u.totalVisits,
+        facilities: u.facilities
+      })));
       
       res.json({
         success: true,

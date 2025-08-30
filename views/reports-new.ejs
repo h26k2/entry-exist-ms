@@ -15,6 +15,8 @@
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link href="/css/global.css" rel="stylesheet" />
     <link href="/css/reports.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
 
@@ -45,7 +47,7 @@
 
           <!-- Search and Filter Section -->
           <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <!-- Search -->
               <div class="lg:col-span-2">
                 <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
@@ -95,21 +97,6 @@
                   <option value="">All Status</option>
                   <option value="paid">Paid</option>
                   <option value="unpaid">Unpaid</option>
-                </select>
-              </div>
-
-              <!-- Facility Filter -->
-              <div>
-                <label for="facilityFilter" class="block text-sm font-medium text-gray-700 mb-2">
-                  Facility
-                </label>
-                <select
-                  id="facilityFilter"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onchange="performSearch()"
-                >
-                  <option value="">All Facilities</option>
-                  <!-- Facility options will be loaded dynamically -->
                 </select>
               </div>
             </div>
@@ -179,17 +166,11 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Last Payment
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Visits
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Facilities Availed
-                    </th>
                   </tr>
                 </thead>
                 <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
                   <tr>
-                    <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                       <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                       <div>Loading users...</div>
                     </td>
@@ -235,33 +216,8 @@
 
       // Initialize the page
       document.addEventListener('DOMContentLoaded', function() {
-        loadFacilities();
         loadUsers();
       });
-
-      // Load facilities for filter dropdown
-      async function loadFacilities() {
-        try {
-          const response = await fetch('/api/facilities');
-          const data = await response.json();
-          
-          if (data.success) {
-            const facilitySelect = document.getElementById('facilityFilter');
-            // Clear existing options except "All Facilities"
-            facilitySelect.innerHTML = '<option value="">All Facilities</option>';
-            
-            // Add facility options
-            data.facilities.forEach(facility => {
-              const option = document.createElement('option');
-              option.value = facility.name;
-              option.textContent = facility.name;
-              facilitySelect.appendChild(option);
-            });
-          }
-        } catch (error) {
-          console.error('Error loading facilities:', error);
-        }
-      }
 
       // Load users function
       async function loadUsers(searchParams = {}) {
@@ -274,13 +230,13 @@
             ...searchParams
           });
 
-          const response = await fetch(`/api/users?${params}`);
+          const response = await fetch(`/admin/api/users?${params}`);
           const data = await response.json();
 
           if (data.success) {
             renderUsersTable(data.users);
             updatePagination(data.pagination);
-            updateUserCount(data.pagination.totalRecords);
+            updateUserCount(data.pagination.total);
           } else {
             showError('Failed to load users');
           }
@@ -297,7 +253,7 @@
         if (!users || users.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+              <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                 <i class="fas fa-users text-3xl mb-2"></i>
                 <p>No users found</p>
               </td>
@@ -310,17 +266,12 @@
           const displayIndex = (currentPage - 1) * usersPerPage + index + 1;
           
           // Format payment status
-          const paymentStatus = user.registrationData?.is_paid ? 'paid' : 'unpaid';
+          const paymentStatus = user.payment_status || 'unpaid';
           const statusClass = paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
           
           // Format last payment date
-          const lastPayment = user.registrationData?.last_payment_date ? 
-            new Date(user.registrationData.last_payment_date).toLocaleDateString() : 'N/A';
-
-          // Get family head name
-          const familyHeadName = user.registrationData?.family_head_first_name && user.registrationData?.family_head_last_name
-            ? `${user.registrationData.family_head_first_name} ${user.registrationData.family_head_last_name}`.trim()
-            : null;
+          const lastPayment = user.last_payment_date ? 
+            new Date(user.last_payment_date).toLocaleDateString() : 'N/A';
 
           return `
             <tr class="hover:bg-gray-50">
@@ -328,20 +279,20 @@
                 ${displayIndex}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${user.emp_code || 'N/A'}
+                ${user.employee_code || 'N/A'}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">${user.fullName || 'N/A'}</div>
-                ${familyHeadName ? `<div class="text-xs text-gray-500">Family of: ${familyHeadName}</div>` : ''}
+                <div class="text-sm font-medium text-gray-900">${user.full_name}</div>
+                ${user.family_head_name ? `<div class="text-xs text-gray-500">Family of: ${user.family_head_name}</div>` : ''}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${user.registrationData?.cnic_number || 'N/A'}
+                ${user.cnic_number}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(user.registrationData?.type)}">
-                  ${user.registrationData?.type || 'Unregistered'}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(user.type)}">
+                  ${user.type}
                 </span>
-                ${user.registrationData?.relation_with_head ? `<div class="text-xs text-gray-500 mt-1">${user.registrationData.relation_with_head}</div>` : ''}
+                ${user.relation_with_head ? `<div class="text-xs text-gray-500 mt-1">${user.relation_with_head}</div>` : ''}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
@@ -350,23 +301,6 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 ${lastPayment}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                  <i class="fas fa-door-open mr-1"></i>
-                  ${user.totalVisits || 0}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${user.facilities && user.facilities.length > 0 
-                  ? user.facilities.map(facility => 
-                      `<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-1 mb-1">
-                        <i class="fas fa-building mr-1"></i>
-                        ${facility}
-                      </span>`
-                    ).join(' ')
-                  : '<span class="text-gray-400 text-xs">No facilities</span>'
-                }
               </td>
             </tr>
           `;
@@ -387,12 +321,12 @@
 
       // Update pagination
       function updatePagination(pagination) {
-        totalPages = pagination.totalPages;
+        totalPages = pagination.pages;
         
         // Update record counts
         document.getElementById('startRecord').textContent = pagination.startRecord;
         document.getElementById('endRecord').textContent = pagination.endRecord;
-        document.getElementById('totalRecords').textContent = pagination.totalRecords;
+        document.getElementById('totalRecords').textContent = pagination.total;
 
         // Update pagination buttons
         const prevBtn = document.getElementById('prevPageBtn');
@@ -443,13 +377,11 @@
         const searchTerm = document.getElementById('searchInput').value;
         const typeFilter = document.getElementById('typeFilter').value;
         const paymentFilter = document.getElementById('paymentFilter').value;
-        const facilityFilter = document.getElementById('facilityFilter').value;
 
         const searchParams = {};
         if (searchTerm) searchParams.search = searchTerm;
         if (typeFilter) searchParams.type = typeFilter;
-        if (paymentFilter) searchParams.payment = paymentFilter; // API expects 'payment' not 'payment_status'
-        if (facilityFilter) searchParams.facility = facilityFilter;
+        if (paymentFilter) searchParams.payment_status = paymentFilter;
 
         currentPage = 1; // Reset to first page
         loadUsers(searchParams);
@@ -460,7 +392,6 @@
         document.getElementById('searchInput').value = '';
         document.getElementById('typeFilter').value = '';
         document.getElementById('paymentFilter').value = '';
-        document.getElementById('facilityFilter').value = '';
         
         currentPage = 1;
         loadUsers();
@@ -495,7 +426,7 @@
         const tbody = document.getElementById('usersTableBody');
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="px-6 py-8 text-center text-red-500">
+            <td colspan="7" class="px-6 py-8 text-center text-red-500">
               <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
               <p>${message}</p>
             </td>

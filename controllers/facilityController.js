@@ -279,3 +279,23 @@ exports.getFacilityUsageReport = async (req, res) => {
     res.json({ success: false, message: "Failed to generate usage report" });
   }
 };
+
+// Get all facilities for dropdown/filter purposes
+exports.getAllFacilities = async (req, res) => {
+  try {
+    const facilities = await DatabaseHelper.query(
+      "SELECT id, name FROM facilities WHERE is_active = 1 AND is_deleted = FALSE ORDER BY name"
+    );
+
+    res.json({
+      success: true,
+      facilities
+    });
+  } catch (err) {
+    console.error("Error fetching facilities:", err);
+    res.json({
+      success: false,
+      message: "Failed to fetch facilities"
+    });
+  }
+};

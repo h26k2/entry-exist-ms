@@ -20,6 +20,14 @@ router.get(
   facilityController.getFacilityStats
 );
 
+// Get all facilities (for filters and dropdowns)
+router.get(
+  "/api/facilities",
+  authController.requireLogin,
+  authController.requireRole("admin"),
+  facilityController.getAllFacilities
+);
+
 // Facility CRUD operations (Admin only)
 router.get(
   "/api/facility-details/:id",
