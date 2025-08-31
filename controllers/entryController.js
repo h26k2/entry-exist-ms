@@ -274,6 +274,21 @@ exports.renderEntryPage = async (req, res) => {
       ORDER BY gt.check_out_time DESC
     `);
 
+    // Fetch ALL master entries (both check-ins and check-outs)
+    const masterEntries = await DatabaseHelper.query(`
+      SELECT 
+        id,
+        description,
+        people_count,
+        checked_in,
+        check_in_time,
+        checked_out,
+        check_out_time,
+        created_at
+      FROM master_entries
+      ORDER BY created_at DESC
+    `);
+
     // Format guest entries to match ZK entry structure
     const formattedGuestCheckIns = guestCheckInEntries.map(entry => {
       const baseFullName = `${entry.first_name} ${entry.last_name}`.trim();
@@ -331,8 +346,65 @@ exports.renderEntryPage = async (req, res) => {
       };
     });
 
+    // Format master entries to match ZK entry structure
+    const formattedMasterEntries = [];
+    
+    masterEntries.forEach(entry => {
+      // Add check-in entry if checked in
+      if (entry.checked_in && entry.check_in_time) {
+        const masterName = `Master Entry #${entry.id}<br><small class="text-gray-600">${entry.description}</small><br><small class="text-blue-600">Total People: ${entry.people_count}</small>`;
+        
+        formattedMasterEntries.push({
+          id: `master_in_${entry.id}`,
+          emp_code: `MASTER_${entry.id}`,
+          first_name: 'Master',
+          last_name: `Entry #${entry.id}`,
+          full_name: masterName,
+          cnic_number: 'N/A',
+          type: 'Master Entry',
+          punch_state_display: 'Check In',
+          punch_time: entry.check_in_time ? new Date(entry.check_in_time).toLocaleString('en-GB', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }) : '',
+          punch_time_raw: entry.check_in_time,
+          source_type: 'master'
+        });
+      }
+      
+      // Add check-out entry if checked out
+      if (entry.checked_out && entry.check_out_time) {
+        const masterName = `Master Entry #${entry.id}<br><small class="text-gray-600">${entry.description}</small><br><small class="text-blue-600">Total People: ${entry.people_count}</small>`;
+        
+        formattedMasterEntries.push({
+          id: `master_out_${entry.id}`,
+          emp_code: `MASTER_${entry.id}`,
+          first_name: 'Master',
+          last_name: `Entry #${entry.id}`,
+          full_name: masterName,
+          cnic_number: 'N/A',
+          type: 'Master Entry',
+          punch_state_display: 'Check Out',
+          punch_time: entry.check_out_time ? new Date(entry.check_out_time).toLocaleString('en-GB', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }) : '',
+          punch_time_raw: entry.check_out_time,
+          source_type: 'master'
+        });
+      }
+    });
+
     // Combine all entries and sort by time (most recent first)
-    const allEntries = [...zkEntries, ...formattedGuestCheckIns, ...formattedGuestCheckOuts];
+    const allEntries = [...zkEntries, ...formattedGuestCheckIns, ...formattedGuestCheckOuts, ...formattedMasterEntries];
     allEntries.sort((a, b) => {
       const timeA = new Date(a.punch_time_raw);
       const timeB = new Date(b.punch_time_raw);
@@ -691,5 +763,149 @@ exports.getPersonDeposits = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: "Failed to get deposit information" });
+  }
+};
+
+// Create a new master entry
+exports.createMasterEntry = async (req, res) => {
+  try {
+    const { description, people_count } = req.body;
+
+    // Validation
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Description is required"
+      });
+    }
+
+    if (!people_count || people_count < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "People count must be at least 1"
+      });
+    }
+
+    // Insert into master_entries table
+    await DatabaseHelper.execute(
+      `INSERT INTO master_entries (description, checked_in, check_in_time, people_count) 
+       VALUES (?, TRUE, NOW(), ?)`,
+      [description.trim(), people_count]
+    );
+
+    res.json({
+      success: true,
+      message: "Master entry recorded successfully"
+    });
+
+  } catch (error) {
+    console.error('Error creating master entry:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to record master entry"
+    });
+  }
+};
+
+// Get all master entries
+exports.getMasterEntries = async (req, res) => {
+  try {
+    const entries = await DatabaseHelper.query(
+      `SELECT id, description, checked_in, check_in_time, checked_out, check_out_time, people_count, created_at 
+       FROM master_entries 
+       ORDER BY created_at DESC`
+    );
+
+    res.json({
+      success: true,
+      entries
+    });
+
+  } catch (error) {
+    console.error('Error fetching master entries:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch master entries"
+    });
+  }
+};
+
+// Get checked-in master entries (for checkout modal)
+exports.getCheckedInMasterEntries = async (req, res) => {
+  try {
+    const entries = await DatabaseHelper.query(
+      `SELECT id, description, check_in_time, people_count, created_at 
+       FROM master_entries 
+       WHERE checked_in = TRUE AND checked_out = FALSE 
+       ORDER BY check_in_time DESC`
+    );
+
+    res.json({
+      success: true,
+      entries
+    });
+
+  } catch (error) {
+    console.error('Error fetching checked-in master entries:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch checked-in master entries"
+    });
+  }
+};
+
+// Check out a master entry
+exports.checkOutMasterEntry = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if entry exists and is checked in
+    const entries = await DatabaseHelper.query(
+      `SELECT id, checked_in, checked_out FROM master_entries WHERE id = ?`,
+      [id]
+    );
+
+    if (entries.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Master entry not found"
+      });
+    }
+
+    const entry = entries[0];
+
+    if (!entry.checked_in) {
+      return res.status(400).json({
+        success: false,
+        message: "Entry is not checked in"
+      });
+    }
+
+    if (entry.checked_out) {
+      return res.status(400).json({
+        success: false,
+        message: "Entry is already checked out"
+      });
+    }
+
+    // Update entry to checked out
+    await DatabaseHelper.execute(
+      `UPDATE master_entries 
+       SET checked_out = TRUE, check_out_time = NOW() 
+       WHERE id = ?`,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: "Master entry checked out successfully"
+    });
+
+  } catch (error) {
+    console.error('Error checking out master entry:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check out master entry"
+    });
   }
 };

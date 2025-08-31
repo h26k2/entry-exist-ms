@@ -64,4 +64,26 @@ router.get(
   entryController.getPersonDeposits
 );
 
+// Master entries
+router.post(
+  "/api/master-entries",
+  authController.requireLogin,
+  entryController.createMasterEntry
+);
+router.get(
+  "/api/master-entries",
+  authController.requireLogin,
+  entryController.getMasterEntries
+);
+router.get(
+  "/api/master-entries/checked-in",
+  authController.requireLogin,
+  entryController.getCheckedInMasterEntries
+);
+router.put(
+  "/api/master-entries/:id/checkout",
+  authController.requireLogin,
+  entryController.checkOutMasterEntry
+);
+
 module.exports = router;

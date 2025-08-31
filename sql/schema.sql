@@ -4,7 +4,22 @@ CREATE TABLE IF NOT EXISTS categories (
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
     requires_payment BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_-- Master Entries Table
+CREATE TABLE IF NOT EXISTS master_entries (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    description TEXT,
+    people_count INT DEFAULT 1,
+    checked_in BOOLEAN DEFAULT FALSE,
+    check_in_time TIMESTAMP NULL,
+    checked_out BOOLEAN DEFAULT FALSE,
+    check_out_time TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_master_entries_checked_in (checked_in),
+    INDEX idx_master_entries_checked_out (checked_out),
+    INDEX idx_master_entries_check_in_time (check_in_time),
+    INDEX idx_master_entries_check_out_time (check_out_time)
+) ENGINE=InnoDB;FAULT CURRENT_TIMESTAMP
 );
 
 -- App Users Table
@@ -216,4 +231,20 @@ CREATE TABLE invoice_items (
     FOREIGN KEY (facility_id) REFERENCES facilities(id) ON DELETE SET NULL,
     INDEX idx_invoice_items_invoice (invoice_id),
     INDEX idx_invoice_items_facility (facility_id)
+) ENGINE=InnoDB;
+
+-- Master Entries Table
+CREATE TABLE master_entries (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    description TEXT,
+    checked_in BOOLEAN DEFAULT FALSE,
+    check_in_time TIMESTAMP NULL,
+    checked_out BOOLEAN DEFAULT FALSE,
+    check_out_time TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_master_entries_checked_in (checked_in),
+    INDEX idx_master_entries_checked_out (checked_out),
+    INDEX idx_master_entries_check_in_time (check_in_time),
+    INDEX idx_master_entries_check_out_time (check_out_time)
 ) ENGINE=InnoDB;
