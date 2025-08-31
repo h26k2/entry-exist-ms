@@ -112,6 +112,32 @@ exports.getUsers = async (req, res) => {
         ORDER BY fur.user_id, f.name
       `);
 
+      // Fetch app_guests data
+      console.log('Fetching guest data...');
+      const [appGuestsRows] = await db.execute(`
+        SELECT 
+          id, first_name, last_name, cnic_number, issued_card_no, created_at
+        FROM app_guests
+        ORDER BY created_at DESC
+      `);
+
+      // Fetch guest visit counts from guest_transactions table
+      console.log('Fetching guest visit counts...');
+      const [guestVisitCounts] = await db.execute(`
+        SELECT 
+          guest_id,
+          COUNT(CASE WHEN checked_in = true THEN 1 END) as visit_count
+        FROM guest_transactions
+        GROUP BY guest_id
+      `);
+
+      // Create guest visit counts map
+      const guestVisitCountsMap = {};
+      guestVisitCounts.forEach(guestVisit => {
+        guestVisitCountsMap[guestVisit.guest_id] = guestVisit.visit_count || 0;
+      });
+      console.log(`Found visit counts for ${Object.keys(guestVisitCountsMap).length} guests`);
+
       // Create facility map for quick lookup
       const userFacilitiesMap = {};
       facilityAssignments.forEach(assignment => {
@@ -184,6 +210,44 @@ exports.getUsers = async (req, res) => {
 
       // Add family members and other app-only users
       allCombinedUsers = allCombinedUsers.concat(familyOnlyUsers);
+
+      // Add guest users from app_guests table
+      console.log(`Processing ${appGuestsRows.length} guest records...`);
+      const guestUsers = appGuestsRows.map(guest => {
+        const guestEmpCode = `GUEST_${guest.id}`;
+        const guestVisitCount = guestVisitCountsMap[guest.id] || 0; // Use guest_transactions count
+        
+        return {
+          emp_code: guestEmpCode,
+          id: null, // No ZKBioTime ID for guests
+          first_name: guest.first_name,
+          last_name: guest.last_name,
+          displayFirstName: guest.first_name,
+          displayLastName: guest.last_name,
+          fullName: `${guest.first_name || ''} ${guest.last_name || ''}`.trim(),
+          registrationData: {
+            type: 'Guest',
+            cnic_number: guest.cnic_number,
+            first_name: guest.first_name,
+            last_name: guest.last_name,
+            is_paid: false, // Guests don't have payment status
+            last_payment_date: null,
+            relation_with_head: null,
+            family_head_id: null,
+            family_head_first_name: null,
+            family_head_last_name: null,
+            family_head_cnic: null,
+            isRegistered: true,
+            issued_card_no: guest.issued_card_no
+          },
+          totalVisits: guestVisitCount,
+          facilities: [] // Guests don't have facility assignments typically
+        };
+      });
+      
+      // Add guest users to the combined array
+      allCombinedUsers = allCombinedUsers.concat(guestUsers);
+      console.log(`Total users after adding guests: ${allCombinedUsers.length}`);
 
       // Apply search filter
       if (search.trim()) {

@@ -79,6 +79,7 @@
                   <option value="Retired Officer">Retired Officer</option>
                   <option value="Serving personnel">Serving personnel</option>
                   <option value="Family Member">Family Member</option>
+                  <option value="Guest">Guest</option>
                 </select>
               </div>
 
@@ -310,12 +311,15 @@
           const displayIndex = (currentPage - 1) * usersPerPage + index + 1;
           
           // Format payment status
-          const paymentStatus = user.registrationData?.is_paid ? 'paid' : 'unpaid';
-          const statusClass = paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+          const isGuest = user.registrationData?.type === 'Guest';
+          const paymentStatus = isGuest ? 'N/A' : (user.registrationData?.is_paid ? 'paid' : 'unpaid');
+          const statusClass = isGuest ? 'bg-gray-100 text-gray-800' : 
+                              (paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
           
           // Format last payment date
-          const lastPayment = user.registrationData?.last_payment_date ? 
-            new Date(user.registrationData.last_payment_date).toLocaleDateString() : 'N/A';
+          const lastPayment = isGuest ? 'N/A' : 
+                              (user.registrationData?.last_payment_date ? 
+                                new Date(user.registrationData.last_payment_date).toLocaleDateString() : 'N/A');
 
           // Get family head name
           const familyHeadName = user.registrationData?.family_head_first_name && user.registrationData?.family_head_last_name
@@ -333,6 +337,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">${user.fullName || 'N/A'}</div>
                 ${familyHeadName ? `<div class="text-xs text-gray-500">Family of: ${familyHeadName}</div>` : ''}
+                ${user.registrationData?.issued_card_no ? `<div class="text-xs text-blue-500">Card: ${user.registrationData.issued_card_no}</div>` : ''}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 ${user.registrationData?.cnic_number || 'N/A'}
@@ -380,7 +385,8 @@
           'Civil Govt. Officer': 'bg-purple-100 text-purple-800',
           'Retired Officer': 'bg-yellow-100 text-yellow-800',
           'Serving personnel': 'bg-green-100 text-green-800',
-          'Family Member': 'bg-pink-100 text-pink-800'
+          'Family Member': 'bg-pink-100 text-pink-800',
+          'Guest': 'bg-orange-100 text-orange-800'
         };
         return colors[type] || 'bg-gray-100 text-gray-800';
       }
